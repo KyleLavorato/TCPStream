@@ -1,22 +1,17 @@
-#include <tins/tins.h>
 #include <iostream>
-#include <stddef.h>
+#include <tins/tcp_ip/stream_follower.h>
+#include <tins/tins.h>
 
 #include "segment.h"
 
-using namespace std;
 using namespace Tins;
-
-size_t counter(0);
-
-bool count_packets(const PDU &) {
-    counter++;
-    // Always keep looping. When the end of the file is found, 
-    // our callback will simply not be called again.
-    return true;
-}
+using namespace std;
+using Tins::TCPIP::Stream;
+using Tins::TCPIP::StreamFollower;
 
 int main(int argc, char *argv[]) {
+	
+	////// ARG CHECKS //////
 	if (argc < 2 || argc > 2) {
 		cerr << "Usage:" << endl;
 		cerr << "./tcpstream <PCAP location>" << endl;
@@ -28,16 +23,28 @@ int main(int argc, char *argv[]) {
 		cerr << "./tcpstream <PCAP location>" << endl;
 		return -1;
 	}
+	////// END ARG CHECKS //////
 
-	try {
-		FileSniffer sniffer(stringArg);
 
-		// Here you would call a function saved in the segment.c file instead of count_packets in the sniff loop
+	// Create our follower
+	Tins::TCPIP::StreamFollower follower;
 
-		sniffer.sniff_loop(count_packets);
-    	cout << "There are " << counter << " packets in the pcap file\n";
-	} catch (Tins::pcap_error& e) {
-		cerr << "Invalid pcap location" << endl; 
-		return -1;
-	}
+	// Set the callback for new streams. Note that this is a std::function, so you
+	// could use std::bind and use a member function for this
+	follower.new_stream_callback(&on_new_stream);
+
+	// Now set up the termination callback. This will be called whenever a stream is 
+	// stopped being followed for some of the reasons explained above
+	follower.stream_termination_callback(&on_stream_terminated);
+
+	// Now create some sniffer
+	//Sniffer sniffer("wlp2s0"); // Change this value to whatever interface you want (run `ifconfig`)
+
+	FileSniffer sniffer(stringArg);
+	
+	// And start sniffing, forwarding all packets to our follower
+	sniffer.sniff_loop([&](PDU& pdu) {
+		follower.process_packet(pdu);
+		return true;
+	});
 }
