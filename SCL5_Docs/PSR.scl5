@@ -1,0 +1,20 @@
+PSR DEFINITIONS ::= BEGIN
+
+	EXPORTS PSRPositionType;
+
+PSRPositionType ::= SEQUENCE {
+        radar_id INTEGER (SIZE 4 BYTES),
+        target_id INTEGER (SIZE 4 BYTES),
+        azimuth REAL (SIZE 8 BYTES),
+        distance REAL (SIZE 8 BYTES),
+        radial_speed REAL (SIZE 8 BYTES),
+        ground_speed REAL (SIZE 8 BYTES),
+        timestamp INTEGER (SIZE 4 BYTES),
+        radar_latitude REAL (SIZE 8 BYTES),
+        radar_longitude REAL (SIZE 8 BYTES)
+}
+<transfer>
+Back {GLOBAL (AppDat) == 2}
+</transfer>
+
+END
