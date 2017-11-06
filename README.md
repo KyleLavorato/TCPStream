@@ -33,12 +33,12 @@ This section has some ideas for meeting the configurability constraint of the pr
 
 #### OR Expression
 
-Pass the program a configuration file in a format like: protocol,string1|string2|string3| ... |stringN
+Pass the program a configuration file in a format like: `protocol,string1|string2|string3| ... |stringN`
 
----
+```
 HTML,GET|POST|PATCH
 FTP,this|that
----
+```
 
 The algorithm will try to find each of the strings provided in the config file on each packet in the streams. If *any* of the strings are found in a packet, the packet is identified as the protocol for that line in the config file. For example, if GET or POST or PATCH was found in a packet, then that packet would be identified as HTTP.
 
