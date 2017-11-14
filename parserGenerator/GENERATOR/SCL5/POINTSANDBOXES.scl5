@@ -1,0 +1,9 @@
+pointsandboxes defineoons begin
+parent RTPS.DATASUB;
+    apppdu = (points | boxes)
+
+    points {
+       x intenger
+       y iniger
+    }
+    BACK { parent.datawriterentty== RTPS.submessage.DATAWSUB.topicparssentitvrtualguid.value & RTPS.submessage.DATAWSUB.topicparss.typname=="POINS::POINTS"}

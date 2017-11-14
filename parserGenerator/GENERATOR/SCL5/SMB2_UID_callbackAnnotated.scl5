@@ -1,0 +1,76 @@
+SMB2 DEFINITIONS ::= BEGIN
+    EXPORTS PDU_SMB2 ^ PDU;
+    PDU_SMB2 ^ PDU ::= (TEST_SMB2 | NEGOTIATE_SMB2)
+    TEST_SMB2 ^ TEST ::= SEQUENCE {
+        Header_TEST_SMB2 ^ Header HEADER_SMB2 (SIZE DEFINED)
+    } (ENCODED BY CUSTOM)
+    < transfer >
+    </ transfer >
+
+    HEADER_SMB2 ^ HEADER ::= (HEADER$ASYNC_SMB2 | HEADER$SYNC_SMB2)
+    HEADER$ASYNC_SMB2 ^ HEADER$ASYNC ::= SEQUENCE {
+        protoID_HEADER$ASYNC_SMB2 ^ protoID OCTET STRING (SIZE 4 BYTES),
+        structureSize_HEADER$ASYNC_SMB2 ^ structureSize INTEGER (SIZE 2 BYTES),
+        creditCharge_HEADER$ASYNC_SMB2 ^ creditCharge INTEGER (SIZE 2 BYTES),
+        ntStatus_HEADER$ASYNC_SMB2 ^ ntStatus INTEGER (SIZE 4 BYTES),
+        command_HEADER$ASYNC_SMB2 ^ command INTEGER (SIZE 2 BYTES),
+        creditREQ_HEADER$ASYNC_SMB2 ^ creditREQ INTEGER (SIZE 2 BYTES),
+        flags_HEADER$ASYNC_SMB2 ^ flags OCTET STRING (SIZE 4 BYTES),
+        nextCommand_HEADER$ASYNC_SMB2 ^ nextCommand INTEGER (SIZE 4 BYTES),
+        messageId_HEADER$ASYNC_SMB2 ^ messageId INTEGER (SIZE 8 BYTES),
+        asyncId_HEADER$ASYNC_SMB2 ^ asyncId INTEGER (SIZE 8 BYTES),
+        sessionId_HEADER$ASYNC_SMB2 ^ sessionId INTEGER (SIZE 8 BYTES),
+        signature_HEADER$ASYNC_SMB2 ^ signature OCTET STRING (SIZE 16 BYTES)
+    } (ENCODED BY CUSTOM)
+    < transfer >
+        Back {protoID_HEADER$ASYNC_SMB2 == 0xFE534D42}
+        Back {structureSize_HEADER$ASYNC_SMB2 == 64}
+        Back {(flags_HEADER$ASYNC_SMB2& 0x00000002) == 2}
+    </ transfer >
+
+    HEADER$SYNC_SMB2 ^ HEADER$SYNC ::= SEQUENCE {
+        protoID_HEADER$SYNC_SMB2 ^ protoID OCTET STRING (SIZE 4 BYTES),
+        structureSize_HEADER$SYNC_SMB2 ^ structureSize INTEGER (SIZE 2 BYTES),
+        creditCharge_HEADER$SYNC_SMB2 ^ creditCharge INTEGER (SIZE 2 BYTES),
+        ntStatus_HEADER$SYNC_SMB2 ^ ntStatus INTEGER (SIZE 4 BYTES),
+        command_HEADER$SYNC_SMB2 ^ command INTEGER (SIZE 2 BYTES),
+        creditREQ_HEADER$SYNC_SMB2 ^ creditREQ INTEGER (SIZE 2 BYTES),
+        flags_HEADER$SYNC_SMB2 ^ flags OCTET STRING (SIZE 4 BYTES),
+        nextCommand_HEADER$SYNC_SMB2 ^ nextCommand INTEGER (SIZE 4 BYTES),
+        messageId_HEADER$SYNC_SMB2 ^ messageId INTEGER (SIZE 8 BYTES),
+        reserved_HEADER$SYNC_SMB2 ^ reserved INTEGER (SIZE 4 BYTES),
+        treeId_HEADER$SYNC_SMB2 ^ treeId INTEGER (SIZE 4 BYTES),
+        sessionId_HEADER$SYNC_SMB2 ^ sessionId INTEGER (SIZE 8 BYTES),
+        signature_HEADER$SYNC_SMB2 ^ signature OCTET STRING (SIZE 16 BYTES)
+    } (ENCODED BY CUSTOM)
+    < transfer >
+        Back {protoID_HEADER$SYNC_SMB2 == 0xFE534D42}
+        Back {structureSize_HEADER$SYNC_SMB2 == 64}
+        Back {(flags_HEADER$SYNC_SMB2& 0x00000002) != 2}
+    </ transfer >
+
+    NEGOTIATE_SMB2 ^ NEGOTIATE ::= SEQUENCE {
+        Header_NEGOTIATE_SMB2 ^ Header HEADER_SMB2 (SIZE DEFINED),
+        structureSize_NEGOTIATE_SMB2 ^ structureSize INTEGER (SIZE 2 BYTES),
+        dialectCount_NEGOTIATE_SMB2 ^ dialectCount INTEGER (SIZE 2 BYTES),
+        securityMode_NEGOTIATE_SMB2 ^ securityMode INTEGER (SIZE 2 BYTES),
+        reserved_NEGOTIATE_SMB2 ^ reserved INTEGER (SIZE 2 BYTES),
+        capabilities_NEGOTIATE_SMB2 ^ capabilities INTEGER (SIZE 4 BYTES),
+        clientGuid_NEGOTIATE_SMB2 ^ clientGuid OCTET STRING (SIZE 16 BYTES),
+        negClientOffset_NEGOTIATE_SMB2 ^ negClientOffset INTEGER (SIZE 4 BYTES),
+        negContextCnt_NEGOTIATE_SMB2 ^ negContextCnt INTEGER (SIZE 2 BYTES),
+        reserved2_NEGOTIATE_SMB2 ^ reserved2 INTEGER (SIZE 2 BYTES),
+        dialects_NEGOTIATE_SMB2 ^ dialects SET OF DIALECT_SMB2 (SIZE CONSTRAINED)
+    } (ENCODED BY CUSTOM)
+    < transfer >
+    </ transfer >
+
+    DIALECT_SMB2 ^ DIALECT ::= SEQUENCE {
+        value_DIALECT_SMB2 ^ value INTEGER (SIZE 2 BYTES)
+    } (ENCODED BY CUSTOM)
+    < transfer >
+        Back {value_DIALECT_SMB2 == 0x0202 || value_DIALECT_SMB2 == 0x0210 || value_DIALECT_SMB2 == 0x0300 || value_DIALECT_SMB2 == 0x0302 || value_DIALECT_SMB2
+          == 0x0311}
+    </ transfer >
+
+END

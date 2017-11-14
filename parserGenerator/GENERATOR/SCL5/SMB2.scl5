@@ -1,0 +1,86 @@
+-- SMB2 Protocol
+
+SMB2 DEFINITIONS ::= BEGIN
+
+EXPORTS PDU;
+
+PDU ::= (TEST | NEGOTIATE)
+
+TEST ::= SEQUENCE {
+	Header	HEADER (SIZE DEFINED)
+} (ENCODED BY CUSTOM)
+<transfer>
+-- Back { Header.protoID == 0xFE534D42} -- 0xFE 'S' 'M' 'B'
+-- Back { Header.structureSize == 64 }
+-- Back { Header.command <= 0x0012 }
+</transfer>
+
+HEADER ::= (HEADER_ASYNC | HEADER_SYNC)
+
+HEADER_ASYNC ::= SEQUENCE {
+	protoID			OCTET STRING (SIZE 4 BYTES),
+	structureSize	INTEGER (SIZE 2 BYTES),
+	creditCharge	INTEGER (SIZE 2 BYTES),
+	ntStatus		INTEGER (SIZE 4 BYTES),
+	command			INTEGER (SIZE 2 BYTES),
+	creditREQ		INTEGER (SIZE 2 BYTES),
+	flags			OCTET STRING (SIZE 4 BYTES),
+	nextCommand		INTEGER (SIZE 4 BYTES),
+	messageId		INTEGER (SIZE 8 BYTES),
+	asyncId			INTEGER (SIZE 8 BYTES),
+	sessionId		INTEGER (SIZE 8 BYTES),
+	signature		OCTET STRING (SIZE 16 BYTES)
+} (ENCODED BY CUSTOM)
+<transfer>
+Back {protoID == 0xFE534D42} -- 0xFE 'S' 'M' 'B'
+Back {structureSize == 64 }
+Back {(flags & 0x00000002) == 2} -- ASYNC bit is set
+</transfer>
+
+HEADER_SYNC ::= SEQUENCE {
+	protoID			OCTET STRING (SIZE 4 BYTES),
+	structureSize	INTEGER (SIZE 2 BYTES),
+	creditCharge	INTEGER (SIZE 2 BYTES),
+	ntStatus		INTEGER (SIZE 4 BYTES),
+	command			INTEGER (SIZE 2 BYTES),
+	creditREQ		INTEGER (SIZE 2 BYTES),
+	flags			OCTET STRING (SIZE 4 BYTES),
+	nextCommand		INTEGER (SIZE 4 BYTES),
+	messageId		INTEGER (SIZE 8 BYTES),
+	reserved		INTEGER (SIZE 4 BYTES),
+	treeId			INTEGER (SIZE 4 BYTES),
+	sessionId		INTEGER (SIZE 8 BYTES),
+	signature		OCTET STRING (SIZE 16 BYTES)
+} (ENCODED BY CUSTOM)
+<transfer>
+Back {protoID == 0xFE534D42} -- 0xFE 'S' 'M' 'B'
+Back {structureSize == 64 }
+Back {(flags & 0x00000002) != 2} -- ASYNC bit is set
+</transfer>
+
+-- For this version, dialects must contain 0x0311
+NEGOTIATE ::= SEQUENCE {
+	Header	HEADER (SIZE DEFINED),
+	structureSize	INTEGER (SIZE 2 BYTES),
+	dialectCount	INTEGER (SIZE 2 BYTES),
+	securityMode	INTEGER (SIZE 2 BYTES),
+	reserved		INTEGER (SIZE 2 BYTES),
+	capabilities	INTEGER (SIZE 4 BYTES),
+	clientGuid		OCTET STRING (SIZE 16 BYTES),
+	negClientOffset	INTEGER (SIZE 4 BYTES),
+	negContextCnt	INTEGER (SIZE 2 BYTES),
+	reserved2		INTEGER (SIZE 2 BYTES),
+	dialects		SET OF DIALECT (SIZE CONSTRAINED)
+} (ENCODED BY CUSTOM)
+<transfer>
+-- Back {securityMode == 0x0001 || securityMode == 0x0002}
+</transfer>
+
+DIALECT ::= SEQUENCE {
+	value	INTEGER (SIZE 2 BYTES)
+} (ENCODED BY CUSTOM)
+<transfer>
+Back {value == 0x0202 || value == 0x0210 || value == 0x0300 || value == 0x0302 || value == 0x0311}
+</transfer>
+
+END

@@ -1,0 +1,17 @@
+PSR DEFINITIONS ::= BEGIN
+    EXPORTS PSRPositionType_PSR ^ PSRPositionType;
+    PSRPositionType_PSR ^ PSRPositionType @ 0 2 @ GLOBAL ::= SEQUENCE {
+        radar$id_PSRPositionType_PSR ^ radar$id INTEGER (SIZE 4 BYTES),
+        target$id_PSRPositionType_PSR ^ target$id INTEGER (SIZE 4 BYTES),
+        azimuth_PSRPositionType_PSR ^ azimuth REAL (SIZE 8 BYTES),
+        distance_PSRPositionType_PSR ^ distance REAL (SIZE 8 BYTES),
+        radial$speed_PSRPositionType_PSR ^ radial$speed REAL (SIZE 8 BYTES),
+        ground$speed_PSRPositionType_PSR ^ ground$speed REAL (SIZE 8 BYTES),
+        timestamp_PSRPositionType_PSR ^ timestamp INTEGER (SIZE 4 BYTES),
+        radar$latitude_PSRPositionType_PSR ^ radar$latitude REAL (SIZE 8 BYTES),
+        radar$longitude_PSRPositionType_PSR ^ radar$longitude REAL (SIZE 8 BYTES)
+    } < transfer >
+        Back {GLOBAL (AppDat) == 2}
+    </ transfer >
+
+END

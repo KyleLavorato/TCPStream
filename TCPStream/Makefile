@@ -1,7 +1,7 @@
 CXX=g++
 CPPFLAGS=-std=c++11
 LDLIBS=-ltins -lboost_regex
-OBJS= segment.o
+OBJS= segment.o SMB2_Generated.o putilities.o packet.o parser.o
 
 all: tcpstream
 
@@ -16,3 +16,9 @@ pmain.o: segment.h
 
 # SUPPORT
 segment.o: segment.h
+
+parser.o: parser.h
+
+SMB2_Generated.o: pglobals.h SMB2_Generated.h
+putilities.o: putilities.h
+packet.o: globals.h packet.h

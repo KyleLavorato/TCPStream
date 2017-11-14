@@ -3,6 +3,7 @@
 #include <tins/tins.h>
 
 #include "segment.h"
+#include "parser.h"
 
 using namespace Tins;
 using namespace std;
@@ -45,6 +46,9 @@ int main(int argc, char *argv[]) {
 	// And start sniffing, forwarding all packets to our follower
 	sniffer.sniff_loop([&](PDU& pdu) {
 		follower.process_packet(pdu);
+		unsigned char * data;
+		unsigned long dataLength;
+		parseData(argv[1], data, dataLength);
 		return true;
 	});
 }
