@@ -65,9 +65,14 @@ txl -s 140 SCL5/"$filename"_UID_annotated.scl5 TXL/generateSource.txl -idchars '
 
 if [[ "$DIR" != "" ]]; then
 	cp SOURCE/"$filename"_Generated.h SOURCE/"$filename"_Generated.c $DIR
-else
-	cp SOURCE/"$filename"_Generated.h SOURCE/"$filename"_Generated.c ../testingGenerator/
+#else
+	#cp SOURCE/"$filename"_Generated.h SOURCE/"$filename"_Generated.c ../testingGenerator/
 fi
+
+sed -i 's/PDU \*/PDUP \*/g' SOURCE/SMB2_Generated.h
+sed -i 's/PDU \*/PDUP \*/g' SOURCE/SMB2_Generated.c
+cp SOURCE/SMB2_Generated.c ../../TCPStream/
+cp SOURCE/SMB2_Generated.h ../../TCPStream/
 
 # Check imports in a module against table of exports from all module
 #txl renamedFULL.scl5 checkImports.txl -idchars '$'

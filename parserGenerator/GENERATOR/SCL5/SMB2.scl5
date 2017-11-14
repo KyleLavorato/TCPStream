@@ -67,13 +67,18 @@ NEGOTIATE ::= SEQUENCE {
 	reserved		INTEGER (SIZE 2 BYTES),
 	capabilities	INTEGER (SIZE 4 BYTES),
 	clientGuid		OCTET STRING (SIZE 16 BYTES),
-	negClientOffset	INTEGER (SIZE 4 BYTES),
+	negContextOff	INTEGER (SIZE 4 BYTES),
 	negContextCnt	INTEGER (SIZE 2 BYTES),
 	reserved2		INTEGER (SIZE 2 BYTES),
-	dialects		SET OF DIALECT (SIZE CONSTRAINED)
+	dialects		SET OF DIALECT (SIZE CONSTRAINED),
+	padding			OCTET STRING (SIZE CONSTRAINED),
+	negContextList	SET OF NEGOTIATECONTEXT (SIZE CONSTRAINED)
 } (ENCODED BY CUSTOM)
 <transfer>
--- Back {securityMode == 0x0001 || securityMode == 0x0002}
+Back {securityMode == 0x0001 || securityMode == 0x0002}
+-- Back {EXISTS(dialects) == 0x0311}
+Forward {LENGTH(padding) == (SIZEOF(Header) + 36 + SIZEOF(dialects) - negContextOff)}
+Forward {CARDINALITY(negContextList) == negContextCnt}
 </transfer>
 
 DIALECT ::= SEQUENCE {
@@ -81,6 +86,51 @@ DIALECT ::= SEQUENCE {
 } (ENCODED BY CUSTOM)
 <transfer>
 Back {value == 0x0202 || value == 0x0210 || value == 0x0300 || value == 0x0302 || value == 0x0311}
+</transfer>
+
+NEGOTIATECONTEXT ::= SEQUENCE {
+	contextType	INTEGER (SIZE 2 BYTES),
+	dataLength	INTEGER (SIZE 4 BYTES),
+	reserved 	INTEGER (SIZE 4 BYTES),
+	data 		CONTEXTDATA (SIZE DEFINED),
+	padding 	OCTET STRING (SIZE CONSTRAINED)
+} (ENCODED BY CUSTOM)
+<transfer>
+Back {contextType == 0x0001 || contextType == 0x0002}
+Forward {LENGTH(padding) == (10 + SIZEOF(data) % 8)}
+</transfer>
+
+CONTEXTDATA ::= (INTEGRITY | ENCRYPTION)
+
+INTEGRITY ::= SEQUENCE {
+	hashAlgCnt	INTEGER (SIZE 2 BYTES),
+	saltLength	INTEGER	(SIZE 2 BYTES),
+	hashAlg 	SET OF HASHALG (SIZE CONSTRAINED),
+	salt 		OCTET STRING (SIZE CONSTRAINED)
+} (ENCODED BY CUSTOM)
+<transfer>
+Forward {CARDINALITY(hashAlg) == hashAlgCnt}
+Forward {LENGTH(salt) == saltLength}
+</transfer>
+
+HASHALG ::= SEQUENCE {
+	alg 	INTEGER (SIZE 2 BYTES)
+} (ENCODED BY CUSTOM)
+<transfer>
+</transfer>
+
+ENCRYPTION ::= SEQUENCE {
+	cipherCnt	INTEGER (SIZE 2 BYTES),
+	ciphers		SET OF CIPHER (SIZE CONSTRAINED)
+} (ENCODED BY CUSTOM)
+<transfer>
+Forward {CARDINALITY(ciphers) == cipherCnt}
+</transfer>
+
+CIPHER ::= SEQUENCE {
+	cipherData 	INTEGER (SIZE 2 BYTES)
+} (ENCODED BY CUSTOM)
+<transfer>
 </transfer>
 
 END

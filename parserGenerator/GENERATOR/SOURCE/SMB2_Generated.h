@@ -11,6 +11,8 @@
 #define NEGOTIATE_SMB2_VAL (2)
 #define HEADER$ASYNC_SMB2_VAL (3)
 #define HEADER$SYNC_SMB2_VAL (4)
+#define INTEGRITY_SMB2_VAL (5)
+#define ENCRYPTION_SMB2_VAL (6)
 typedef struct {
     uint32_t protoid;
     uint16_t structuresize;
@@ -54,6 +56,42 @@ typedef struct {
     uint16_t value;
 } DIALECT_SMB2;
 typedef struct {
+    uint16_t alg;
+} HASHALG_SMB2;
+typedef struct {
+    uint16_t hashalgcnt;
+    uint16_t saltlength;
+    unsigned long hashalglength;
+    unsigned long hashalgcount;
+    HASHALG_SMB2 *hashalg;
+    unsigned long salt_length;
+    unsigned char *salt;
+} INTEGRITY_SMB2;
+typedef struct {
+    uint16_t cipherdata;
+} CIPHER_SMB2;
+typedef struct {
+    uint16_t ciphercnt;
+    unsigned long cipherslength;
+    unsigned long cipherscount;
+    CIPHER_SMB2 *ciphers;
+} ENCRYPTION_SMB2;
+typedef struct {
+    uint32_t type;
+    union {
+        INTEGRITY_SMB2 integrity_smb2;
+        ENCRYPTION_SMB2 encryption_smb2;
+    } ptr;
+} CONTEXTDATA_SMB2;
+typedef struct {
+    uint16_t contexttype;
+    uint32_t datalength;
+    uint32_t reserved;
+    CONTEXTDATA_SMB2 data;
+    unsigned long padding_length;
+    unsigned char *padding;
+} NEGOTIATECONTEXT_SMB2;
+typedef struct {
     HEADER_SMB2 header;
     uint16_t structuresize;
     uint16_t dialectcount;
@@ -61,12 +99,17 @@ typedef struct {
     uint16_t reserved;
     uint32_t capabilities;
     unsigned char clientguid [16];
-    uint32_t negclientoffset;
+    uint32_t negcontextoff;
     uint16_t negcontextcnt;
     uint16_t reserved2;
     unsigned long dialectslength;
     unsigned long dialectscount;
     DIALECT_SMB2 *dialects;
+    unsigned long padding_length;
+    unsigned char *padding;
+    unsigned long negcontextlistlength;
+    unsigned long negcontextlistcount;
+    NEGOTIATECONTEXT_SMB2 *negcontextlist;
 } NEGOTIATE_SMB2;
 typedef struct {
     uint32_t type;
@@ -75,6 +118,6 @@ typedef struct {
         NEGOTIATE_SMB2 negotiate_smb2;
     } ptr;
 } PDU_SMB2;
-bool parseSMB2 (PDU_SMB2 * pdu_smb2, PDU * thePDU, char * name, uint8_t endianness);
+bool parseSMB2 (PDU_SMB2 * pdu_smb2, PDUP * thePDU, char * name, uint8_t endianness);
 void freePDU_SMB2 (PDU_SMB2 * mainpdu);
 #endif

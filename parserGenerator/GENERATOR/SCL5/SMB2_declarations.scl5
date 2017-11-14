@@ -57,12 +57,17 @@ SMB2 DEFINITIONS ::= BEGIN
         reserved_NEGOTIATE_SMB2 ^ reserved INTEGER (SIZE 2 BYTES),
         capabilities_NEGOTIATE_SMB2 ^ capabilities INTEGER (SIZE 4 BYTES),
         clientGuid_NEGOTIATE_SMB2 ^ clientGuid OCTET STRING (SIZE 16 BYTES),
-        negClientOffset_NEGOTIATE_SMB2 ^ negClientOffset INTEGER (SIZE 4 BYTES),
+        negContextOff_NEGOTIATE_SMB2 ^ negContextOff INTEGER (SIZE 4 BYTES),
         negContextCnt_NEGOTIATE_SMB2 ^ negContextCnt INTEGER (SIZE 2 BYTES),
         reserved2_NEGOTIATE_SMB2 ^ reserved2 INTEGER (SIZE 2 BYTES),
-        dialects_NEGOTIATE_SMB2 ^ dialects SET OF DIALECT (SIZE CONSTRAINED)
+        dialects_NEGOTIATE_SMB2 ^ dialects SET OF DIALECT (SIZE CONSTRAINED),
+        padding_NEGOTIATE_SMB2 ^ padding OCTET STRING (SIZE CONSTRAINED),
+        negContextList_NEGOTIATE_SMB2 ^ negContextList SET OF NEGOTIATECONTEXT (SIZE CONSTRAINED)
     } (ENCODED BY CUSTOM)
     < transfer >
+        Back {securityMode == 0x0001 || securityMode == 0x0002}
+        Forward {LENGTH (padding) == (SIZEOF (Header) + 36 + SIZEOF (dialects) - negContextOff)}
+        Forward {CARDINALITY (negContextList) == negContextCnt}
     </ transfer >
 
     DIALECT_SMB2 ^ DIALECT ::= SEQUENCE {
@@ -70,6 +75,50 @@ SMB2 DEFINITIONS ::= BEGIN
     } (ENCODED BY CUSTOM)
     < transfer >
         Back {value == 0x0202 || value == 0x0210 || value == 0x0300 || value == 0x0302 || value == 0x0311}
+    </ transfer >
+
+    NEGOTIATECONTEXT_SMB2 ^ NEGOTIATECONTEXT ::= SEQUENCE {
+        contextType_NEGOTIATECONTEXT_SMB2 ^ contextType INTEGER (SIZE 2 BYTES),
+        dataLength_NEGOTIATECONTEXT_SMB2 ^ dataLength INTEGER (SIZE 4 BYTES),
+        reserved_NEGOTIATECONTEXT_SMB2 ^ reserved INTEGER (SIZE 4 BYTES),
+        data_NEGOTIATECONTEXT_SMB2 ^ data CONTEXTDATA (SIZE DEFINED),
+        padding_NEGOTIATECONTEXT_SMB2 ^ padding OCTET STRING (SIZE CONSTRAINED)
+    } (ENCODED BY CUSTOM)
+    < transfer >
+        Back {contextType == 0x0001 || contextType == 0x0002}
+        Forward {LENGTH (padding) == (10 + SIZEOF (data) % 8)}
+    </ transfer >
+
+    CONTEXTDATA_SMB2 ^ CONTEXTDATA ::= (INTEGRITY | ENCRYPTION)
+    INTEGRITY_SMB2 ^ INTEGRITY ::= SEQUENCE {
+        hashAlgCnt_INTEGRITY_SMB2 ^ hashAlgCnt INTEGER (SIZE 2 BYTES),
+        saltLength_INTEGRITY_SMB2 ^ saltLength INTEGER (SIZE 2 BYTES),
+        hashAlg_INTEGRITY_SMB2 ^ hashAlg SET OF HASHALG (SIZE CONSTRAINED),
+        salt_INTEGRITY_SMB2 ^ salt OCTET STRING (SIZE CONSTRAINED)
+    } (ENCODED BY CUSTOM)
+    < transfer >
+        Forward {CARDINALITY (hashAlg) == hashAlgCnt}
+        Forward {LENGTH (salt) == saltLength}
+    </ transfer >
+
+    HASHALG_SMB2 ^ HASHALG ::= SEQUENCE {
+        alg_HASHALG_SMB2 ^ alg INTEGER (SIZE 2 BYTES)
+    } (ENCODED BY CUSTOM)
+    < transfer >
+    </ transfer >
+
+    ENCRYPTION_SMB2 ^ ENCRYPTION ::= SEQUENCE {
+        cipherCnt_ENCRYPTION_SMB2 ^ cipherCnt INTEGER (SIZE 2 BYTES),
+        ciphers_ENCRYPTION_SMB2 ^ ciphers SET OF CIPHER (SIZE CONSTRAINED)
+    } (ENCODED BY CUSTOM)
+    < transfer >
+        Forward {CARDINALITY (ciphers) == cipherCnt}
+    </ transfer >
+
+    CIPHER_SMB2 ^ CIPHER ::= SEQUENCE {
+        cipherData_CIPHER_SMB2 ^ cipherData INTEGER (SIZE 2 BYTES)
+    } (ENCODED BY CUSTOM)
+    < transfer >
     </ transfer >
 
 END
