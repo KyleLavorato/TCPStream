@@ -1,6 +1,7 @@
 #include <iostream>
 #include <tins/tcp_ip/stream_follower.h>
 #include <tins/tins.h>
+#include "parser.h"
 
 using namespace Tins;
 using namespace std;
@@ -9,6 +10,7 @@ using Tins::TCPIP::StreamFollower;
 
 // This will be called when there's new client data
 void on_client_data(Stream& stream) {
+    int i;
 
     if (stream.is_partial_stream()) {
         cout << "Skipping partial stream" << endl;
@@ -17,7 +19,11 @@ void on_client_data(Stream& stream) {
 
     // Get the client's payload, this is a vector<uint8_t>
     const Stream::payload_type& payload = stream.client_payload();
-    int i;
+
+    // As per Kyle's request, call parseData from packet.h with the data and size
+    // TODO: get the first argument here
+    parseData("TODO", payload.data(), payload.size());
+
 
     cout << "Client data:" << endl;
 
@@ -30,6 +36,7 @@ void on_client_data(Stream& stream) {
 
 // This will be called when there's new server data
 void on_server_data(Stream& stream) {
+    int i;
 
     if (stream.is_partial_stream()) {
         cout << "Skipping partial stream" << endl;
@@ -37,7 +44,10 @@ void on_server_data(Stream& stream) {
     }
 
     const Stream::payload_type& payload = stream.client_payload();
-    int i;
+
+    // As per Kyle's request, call parseData from packet.h with the data and size
+    // TODO: get the first argument here
+    parseData("TODO", payload.data(), payload.size());
 
     cout << "Server data:" << endl;
 

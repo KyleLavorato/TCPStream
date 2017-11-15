@@ -38,9 +38,6 @@ int main(int argc, char *argv[]) {
 	// stopped being followed for some of the reasons explained above
 	follower.stream_termination_callback(&on_stream_terminated);
 
-	// Now create some sniffer
-	//Sniffer sniffer("wlp2s0"); // Change this value to whatever interface you want (run `ifconfig`)
-
 	FileSniffer sniffer(stringArg);
 	
 	// And start sniffing, forwarding all packets to our follower
