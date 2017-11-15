@@ -1,22 +1,25 @@
+#pragma once
+
 #include <iostream>
-#include <tins/tcp_ip/stream_follower.h>
-#include <tins/tins.h>
 #include <tuple>
 #include "AttributeFingerprintHandler.h"
 
-using namespace Tins;
 using namespace std;
-using Tins::TCPIP::Stream;
-using Tins::TCPIP::StreamFollower;
 
 class ProtocolModel {
 private:
 public:
 	ProtocolModel();
-	ProtocolModel ProtocolModel();
-	AddObservation (byte[] packetData, DateTime packetTimestamp, PacketDirection packetDirection);
-	double GetAvergaeKullbackLeiblerDivergenceFrom (ProtocolModel model);
+	//packetTimestamp is time of recieving packet
+	//packetDirection is 1 for client data, and 0 for server data
+	void AddObservation (byte packetData[], time_t packetTimestamp, int packetDirection);
+	double GetAverageKullbackLeiblerDivergenceFrom (ProtocolModel model);
 	ProtocolModel MergeWith(ProtocolModel otherModel);
 	int trainingSessionCount;
 	unsigned long observationCount;
-}
+	AttributeFingerprintHandler packetSize;
+	AttributeFingerprintHandler packetSource;
+	AttributeFingerprintHandler byteFrequency;
+	AttributeFingerprintHandler byteSequences;
+	AttributeFingerprintHandler byteOffsets;
+};

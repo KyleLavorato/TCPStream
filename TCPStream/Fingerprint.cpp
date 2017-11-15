@@ -1,16 +1,18 @@
 #include "Fingerprint.h"
 
-using namespace Tins;
 using namespace std;
-using Tins::TCPIP::Stream;
-using Tins::TCPIP::StreamFollower;
 
 Fingerprint::Fingerprint(){};
 
-Fingerprint Fingerprint::Fingerprint(){
-	int[][] probabilityDistributionVector;
+Fingerprint::Fingerprint(int counter){
+	int size = counter;
+	int probabilityDistributionVector [size][2] = {{}};
 }
 
 void Fingerprint::IncrementFingerprintCounterAtIndex(int index){
-	
+	probabilityDistributionVector[index][0]++;
+}
+
+Fingerprint Fingerprint::MergeWith(Fingerprint otherFingerprint){
+
 }

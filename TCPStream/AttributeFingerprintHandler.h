@@ -1,25 +1,23 @@
-#include <iostream>
-#include <tins/tcp_ip/stream_follower.h>
-#include <tins/tins.h>
-#include <tuple>
-#include "Fingerprint.h"
-#include "lAttributeMeter.h"
+#pragma once
 
-using namespace Tins;
+#include <iostream>
+#include <tuple>
+#include <ctime>
+#include "Fingerprint.h"
+
 using namespace std;
-using Tins::TCPIP::Stream;
-using Tins::TCPIP::StreamFollower;
+using byte = unsigned char;
 
 class AttributeFingerprintHandler {
 private:
-	lAttributeMeter attributeMeter;
+public:
 	Fingerprint attributeFingerprint;
 	string attributeName;
-public:
+	int counter;
 	AttributeFingerprintHandler();
-	AttributeFingerprintHandler AttributeFingerprintHandler(string name);
-	AddObservation (byte[] packetData, DateTime packetTimestamp, PacketDirection packetDirection, int packetOrderNumberInSession);
-	double GetAvergaeKullbackLeiblerDivergenceFrom (AttributeFingerprintHandler model);
+	AttributeFingerprintHandler(string name);
+	void AddObservation (byte packetData[], time_t packetTimestamp, int packetDirection, int packetOrderNumberInSession);
+	double GetAverageKullbackLeiblerDivergenceFrom (AttributeFingerprintHandler model);
 	AttributeFingerprintHandler MergeWith(Fingerprint otherFingerprint);
-	int* GetMeasurements(byte[] packetData, DateTime packetTimestamp, PacketDirection packetDirection, int packetOrderNumberInSession);
-}
+	int* GetMeasurements(byte packetData[], time_t packetTimestamp, int packetDirection, int packetOrderNumberInSession);
+};
