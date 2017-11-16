@@ -27,6 +27,8 @@ If we're strictly matching strings to identify protocols, then we may run into f
 
 ## Solution
 
+Our team has decided to try several different approaches and weigh their relative strengths and weaknesses.
+
 ### Configuration
 
 This section has some ideas for meeting the configurability constraint of the problem.
@@ -53,3 +55,12 @@ chmod +x install.sh
 
 This has been tested on an Ubuntu-based Linux system.
 
+## Write each stream to a file
+
+Make sure you have a directory called `streams` to write the files to.
+
+```shell
+make
+rm -f streams/*
+./tcpstream PCAPS/<YOUR_FILE>.pcap
+```
