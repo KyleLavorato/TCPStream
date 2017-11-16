@@ -19,14 +19,11 @@
 
 #define true 1
 #define false 0
-typedef int bool;
+//typedef int bool;
 
-extern FILE * traceFile;
-extern char * progname;
-extern FILE * traceFileCons;
-extern int learnmode;
 extern unsigned long long count;
 extern unsigned long long failed;
+extern char * argString;
 
 struct HeaderInfo {
 	uint32_t srcIP;

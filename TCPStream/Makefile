@@ -12,12 +12,12 @@ clean:
 	rm -f *.o ./tcpstream
 
 # MAIN
-pmain.o: segment.h
+pmain.o: globals.h segment.h
 
 # SUPPORT
 segment.o: segment.h
 
-parser.o: parser.h
+parser.o: globals.h parser.h
 
 SMB2_Generated.o: pglobals.h SMB2_Generated.h
 putilities.o: putilities.h

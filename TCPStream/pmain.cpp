@@ -10,6 +10,8 @@ using namespace std;
 using Tins::TCPIP::Stream;
 using Tins::TCPIP::StreamFollower;
 
+char * argString;
+
 int main(int argc, char *argv[]) {
 	
 	////// ARG CHECKS //////
@@ -24,6 +26,7 @@ int main(int argc, char *argv[]) {
 		cerr << "./tcpstream <PCAP location>" << endl;
 		return -1;
 	}
+	argString = argv[1];
 	////// END ARG CHECKS //////
 
 
@@ -43,9 +46,6 @@ int main(int argc, char *argv[]) {
 	// And start sniffing, forwarding all packets to our follower
 	sniffer.sniff_loop([&](PDU& pdu) {
 		follower.process_packet(pdu);
-		unsigned char * data;
-		unsigned long dataLength;
-		parseData(argv[1], data, dataLength);
 		return true;
 	});
 }
