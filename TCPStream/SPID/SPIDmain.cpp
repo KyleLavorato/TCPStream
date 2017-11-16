@@ -2,32 +2,28 @@
 #include <tins/tcp_ip/stream_follower.h>
 #include <tins/tins.h>
 
-#include "segment.h"
-#include "parser.h"
-//#include "SPIDinterface.h"
+#include "SPIDinterface.h"
 
 using namespace Tins;
 using namespace std;
 using Tins::TCPIP::Stream;
 using Tins::TCPIP::StreamFollower;
 
-char * argString;
-
 int main(int argc, char *argv[]) {
 	
 	////// ARG CHECKS //////
-	if (argc < 2 || argc > 2) {
+	if (argc < 3 || argc > 3) {
 		cerr << "Usage:" << endl;
-		cerr << "./tcpstream <PCAP location>" << endl;
+		cerr << "./tcpstream <PCAP location> <Model Location>" << endl;
 		return -1;
 	}
-	string stringArg = argv[1];
+	string PCAP = argv[1];
+	string model = argv[2];
 	if (stringArg == "-h") {
 		cerr << "Usage:" << endl;
-		cerr << "./tcpstream <PCAP location>" << endl;
+		cerr << "./tcpstream <PCAP location> <Model Location>" << endl;
 		return -1;
 	}
-	argString = argv[1];
 	////// END ARG CHECKS //////
 
 
@@ -42,11 +38,17 @@ int main(int argc, char *argv[]) {
 	// stopped being followed for some of the reasons explained above
 	follower.stream_termination_callback(&on_stream_terminated);
 
-	FileSniffer sniffer(stringArg);
+	// Now create some sniffer
+	//Sniffer sniffer("wlp2s0"); // Change this value to whatever interface you want (run `ifconfig`)
+
+	FileSniffer sniffer(PCAP);
 	
 	// And start sniffing, forwarding all packets to our follower
-	sniffer.sniff_loop([&](PDU& pdu) {
-		follower.process_packet(pdu);
-		return true;
-	});
+	//sniffer.sniff_loop([&](PDU& pdu) {
+	//	follower.process_packet(pdu);
+	//	unsigned char * data;
+	//	unsigned long dataLength;
+	//	parseData(argv[1], data, dataLength);
+	//	return true;
+	//});
 }

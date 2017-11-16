@@ -10,7 +10,7 @@ using Tins::TCPIP::StreamFollower;
 
 class Stream {
 private:
-	tuple <string, int, string, int, string> connections;
+	tuple <string, int, string, int, string> id;
 	int [][] packetSizeDistribution;
 	int [][] packetDirectionDistribution;
 	int [][] byteFrequency;
