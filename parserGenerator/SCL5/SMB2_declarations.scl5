@@ -1,33 +1,13 @@
 SMB2 DEFINITIONS ::= BEGIN
     EXPORTS PDU;
-    PDU_SMB2 ^ PDU ::= (TEST | NEGOTIATE | NEGOTIATE$RESPONSE)
+    PDU_SMB2 ^ PDU ::= (NEGOTIATE)
     TEST_SMB2 ^ TEST ::= SEQUENCE {
         Header_TEST_SMB2 ^ Header HEADER (SIZE DEFINED)
     } (ENCODED BY CUSTOM)
     < transfer >
     </ transfer >
 
-    HEADER_SMB2 ^ HEADER ::= (HEADER$ASYNC | HEADER$SYNC)
-    HEADER$ASYNC_SMB2 ^ HEADER$ASYNC ::= SEQUENCE {
-        protoID_HEADER$ASYNC_SMB2 ^ protoID OCTET STRING (SIZE 4 BYTES),
-        structureSize_HEADER$ASYNC_SMB2 ^ structureSize INTEGER (SIZE 2 BYTES),
-        creditCharge_HEADER$ASYNC_SMB2 ^ creditCharge INTEGER (SIZE 2 BYTES),
-        ntStatus_HEADER$ASYNC_SMB2 ^ ntStatus INTEGER (SIZE 4 BYTES),
-        command_HEADER$ASYNC_SMB2 ^ command INTEGER (SIZE 2 BYTES),
-        creditREQ_HEADER$ASYNC_SMB2 ^ creditREQ INTEGER (SIZE 2 BYTES),
-        flags_HEADER$ASYNC_SMB2 ^ flags OCTET STRING (SIZE 4 BYTES),
-        nextCommand_HEADER$ASYNC_SMB2 ^ nextCommand INTEGER (SIZE 4 BYTES),
-        messageId_HEADER$ASYNC_SMB2 ^ messageId INTEGER (SIZE 8 BYTES),
-        asyncId_HEADER$ASYNC_SMB2 ^ asyncId INTEGER (SIZE 8 BYTES),
-        sessionId_HEADER$ASYNC_SMB2 ^ sessionId INTEGER (SIZE 8 BYTES),
-        signature_HEADER$ASYNC_SMB2 ^ signature OCTET STRING (SIZE 16 BYTES)
-    } (ENCODED BY CUSTOM)
-    < transfer >
-        Back {protoID == 0xFE534D42}
-        Back {structureSize == 64}
-        Back {(flags& 0x00000002) == 2}
-    </ transfer >
-
+    HEADER_SMB2 ^ HEADER ::= (HEADER$SYNC)
     HEADER$SYNC_SMB2 ^ HEADER$SYNC ::= SEQUENCE {
         protoID_HEADER$SYNC_SMB2 ^ protoID OCTET STRING (SIZE 4 BYTES),
         structureSize_HEADER$SYNC_SMB2 ^ structureSize INTEGER (SIZE 2 BYTES),
@@ -66,7 +46,8 @@ SMB2 DEFINITIONS ::= BEGIN
     } (ENCODED BY CUSTOM)
     < transfer >
         Back {securityMode == 0x0001 || securityMode == 0x0002}
-        Forward {LENGTH (padding) == (SIZEOF (Header) + 36 + SIZEOF (dialects) - negContextOff)}
+        Forward {CARDINALITY (dialects) == dialectCount}
+        Forward {PADDING (padding) == 8 - ((64 + 36 + dialectCount * 2) % 8)}
         Forward {CARDINALITY (negContextList) == negContextCnt}
     </ transfer >
 
@@ -86,7 +67,7 @@ SMB2 DEFINITIONS ::= BEGIN
     } (ENCODED BY CUSTOM)
     < transfer >
         Back {contextType == 0x0001 || contextType == 0x0002}
-        Forward {LENGTH (padding) == (10 + SIZEOF (data) % 8)}
+        Forward {PADDING (padding) == (8 - ((8 + dataLength) % 8))}
     </ transfer >
 
     CONTEXTDATA_SMB2 ^ CONTEXTDATA ::= (INTEGRITY | ENCRYPTION)
@@ -145,7 +126,7 @@ SMB2 DEFINITIONS ::= BEGIN
         Back {structureSize == 65}
         Back {securityMode == 0x0001 || securityMode == 0x0002}
         Forward {LENGTH (buffer) == secBufferLength}
-        Forward {LENGTH (padding) == (SIZEOF (Header) + 64 + secBufferLength - negContextOff)}
+        Forward {LENGTH (padding) == 8 - ((64 + 64 + secBufferLength) % 8)}
         Forward {CARDINALITY (negContextList) == negContextCnt}
     </ transfer >
 
@@ -158,7 +139,7 @@ SMB2 DEFINITIONS ::= BEGIN
     } (ENCODED BY CUSTOM)
     < transfer >
         Back {contextType == 0x0001 || contextType == 0x0002}
-        Forward {LENGTH (padding) == (10 + SIZEOF (data) % 8)}
+        Forward {PADDING (padding) == (8 - ((8 + dataLength) % 8))}
     </ transfer >
 
     CONTEXTDATA$RESPONSE_SMB2 ^ CONTEXTDATA$RESPONSE ::= (INTEGRITY$RESPONSE | ENCRYPTION$RESPONSE)

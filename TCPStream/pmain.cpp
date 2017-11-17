@@ -11,6 +11,7 @@ using Tins::TCPIP::Stream;
 using Tins::TCPIP::StreamFollower;
 
 char * argString;
+int indent;
 
 int main(int argc, char *argv[]) {
 	

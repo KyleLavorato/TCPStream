@@ -44,7 +44,7 @@ void on_server_data(Stream& stream) {
         return;
     }
 
-    const Stream::payload_type& payload = stream.client_payload();
+    const Stream::payload_type& payload = stream.server_payload();
 
     // As per Kyle's request, call parseData from packet.h with the data and size
     // TODO: get the first argument here

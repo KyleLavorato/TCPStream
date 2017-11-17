@@ -31,6 +31,7 @@ void parseData(char *progname, const unsigned char *data, const unsigned long da
 
 	uint32_t NETBIOS = get32_e (thePDU, endianness);
 
+	indent = 0;
 	parsedPDU = parseSMB2(&pdu_smb2, thePDU, progname, endianness);
 	if (parsedPDU == true){
 		std::cout << "Parsed SMB" << std::endl;

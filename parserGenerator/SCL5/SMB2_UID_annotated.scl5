@@ -1,31 +1,12 @@
 SMB2 DEFINITIONS ::= BEGIN
     EXPORTS PDU_SMB2 ^ PDU;
-    PDU_SMB2 ^ PDU ::= (TEST_SMB2 | NEGOTIATE_SMB2 | NEGOTIATE$RESPONSE_SMB2 @ 2 65)
+    PDU_SMB2 ^ PDU ::= (NEGOTIATE_SMB2)
     TEST_SMB2 ^ TEST ::= SEQUENCE {
         Header_TEST_SMB2 ^ Header HEADER_SMB2 (SIZE DEFINED)
     } (ENCODED BY CUSTOM)
     < transfer >
     </ transfer >
-    HEADER_SMB2 ^ HEADER ::= (HEADER$ASYNC_SMB2 @ 2 64 | HEADER$SYNC_SMB2 @ 2 64)
-    HEADER$ASYNC_SMB2 ^ HEADER$ASYNC @ 2 64 ::= SEQUENCE {
-        protoID_HEADER$ASYNC_SMB2 ^ protoID OCTET STRING (SIZE 4 BYTES),
-        structureSize_HEADER$ASYNC_SMB2 ^ structureSize INTEGER (SIZE 2 BYTES),
-        creditCharge_HEADER$ASYNC_SMB2 ^ creditCharge INTEGER (SIZE 2 BYTES),
-        ntStatus_HEADER$ASYNC_SMB2 ^ ntStatus INTEGER (SIZE 4 BYTES),
-        command_HEADER$ASYNC_SMB2 ^ command INTEGER (SIZE 2 BYTES),
-        creditREQ_HEADER$ASYNC_SMB2 ^ creditREQ INTEGER (SIZE 2 BYTES),
-        flags_HEADER$ASYNC_SMB2 ^ flags OCTET STRING (SIZE 4 BYTES),
-        nextCommand_HEADER$ASYNC_SMB2 ^ nextCommand INTEGER (SIZE 4 BYTES),
-        messageId_HEADER$ASYNC_SMB2 ^ messageId INTEGER (SIZE 8 BYTES),
-        asyncId_HEADER$ASYNC_SMB2 ^ asyncId INTEGER (SIZE 8 BYTES),
-        sessionId_HEADER$ASYNC_SMB2 ^ sessionId INTEGER (SIZE 8 BYTES),
-        signature_HEADER$ASYNC_SMB2 ^ signature OCTET STRING (SIZE 16 BYTES)
-    } (ENCODED BY CUSTOM)
-    < transfer >
-        Back {protoID_HEADER$ASYNC_SMB2 == 0xFE534D42}
-        Back {structureSize_HEADER$ASYNC_SMB2 == 64}
-        Back {(flags_HEADER$ASYNC_SMB2& 0x00000002) == 2}
-    </ transfer >
+    HEADER_SMB2 ^ HEADER ::= (HEADER$SYNC_SMB2 @ 2 64)
     HEADER$SYNC_SMB2 ^ HEADER$SYNC @ 2 64 ::= SEQUENCE {
         protoID_HEADER$SYNC_SMB2 ^ protoID OCTET STRING (SIZE 4 BYTES),
         structureSize_HEADER$SYNC_SMB2 ^ structureSize INTEGER (SIZE 2 BYTES),
@@ -63,7 +44,8 @@ SMB2 DEFINITIONS ::= BEGIN
     } (ENCODED BY CUSTOM)
     < transfer >
         Back {securityMode_NEGOTIATE_SMB2 == 0x0001 || securityMode_NEGOTIATE_SMB2 == 0x0002}
-        Forward {LENGTH (padding_NEGOTIATE_SMB2) == (SIZEOF (Header_NEGOTIATE_SMB2) + 36 + SIZEOF (dialects_NEGOTIATE_SMB2) - negContextOff_NEGOTIATE_SMB2)}
+        Forward {CARDINALITY (dialects_NEGOTIATE_SMB2) == dialectCount_NEGOTIATE_SMB2}
+        Forward {PADDING (padding_NEGOTIATE_SMB2) == 8 - ((64 + 36 + dialectCount_NEGOTIATE_SMB2 * 2) % 8)}
         Forward {CARDINALITY (negContextList_NEGOTIATE_SMB2) == negContextCnt_NEGOTIATE_SMB2}
     </ transfer >
     DIALECT_SMB2 ^ DIALECT ::= SEQUENCE {
@@ -82,7 +64,7 @@ SMB2 DEFINITIONS ::= BEGIN
     } (ENCODED BY CUSTOM)
     < transfer >
         Back {contextType_NEGOTIATECONTEXT_SMB2 == 0x0001 || contextType_NEGOTIATECONTEXT_SMB2 == 0x0002}
-        Forward {LENGTH (padding_NEGOTIATECONTEXT_SMB2) == (10 + SIZEOF (data_NEGOTIATECONTEXT_SMB2) % 8)}
+        Forward {PADDING (padding_NEGOTIATECONTEXT_SMB2) == (8 - ((8 + dataLength_NEGOTIATECONTEXT_SMB2) % 8))}
     </ transfer >
     CONTEXTDATA_SMB2 ^ CONTEXTDATA ::= (INTEGRITY_SMB2 | ENCRYPTION_SMB2)
     INTEGRITY_SMB2 ^ INTEGRITY ::= SEQUENCE {
@@ -136,8 +118,7 @@ SMB2 DEFINITIONS ::= BEGIN
         Back {structureSize_NEGOTIATE$RESPONSE_SMB2 == 65}
         Back {securityMode_NEGOTIATE$RESPONSE_SMB2 == 0x0001 || securityMode_NEGOTIATE$RESPONSE_SMB2 == 0x0002}
         Forward {LENGTH (buffer_NEGOTIATE$RESPONSE_SMB2) == secBufferLength_NEGOTIATE$RESPONSE_SMB2}
-        Forward {LENGTH (padding_NEGOTIATE$RESPONSE_SMB2) == (SIZEOF (Header_NEGOTIATE$RESPONSE_SMB2) + 64 + secBufferLength_NEGOTIATE$RESPONSE_SMB2 -
-          negContextOff_NEGOTIATE$RESPONSE_SMB2)}
+        Forward {LENGTH (padding_NEGOTIATE$RESPONSE_SMB2) == 8 - ((64 + 64 + secBufferLength_NEGOTIATE$RESPONSE_SMB2) % 8)}
         Forward {CARDINALITY (negContextList_NEGOTIATE$RESPONSE_SMB2) == negContextCnt_NEGOTIATE$RESPONSE_SMB2}
     </ transfer >
     NEGOTIATECONTEXT$RESPONSE_SMB2 ^ NEGOTIATECONTEXT$RESPONSE ::= SEQUENCE {
@@ -149,7 +130,7 @@ SMB2 DEFINITIONS ::= BEGIN
     } (ENCODED BY CUSTOM)
     < transfer >
         Back {contextType_NEGOTIATECONTEXT$RESPONSE_SMB2 == 0x0001 || contextType_NEGOTIATECONTEXT$RESPONSE_SMB2 == 0x0002}
-        Forward {LENGTH (padding_NEGOTIATECONTEXT$RESPONSE_SMB2) == (10 + SIZEOF (data_NEGOTIATECONTEXT$RESPONSE_SMB2) % 8)}
+        Forward {PADDING (padding_NEGOTIATECONTEXT$RESPONSE_SMB2) == (8 - ((8 + dataLength_NEGOTIATECONTEXT$RESPONSE_SMB2) % 8))}
     </ transfer >
     CONTEXTDATA$RESPONSE_SMB2 ^ CONTEXTDATA$RESPONSE ::= (INTEGRITY$RESPONSE_SMB2 @ 2 1 | ENCRYPTION$RESPONSE_SMB2 @ 2 1)
     INTEGRITY$RESPONSE_SMB2 ^ INTEGRITY$RESPONSE @ 2 1 ::= SEQUENCE {
