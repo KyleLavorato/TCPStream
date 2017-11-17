@@ -4,7 +4,7 @@ SMB2 DEFINITIONS ::= BEGIN
 
 EXPORTS PDU;
 
-PDU ::= (TEST | NEGOTIATE)
+PDU ::= (TEST | NEGOTIATE | NEGOTIATE_RESPONSE)
 
 TEST ::= SEQUENCE {
 	Header	HEADER (SIZE DEFINED)
@@ -131,6 +131,70 @@ CIPHER ::= SEQUENCE {
 	cipherData 	INTEGER (SIZE 2 BYTES)
 } (ENCODED BY CUSTOM)
 <transfer>
+</transfer>
+
+NEGOTIATE_RESPONSE ::= SEQUENCE {
+	Header			HEADER (SIZE DEFINED),
+	structureSize	INTEGER (SIZE 2 BYTES),
+	securityMode	INTEGER (SIZE 2 BYTES),
+	dialectRevision	INTEGER (SIZE 2 BYTES),
+	negContextCnt	INTEGER (SIZE 2 BYTES),
+	serverGuid		OCTET STRING (SIZE 16 BYTES),
+	capabilities	INTEGER (SIZE 4 BYTES),
+	maxTranSize		INTEGER (SIZE 4 BYTES),
+	maxReadSize		INTEGER (SIZE 4 BYTES),
+	maxWriteSize	INTEGER (SIZE 4 BYTES),
+	syetemTime		INTEGER (SIZE 8 BYTES),
+	serverStartTime	INTEGER (SIZE 8 BYTES),
+	secBufferOffset	INTEGER (SIZE 2 BYTES),
+	secBufferLength	INTEGER (SIZE 2 BYTES),
+	negContextOff	INTEGER (SIZE 4 BYTES),
+	buffer 			OCTET STRING (SIZE CONSTRAINED),
+	padding			OCTET STRING (SIZE CONSTRAINED),
+	negContextList	SET OF NEGOTIATECONTEXT_RESPONSE (SIZE CONSTRAINED)
+} (ENCODED BY CUSTOM)
+<transfer>
+Back {structureSize == 65}
+Back {securityMode == 0x0001 || securityMode == 0x0002}
+-- Back {EXISTS(dialects) == 0x0311}
+Forward {LENGTH(buffer) == secBufferLength}
+Forward {LENGTH(padding) == (SIZEOF(Header) + 64 + secBufferLength - negContextOff)}
+Forward {CARDINALITY(negContextList) == negContextCnt}
+</transfer>
+
+NEGOTIATECONTEXT_RESPONSE ::= SEQUENCE {
+	contextType	INTEGER (SIZE 2 BYTES),
+	dataLength	INTEGER (SIZE 2 BYTES),
+	reserved 	INTEGER (SIZE 4 BYTES),
+	data 		CONTEXTDATA_RESPONSE (SIZE DEFINED),
+	padding 	OCTET STRING (SIZE CONSTRAINED)
+} (ENCODED BY CUSTOM)
+<transfer>
+Back {contextType == 0x0001 || contextType == 0x0002}
+Forward {LENGTH(padding) == (10 + SIZEOF(data) % 8)}
+</transfer>
+
+CONTEXTDATA_RESPONSE ::= (INTEGRITY_RESPONSE | ENCRYPTION_RESPONSE)
+
+INTEGRITY_RESPONSE ::= SEQUENCE {
+	hashAlgCnt	INTEGER (SIZE 2 BYTES),
+	saltLength	INTEGER	(SIZE 2 BYTES),
+	hashAlg 	SET OF HASHALG (SIZE CONSTRAINED),
+	salt 		OCTET STRING (SIZE CONSTRAINED)
+} (ENCODED BY CUSTOM)
+<transfer>
+Back {hashAlgCnt == 1}
+Forward {CARDINALITY(hashAlg) == hashAlgCnt}
+Forward {LENGTH(salt) == saltLength}
+</transfer>
+
+ENCRYPTION_RESPONSE ::= SEQUENCE {
+	cipherCnt	INTEGER (SIZE 2 BYTES),
+	ciphers		SET OF CIPHER (SIZE CONSTRAINED)
+} (ENCODED BY CUSTOM)
+<transfer>
+Back {cipherCnt == 1}
+Forward {CARDINALITY(ciphers) == cipherCnt}
 </transfer>
 
 END

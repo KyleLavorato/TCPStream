@@ -7,6 +7,7 @@
 #define LITTLEENDIAN (0x1)
 
 void parseData(char *progname, const unsigned char *data, const unsigned long dataLength) {
+	//std::cout << "PARSE START" << std::endl << std::endl;
 	bool parsedPDU;
 	PDUP * thePDU;
 	thePDU = (PDUP*)malloc(sizeof(PDUP));
