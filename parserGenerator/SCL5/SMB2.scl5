@@ -4,7 +4,9 @@ SMB2 DEFINITIONS ::= BEGIN
 
 EXPORTS PDU;
 
-PDU ::= (NEGOTIATE) -- | NEGOTIATE_RESPONSE)
+PDU ::= (NEGOTIATE)
+
+NEGOTIATE ::= (REQUEST | RESPONSE_NODIALECT | RESPONSE_DIALECT)
 
 TEST ::= SEQUENCE {
 	Header	HEADER (SIZE DEFINED)
@@ -59,7 +61,7 @@ Back {(flags & 0x00000002) != 2} -- ASYNC bit is set
 </transfer>
 
 -- For this version, dialects must contain 0x0311
-NEGOTIATE ::= SEQUENCE {
+REQUEST ::= SEQUENCE {
 	Header	HEADER (SIZE DEFINED),
 	structureSize	INTEGER (SIZE 2 BYTES),
 	dialectCount	INTEGER (SIZE 2 BYTES),
@@ -134,7 +136,34 @@ CIPHER ::= SEQUENCE {
 <transfer>
 </transfer>
 
-NEGOTIATE_RESPONSE ::= SEQUENCE {
+-- This is the version if dialect is not 0x0311
+RESPONSE_NODIALECT ::= SEQUENCE {
+	Header			HEADER (SIZE DEFINED),
+	structureSize	INTEGER (SIZE 2 BYTES),
+	securityMode	INTEGER (SIZE 2 BYTES),
+	dialectRevision	INTEGER (SIZE 2 BYTES),
+	reserved 		INTEGER (SIZE 2 BYTES),
+	serverGuid		OCTET STRING (SIZE 16 BYTES),
+	capabilities	INTEGER (SIZE 4 BYTES),
+	maxTranSize		INTEGER (SIZE 4 BYTES),
+	maxReadSize		INTEGER (SIZE 4 BYTES),
+	maxWriteSize	INTEGER (SIZE 4 BYTES),
+	syetemTime		INTEGER (SIZE 8 BYTES),
+	serverStartTime	INTEGER (SIZE 8 BYTES),
+	secBufferOffset	INTEGER (SIZE 2 BYTES),
+	secBufferLength	INTEGER (SIZE 2 BYTES),
+	reserved2		INTEGER (SIZE 4 BYTES),
+	buffer 			OCTET STRING (SIZE CONSTRAINED),
+} (ENCODED BY CUSTOM)
+<transfer>
+Back {structureSize == 65}
+Back {securityMode == 0x0001 || securityMode == 0x0002}
+Back {dialectRevision != 0x0311}
+-- Back {EXISTS(dialects) == 0x0311}
+Forward {LENGTH(buffer) == secBufferLength}
+</transfer>
+
+RESPONSE_DIALECT ::= SEQUENCE {
 	Header			HEADER (SIZE DEFINED),
 	structureSize	INTEGER (SIZE 2 BYTES),
 	securityMode	INTEGER (SIZE 2 BYTES),
@@ -157,6 +186,7 @@ NEGOTIATE_RESPONSE ::= SEQUENCE {
 <transfer>
 Back {structureSize == 65}
 Back {securityMode == 0x0001 || securityMode == 0x0002}
+Back {dialectRevision == 0x0311}
 -- Back {EXISTS(dialects) == 0x0311}
 Forward {LENGTH(buffer) == secBufferLength}
 Forward {LENGTH(padding) == 8 - ((64 + 64 + secBufferLength) % 8)}

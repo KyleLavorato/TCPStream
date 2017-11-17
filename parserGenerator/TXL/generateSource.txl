@@ -442,7 +442,7 @@ function simpleTypeRuleDebugStart SHORT [id]
 	replace [repeat declaration_or_statement]
 		Stmts [repeat declaration_or_statement]
 	construct content [stringlit]
-		_ [+ "%*sParse "] [+ SHORT] [+ "\n"]
+		_ [+ "%*s*Parse "] [+ SHORT] [+ "*\n"]
 	construct PrintStmt [declaration_or_statement] %% $$$
 		fprintf (stderr, content, indent, "");
 	construct PrintIndentIncrease [declaration_or_statement] %% $$$
@@ -458,13 +458,13 @@ function simpleTypeRuleDebugEnd SHORT [id]
 	replace [repeat declaration_or_statement]
 		Stmts [repeat declaration_or_statement]
 	construct content2 [stringlit]
-		_ [+ "%*sEND "] [+ SHORT] [+ "\n"]
+		_ [+ "%*s*END "] [+ SHORT] [+ "*\n"]
 	construct PrintStmt [declaration_or_statement] %% $$$
 		fprintf (stderr, content2, indent, "");
 	construct PrintIndentDecrease [declaration_or_statement] %% $$$
 		indent -= 2;
 	by
-		Stmts [. PrintStmt] [. PrintIndentDecrease]
+		Stmts [. PrintIndentDecrease] [. PrintStmt]
 end function
 %% $$$  $$$ %%
 
@@ -1000,6 +1000,8 @@ function parseSimpleTypeDecision mallocName [id]  LONG [id] OP [opt scl_addition
 		_ [genCallback OP ID IDTOPASS] [genAnnotatedCallback OP ID IDTOPASS]
 	construct return [declaration_or_statement]
 		return true;
+	construct PrintStmt [repeat declaration_or_statement] %% $$$
+		_ [unindentFail]
 	construct Stmt [repeat declaration_or_statement]
 		thePDU ->curPos = pos;
 		thePDU ->remaining = remaining;
@@ -1007,8 +1009,26 @@ function parseSimpleTypeDecision mallocName [id]  LONG [id] OP [opt scl_addition
 			body [. callback] [. return]
 		}
 	by
-		Stmts [. Stmt]
+		Stmts [. PrintStmt] [. Stmt]
 end function
+
+%% $$$
+function unindentFail
+	import debugArg [number]
+	deconstruct debugArg
+		'1
+	replace [repeat declaration_or_statement]
+		Stmts [repeat declaration_or_statement]
+	construct content [stringlit]
+		_ [+ "\n%*s**BACKTRACKING**\n\n"]
+	construct PrintStmt [declaration_or_statement] %% $$$
+		fprintf (stderr, content, indent, "");
+	construct PrintIndentDecrease [declaration_or_statement] %% $$$
+		indent += -2; 
+	by
+		Stmts [. PrintIndentDecrease] [. PrintStmt]
+end function
+%% $$$
 
 function parseByOptimizedDecision mallocName [id] RuleName [id] TD [type_decision] LONG [id] OP [opt scl_additions] GLOB [id]
 	replace [repeat declaration_or_statement]

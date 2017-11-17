@@ -5,10 +5,11 @@
 #include "putilities.h"
 void freePDU_SMB2 (PDU_SMB2 *mainpdu);
 bool parseSMB2 (PDU_SMB2 *pdu_smb2, PDUP *thePDU, char *progname, uint8_t endianness);
+bool parseNEGOTIATE (NEGOTIATE_SMB2 *negotiate_smb2, PDUP *thePDU, char *progname, uint8_t endianness);
 bool parseTEST (TEST_SMB2 *test_smb2, PDUP *thePDU, char *progname, uint8_t endianness);
 bool parseHEADER (HEADER_SMB2 *header_smb2, PDUP *thePDU, char *progname, uint8_t endianness);
 bool parseHEADER$SYNC (HEADER$SYNC_SMB2 *header$sync_smb2, PDUP *thePDU, char *progname, uint8_t endianness);
-bool parseNEGOTIATE (NEGOTIATE_SMB2 *negotiate_smb2, PDUP *thePDU, char *progname, uint8_t endianness);
+bool parseREQUEST (REQUEST_SMB2 *request_smb2, PDUP *thePDU, char *progname, uint8_t endianness);
 DIALECT_SMB2 *parseSetOfDIALECT (PDUP *thePDU, int size, char *progname, uint8_t endianness);
 NEGOTIATECONTEXT_SMB2 *parseSetOfNEGOTIATECONTEXT (PDUP *thePDU, int size, char *progname, uint8_t endianness);
 bool parseDIALECT (DIALECT_SMB2 *dialect_smb2, PDUP *thePDU, char *progname, uint8_t endianness);
@@ -18,7 +19,8 @@ bool parseINTEGRITY (INTEGRITY_SMB2 *integrity_smb2, PDUP *thePDU, char *prognam
 bool parseHASHALG (HASHALG_SMB2 *hashalg_smb2, PDUP *thePDU, char *progname, uint8_t endianness);
 bool parseENCRYPTION (ENCRYPTION_SMB2 *encryption_smb2, PDUP *thePDU, char *progname, uint8_t endianness);
 bool parseCIPHER (CIPHER_SMB2 *cipher_smb2, PDUP *thePDU, char *progname, uint8_t endianness);
-bool parseNEGOTIATE$RESPONSE (NEGOTIATE$RESPONSE_SMB2 *negotiate$response_smb2, PDUP *thePDU, char *progname, uint8_t endianness);
+bool parseRESPONSE$NODIALECT (RESPONSE$NODIALECT_SMB2 *response$nodialect_smb2, PDUP *thePDU, char *progname, uint8_t endianness);
+bool parseRESPONSE$DIALECT (RESPONSE$DIALECT_SMB2 *response$dialect_smb2, PDUP *thePDU, char *progname, uint8_t endianness);
 NEGOTIATECONTEXT$RESPONSE_SMB2 *parseSetOfNEGOTIATECONTEXT$RESPONSE (PDUP *thePDU, int size, char *progname, uint8_t endianness);
 bool parseNEGOTIATECONTEXT$RESPONSE (NEGOTIATECONTEXT$RESPONSE_SMB2 *negotiatecontext$response_smb2, PDUP *thePDU, char *progname, uint8_t endianness);
 bool parseCONTEXTDATA$RESPONSE (CONTEXTDATA$RESPONSE_SMB2 *contextdata$response_smb2, PDUP *thePDU, char *progname, uint8_t endianness);
@@ -37,8 +39,34 @@ bool parseSMB2 (PDU_SMB2 *pdu_smb2, PDUP *thePDU, char *progname, uint8_t endian
     return false;
 }
 
+bool parseNEGOTIATE (NEGOTIATE_SMB2 *negotiate_smb2, PDUP *thePDU, char *progname, uint8_t endianness) {
+    unsigned long pos = thePDU->curPos;
+    unsigned long remaining = thePDU->remaining;
+    if (parseREQUEST (&negotiate_smb2->ptr.request_smb2, thePDU, progname, endianness)) {
+        negotiate_smb2->type = REQUEST_SMB2_VAL;
+        return true;
+    }
+    indent += -2;
+    fprintf (stderr, "\n%*s**BACKTRACKING**\n\n", indent, "");
+    thePDU->curPos = pos;
+    thePDU->remaining = remaining;
+    if (parseRESPONSE$NODIALECT (&negotiate_smb2->ptr.response$nodialect_smb2, thePDU, progname, endianness)) {
+        negotiate_smb2->type = RESPONSE$NODIALECT_SMB2_VAL;
+        return true;
+    }
+    indent += -2;
+    fprintf (stderr, "\n%*s**BACKTRACKING**\n\n", indent, "");
+    thePDU->curPos = pos;
+    thePDU->remaining = remaining;
+    if (parseRESPONSE$DIALECT (&negotiate_smb2->ptr.response$dialect_smb2, thePDU, progname, endianness)) {
+        negotiate_smb2->type = RESPONSE$DIALECT_SMB2_VAL;
+        return true;
+    }
+    return false;
+}
+
 bool parseTEST (TEST_SMB2 *test_smb2, PDUP *thePDU, char *progname, uint8_t endianness) {
-    fprintf (stderr, "%*sParse TEST\n", indent, "");
+    fprintf (stderr, "%*s*Parse TEST*\n", indent, "");
     indent += 2;
     if (!lengthRemaining (thePDU, 0, progname)) {
         return false;
@@ -48,8 +76,8 @@ bool parseTEST (TEST_SMB2 *test_smb2, PDUP *thePDU, char *progname, uint8_t endi
         return false;
     }
     test_smb2->header = header;
-    fprintf (stderr, "%*sEND TEST\n", indent, "");
     indent -= 2;
+    fprintf (stderr, "%*s*END TEST*\n", indent, "");
     return true;
 }
 
@@ -64,7 +92,7 @@ bool parseHEADER (HEADER_SMB2 *header_smb2, PDUP *thePDU, char *progname, uint8_
 }
 
 bool parseHEADER$SYNC (HEADER$SYNC_SMB2 *header$sync_smb2, PDUP *thePDU, char *progname, uint8_t endianness) {
-    fprintf (stderr, "%*sParse HEADER$SYNC\n", indent, "");
+    fprintf (stderr, "%*s*Parse HEADER$SYNC*\n", indent, "");
     indent += 2;
     if (!lengthRemaining (thePDU, 64, progname)) {
         return false;
@@ -111,91 +139,91 @@ bool parseHEADER$SYNC (HEADER$SYNC_SMB2 *header$sync_smb2, PDUP *thePDU, char *p
         fprintf (stderr, "%02x ", header$sync_smb2->signature[q]);
     }
     fprintf (stderr, "\n");
-    fprintf (stderr, "%*sEND HEADER$SYNC\n", indent, "");
     indent -= 2;
+    fprintf (stderr, "%*s*END HEADER$SYNC*\n", indent, "");
     return true;
 }
 
-bool parseNEGOTIATE (NEGOTIATE_SMB2 *negotiate_smb2, PDUP *thePDU, char *progname, uint8_t endianness) {
-    fprintf (stderr, "%*sParse NEGOTIATE\n", indent, "");
+bool parseREQUEST (REQUEST_SMB2 *request_smb2, PDUP *thePDU, char *progname, uint8_t endianness) {
+    fprintf (stderr, "%*s*Parse REQUEST*\n", indent, "");
     indent += 2;
     if (!lengthRemaining (thePDU, 36, progname)) {
         return false;
     }
-    negotiate_smb2->dialects = NULL;
-    negotiate_smb2->padding = NULL;
-    negotiate_smb2->negcontextlist = NULL;
+    request_smb2->dialects = NULL;
+    request_smb2->padding = NULL;
+    request_smb2->negcontextlist = NULL;
     HEADER_SMB2 header;
     if (!parseHEADER (&header, thePDU, progname, endianness)) {
         return false;
     }
-    negotiate_smb2->header = header;
-    negotiate_smb2->structuresize = get16_e (thePDU, endianness);
-    fprintf (stderr, "%*sstructureSize: %04x \n", indent, "", negotiate_smb2->structuresize);
-    negotiate_smb2->dialectcount = get16_e (thePDU, endianness);
-    fprintf (stderr, "%*sdialectCount: %04x \n", indent, "", negotiate_smb2->dialectcount);
-    negotiate_smb2->securitymode = get16_e (thePDU, endianness);
-    fprintf (stderr, "%*ssecurityMode: %04x \n", indent, "", negotiate_smb2->securitymode);
-    if (!(negotiate_smb2->securitymode == 0x0001 ||negotiate_smb2->securitymode == 0x0002)) {
+    request_smb2->header = header;
+    request_smb2->structuresize = get16_e (thePDU, endianness);
+    fprintf (stderr, "%*sstructureSize: %04x \n", indent, "", request_smb2->structuresize);
+    request_smb2->dialectcount = get16_e (thePDU, endianness);
+    fprintf (stderr, "%*sdialectCount: %04x \n", indent, "", request_smb2->dialectcount);
+    request_smb2->securitymode = get16_e (thePDU, endianness);
+    fprintf (stderr, "%*ssecurityMode: %04x \n", indent, "", request_smb2->securitymode);
+    if (!(request_smb2->securitymode == 0x0001 ||request_smb2->securitymode == 0x0002)) {
         return false;
     }
-    negotiate_smb2->reserved = get16_e (thePDU, endianness);
-    fprintf (stderr, "%*sreserved: %04x \n", indent, "", negotiate_smb2->reserved);
-    negotiate_smb2->capabilities = get32_e (thePDU, endianness);
-    fprintf (stderr, "%*scapabilities: %08x \n", indent, "", negotiate_smb2->capabilities);
-    memcpy (negotiate_smb2->clientguid, &thePDU->data[thePDU->curPos], 16);
+    request_smb2->reserved = get16_e (thePDU, endianness);
+    fprintf (stderr, "%*sreserved: %04x \n", indent, "", request_smb2->reserved);
+    request_smb2->capabilities = get32_e (thePDU, endianness);
+    fprintf (stderr, "%*scapabilities: %08x \n", indent, "", request_smb2->capabilities);
+    memcpy (request_smb2->clientguid, &thePDU->data[thePDU->curPos], 16);
     thePDU->curPos += 16;
-    if (negotiate_smb2->clientguid[16 - 1] != '\0') {
+    if (request_smb2->clientguid[16 - 1] != '\0') {
     }
     fprintf (stderr, "%*sclientGuid: ", indent, "");
     for (int q = 0; q < 16; q++) {
-        fprintf (stderr, "%02x ", negotiate_smb2->clientguid[q]);
+        fprintf (stderr, "%02x ", request_smb2->clientguid[q]);
     }
     fprintf (stderr, "\n");
-    negotiate_smb2->negcontextoff = get32_e (thePDU, endianness);
-    fprintf (stderr, "%*snegContextOff: %08x \n", indent, "", negotiate_smb2->negcontextoff);
-    negotiate_smb2->negcontextcnt = get16_e (thePDU, endianness);
-    fprintf (stderr, "%*snegContextCnt: %04x \n", indent, "", negotiate_smb2->negcontextcnt);
-    negotiate_smb2->reserved2 = get16_e (thePDU, endianness);
-    fprintf (stderr, "%*sreserved2: %04x \n", indent, "", negotiate_smb2->reserved2);
-    negotiate_smb2->dialectscount = negotiate_smb2->dialectcount;
-    negotiate_smb2->dialectslength = thePDU->curPos;
-    negotiate_smb2->dialects = parseSetOfDIALECT (thePDU, negotiate_smb2->dialectcount, progname, endianness);
-    if (negotiate_smb2->dialects == NULL) {
+    request_smb2->negcontextoff = get32_e (thePDU, endianness);
+    fprintf (stderr, "%*snegContextOff: %08x \n", indent, "", request_smb2->negcontextoff);
+    request_smb2->negcontextcnt = get16_e (thePDU, endianness);
+    fprintf (stderr, "%*snegContextCnt: %04x \n", indent, "", request_smb2->negcontextcnt);
+    request_smb2->reserved2 = get16_e (thePDU, endianness);
+    fprintf (stderr, "%*sreserved2: %04x \n", indent, "", request_smb2->reserved2);
+    request_smb2->dialectscount = request_smb2->dialectcount;
+    request_smb2->dialectslength = thePDU->curPos;
+    request_smb2->dialects = parseSetOfDIALECT (thePDU, request_smb2->dialectcount, progname, endianness);
+    if (request_smb2->dialects == NULL) {
         return false;
     }
-    negotiate_smb2->dialectslength = thePDU->curPos - negotiate_smb2->dialectslength;
-    if (lengthRemaining (thePDU, 8 - ((64 + 36 + negotiate_smb2->dialectcount * 2) % 8), progname)) {
-        negotiate_smb2->padding = (unsigned char *) malloc (sizeof (unsigned char) * (8 - ((64 + 36 + negotiate_smb2->dialectcount * 2) % 8)));
-        if (negotiate_smb2->padding == NULL) {
+    request_smb2->dialectslength = thePDU->curPos - request_smb2->dialectslength;
+    if (lengthRemaining (thePDU, 8 - ((64 + 36 + request_smb2->dialectcount * 2) % 8), progname)) {
+        request_smb2->padding = (unsigned char *) malloc (sizeof (unsigned char) * (8 - ((64 + 36 + request_smb2->dialectcount * 2) % 8)));
+        if (request_smb2->padding == NULL) {
             fprintf (stderr, "%s: internal malloc error file: %s line: %d \n", progname, __FILE__, __LINE__);
             return false;
         }
-        negotiate_smb2->padding_length = 8 - ((64 + 36 + negotiate_smb2->dialectcount * 2) % 8);
-        memcpy (negotiate_smb2->padding, &thePDU->data[thePDU->curPos], 8 - ((64 + 36 + negotiate_smb2->dialectcount * 2) % 8));
-        thePDU->curPos += 8 - ((64 + 36 + negotiate_smb2->dialectcount * 2) % 8);
-        if (negotiate_smb2->padding[8 - ((64 + 36 + negotiate_smb2->dialectcount * 2) % 8) - 1] != '\0') {
+        request_smb2->padding_length = 8 - ((64 + 36 + request_smb2->dialectcount * 2) % 8);
+        memcpy (request_smb2->padding, &thePDU->data[thePDU->curPos], 8 - ((64 + 36 + request_smb2->dialectcount * 2) % 8));
+        thePDU->curPos += 8 - ((64 + 36 + request_smb2->dialectcount * 2) % 8);
+        if (request_smb2->padding[8 - ((64 + 36 + request_smb2->dialectcount * 2) % 8) - 1] != '\0') {
         }
         fprintf (stderr, "%*spadding: ", indent, "");
-        for (int q = 0; q < 8 - ((64 + 36 + negotiate_smb2->dialectcount * 2) % 8); q++) {
-            fprintf (stderr, "%02x ", negotiate_smb2->padding[q]);
+        for (int q = 0; q < 8 - ((64 + 36 + request_smb2->dialectcount * 2) % 8); q++) {
+            fprintf (stderr, "%02x ", request_smb2->padding[q]);
         }
         fprintf (stderr, "\n");
     }
-    negotiate_smb2->negcontextlistcount = negotiate_smb2->negcontextcnt;
-    negotiate_smb2->negcontextlistlength = thePDU->curPos;
-    negotiate_smb2->negcontextlist = parseSetOfNEGOTIATECONTEXT (thePDU, negotiate_smb2->negcontextcnt, progname, endianness);
-    if (negotiate_smb2->negcontextlist == NULL) {
+    request_smb2->negcontextlistcount = request_smb2->negcontextcnt;
+    request_smb2->negcontextlistlength = thePDU->curPos;
+    request_smb2->negcontextlist = parseSetOfNEGOTIATECONTEXT (thePDU, request_smb2->negcontextcnt, progname, endianness);
+    if (request_smb2->negcontextlist == NULL) {
         return false;
     }
-    negotiate_smb2->negcontextlistlength = thePDU->curPos - negotiate_smb2->negcontextlistlength;
-    fprintf (stderr, "%*sEND NEGOTIATE\n", indent, "");
+    request_smb2->negcontextlistlength = thePDU->curPos - request_smb2->negcontextlistlength;
     indent -= 2;
+    fprintf (stderr, "%*s*END REQUEST*\n", indent, "");
     return true;
 }
 
 bool parseDIALECT (DIALECT_SMB2 *dialect_smb2, PDUP *thePDU, char *progname, uint8_t endianness) {
-    fprintf (stderr, "%*sParse DIALECT\n", indent, "");
+    fprintf (stderr, "%*s*Parse DIALECT*\n", indent, "");
     indent += 2;
     if (!lengthRemaining (thePDU, 2, progname)) {
         return false;
@@ -205,13 +233,13 @@ bool parseDIALECT (DIALECT_SMB2 *dialect_smb2, PDUP *thePDU, char *progname, uin
     if (!(dialect_smb2->value == 0x0202 ||dialect_smb2->value == 0x0210 ||dialect_smb2->value == 0x0300 ||dialect_smb2->value == 0x0302 ||dialect_smb2->value == 0x0311)) {
         return false;
     }
-    fprintf (stderr, "%*sEND DIALECT\n", indent, "");
     indent -= 2;
+    fprintf (stderr, "%*s*END DIALECT*\n", indent, "");
     return true;
 }
 
 bool parseNEGOTIATECONTEXT (NEGOTIATECONTEXT_SMB2 *negotiatecontext_smb2, PDUP *thePDU, char *progname, uint8_t endianness) {
-    fprintf (stderr, "%*sParse NEGOTIATECONTEXT\n", indent, "");
+    fprintf (stderr, "%*s*Parse NEGOTIATECONTEXT*\n", indent, "");
     indent += 2;
     if (!lengthRemaining (thePDU, 8, progname)) {
         return false;
@@ -248,8 +276,8 @@ bool parseNEGOTIATECONTEXT (NEGOTIATECONTEXT_SMB2 *negotiatecontext_smb2, PDUP *
         }
         fprintf (stderr, "\n");
     }
-    fprintf (stderr, "%*sEND NEGOTIATECONTEXT\n", indent, "");
     indent -= 2;
+    fprintf (stderr, "%*s*END NEGOTIATECONTEXT*\n", indent, "");
     return true;
 }
 
@@ -260,6 +288,8 @@ bool parseCONTEXTDATA (CONTEXTDATA_SMB2 *contextdata_smb2, PDUP *thePDU, char *p
         contextdata_smb2->type = INTEGRITY_SMB2_VAL;
         return true;
     }
+    indent += -2;
+    fprintf (stderr, "\n%*s**BACKTRACKING**\n\n", indent, "");
     thePDU->curPos = pos;
     thePDU->remaining = remaining;
     if (parseENCRYPTION (&contextdata_smb2->ptr.encryption_smb2, thePDU, progname, endianness)) {
@@ -270,7 +300,7 @@ bool parseCONTEXTDATA (CONTEXTDATA_SMB2 *contextdata_smb2, PDUP *thePDU, char *p
 }
 
 bool parseINTEGRITY (INTEGRITY_SMB2 *integrity_smb2, PDUP *thePDU, char *progname, uint8_t endianness) {
-    fprintf (stderr, "%*sParse INTEGRITY\n", indent, "");
+    fprintf (stderr, "%*s*Parse INTEGRITY*\n", indent, "");
     indent += 2;
     if (!lengthRemaining (thePDU, 4, progname)) {
         return false;
@@ -306,26 +336,26 @@ bool parseINTEGRITY (INTEGRITY_SMB2 *integrity_smb2, PDUP *thePDU, char *prognam
         fprintf (stderr, "%02x ", integrity_smb2->salt[q]);
     }
     fprintf (stderr, "\n");
-    fprintf (stderr, "%*sEND INTEGRITY\n", indent, "");
     indent -= 2;
+    fprintf (stderr, "%*s*END INTEGRITY*\n", indent, "");
     return true;
 }
 
 bool parseHASHALG (HASHALG_SMB2 *hashalg_smb2, PDUP *thePDU, char *progname, uint8_t endianness) {
-    fprintf (stderr, "%*sParse HASHALG\n", indent, "");
+    fprintf (stderr, "%*s*Parse HASHALG*\n", indent, "");
     indent += 2;
     if (!lengthRemaining (thePDU, 2, progname)) {
         return false;
     }
     hashalg_smb2->alg = get16_e (thePDU, endianness);
     fprintf (stderr, "%*salg: %04x \n", indent, "", hashalg_smb2->alg);
-    fprintf (stderr, "%*sEND HASHALG\n", indent, "");
     indent -= 2;
+    fprintf (stderr, "%*s*END HASHALG*\n", indent, "");
     return true;
 }
 
 bool parseENCRYPTION (ENCRYPTION_SMB2 *encryption_smb2, PDUP *thePDU, char *progname, uint8_t endianness) {
-    fprintf (stderr, "%*sParse ENCRYPTION\n", indent, "");
+    fprintf (stderr, "%*s*Parse ENCRYPTION*\n", indent, "");
     indent += 2;
     if (!lengthRemaining (thePDU, 2, progname)) {
         return false;
@@ -340,129 +370,211 @@ bool parseENCRYPTION (ENCRYPTION_SMB2 *encryption_smb2, PDUP *thePDU, char *prog
         return false;
     }
     encryption_smb2->cipherslength = thePDU->curPos - encryption_smb2->cipherslength;
-    fprintf (stderr, "%*sEND ENCRYPTION\n", indent, "");
     indent -= 2;
+    fprintf (stderr, "%*s*END ENCRYPTION*\n", indent, "");
     return true;
 }
 
 bool parseCIPHER (CIPHER_SMB2 *cipher_smb2, PDUP *thePDU, char *progname, uint8_t endianness) {
-    fprintf (stderr, "%*sParse CIPHER\n", indent, "");
+    fprintf (stderr, "%*s*Parse CIPHER*\n", indent, "");
     indent += 2;
     if (!lengthRemaining (thePDU, 2, progname)) {
         return false;
     }
     cipher_smb2->cipherdata = get16_e (thePDU, endianness);
     fprintf (stderr, "%*scipherData: %04x \n", indent, "", cipher_smb2->cipherdata);
-    fprintf (stderr, "%*sEND CIPHER\n", indent, "");
     indent -= 2;
+    fprintf (stderr, "%*s*END CIPHER*\n", indent, "");
     return true;
 }
 
-bool parseNEGOTIATE$RESPONSE (NEGOTIATE$RESPONSE_SMB2 *negotiate$response_smb2, PDUP *thePDU, char *progname, uint8_t endianness) {
-    fprintf (stderr, "%*sParse NEGOTIATE$RESPONSE\n", indent, "");
+bool parseRESPONSE$NODIALECT (RESPONSE$NODIALECT_SMB2 *response$nodialect_smb2, PDUP *thePDU, char *progname, uint8_t endianness) {
+    fprintf (stderr, "%*s*Parse RESPONSE$NODIALECT*\n", indent, "");
     indent += 2;
     if (!lengthRemaining (thePDU, 64, progname)) {
         return false;
     }
-    negotiate$response_smb2->buffer = NULL;
-    negotiate$response_smb2->padding = NULL;
-    negotiate$response_smb2->negcontextlist = NULL;
+    response$nodialect_smb2->buffer = NULL;
     HEADER_SMB2 header;
     if (!parseHEADER (&header, thePDU, progname, endianness)) {
         return false;
     }
-    negotiate$response_smb2->header = header;
-    negotiate$response_smb2->structuresize = get16_e (thePDU, endianness);
-    fprintf (stderr, "%*sstructureSize: %04x \n", indent, "", negotiate$response_smb2->structuresize);
-    if (!(negotiate$response_smb2->structuresize == 65)) {
+    response$nodialect_smb2->header = header;
+    response$nodialect_smb2->structuresize = get16_e (thePDU, endianness);
+    fprintf (stderr, "%*sstructureSize: %04x \n", indent, "", response$nodialect_smb2->structuresize);
+    if (!(response$nodialect_smb2->structuresize == 65)) {
         return false;
     }
-    negotiate$response_smb2->securitymode = get16_e (thePDU, endianness);
-    fprintf (stderr, "%*ssecurityMode: %04x \n", indent, "", negotiate$response_smb2->securitymode);
-    if (!(negotiate$response_smb2->securitymode == 0x0001 ||negotiate$response_smb2->securitymode == 0x0002)) {
+    response$nodialect_smb2->securitymode = get16_e (thePDU, endianness);
+    fprintf (stderr, "%*ssecurityMode: %04x \n", indent, "", response$nodialect_smb2->securitymode);
+    if (!(response$nodialect_smb2->securitymode == 0x0001 ||response$nodialect_smb2->securitymode == 0x0002)) {
         return false;
     }
-    negotiate$response_smb2->dialectrevision = get16_e (thePDU, endianness);
-    fprintf (stderr, "%*sdialectRevision: %04x \n", indent, "", negotiate$response_smb2->dialectrevision);
-    negotiate$response_smb2->negcontextcnt = get16_e (thePDU, endianness);
-    fprintf (stderr, "%*snegContextCnt: %04x \n", indent, "", negotiate$response_smb2->negcontextcnt);
-    memcpy (negotiate$response_smb2->serverguid, &thePDU->data[thePDU->curPos], 16);
+    response$nodialect_smb2->dialectrevision = get16_e (thePDU, endianness);
+    fprintf (stderr, "%*sdialectRevision: %04x \n", indent, "", response$nodialect_smb2->dialectrevision);
+    if (!(response$nodialect_smb2->dialectrevision != 0x0311)) {
+        return false;
+    }
+    response$nodialect_smb2->reserved = get16_e (thePDU, endianness);
+    fprintf (stderr, "%*sreserved: %04x \n", indent, "", response$nodialect_smb2->reserved);
+    memcpy (response$nodialect_smb2->serverguid, &thePDU->data[thePDU->curPos], 16);
     thePDU->curPos += 16;
-    if (negotiate$response_smb2->serverguid[16 - 1] != '\0') {
+    if (response$nodialect_smb2->serverguid[16 - 1] != '\0') {
     }
     fprintf (stderr, "%*sserverGuid: ", indent, "");
     for (int q = 0; q < 16; q++) {
-        fprintf (stderr, "%02x ", negotiate$response_smb2->serverguid[q]);
+        fprintf (stderr, "%02x ", response$nodialect_smb2->serverguid[q]);
     }
     fprintf (stderr, "\n");
-    negotiate$response_smb2->capabilities = get32_e (thePDU, endianness);
-    fprintf (stderr, "%*scapabilities: %08x \n", indent, "", negotiate$response_smb2->capabilities);
-    negotiate$response_smb2->maxtransize = get32_e (thePDU, endianness);
-    fprintf (stderr, "%*smaxTranSize: %08x \n", indent, "", negotiate$response_smb2->maxtransize);
-    negotiate$response_smb2->maxreadsize = get32_e (thePDU, endianness);
-    fprintf (stderr, "%*smaxReadSize: %08x \n", indent, "", negotiate$response_smb2->maxreadsize);
-    negotiate$response_smb2->maxwritesize = get32_e (thePDU, endianness);
-    fprintf (stderr, "%*smaxWriteSize: %08x \n", indent, "", negotiate$response_smb2->maxwritesize);
-    negotiate$response_smb2->syetemtime = get64_e (thePDU, endianness);
-    fprintf (stderr, "%*ssyetemTime: %016lx \n", indent, "", negotiate$response_smb2->syetemtime);
-    negotiate$response_smb2->serverstarttime = get64_e (thePDU, endianness);
-    fprintf (stderr, "%*sserverStartTime: %016lx \n", indent, "", negotiate$response_smb2->serverstarttime);
-    negotiate$response_smb2->secbufferoffset = get16_e (thePDU, endianness);
-    fprintf (stderr, "%*ssecBufferOffset: %04x \n", indent, "", negotiate$response_smb2->secbufferoffset);
-    negotiate$response_smb2->secbufferlength = get16_e (thePDU, endianness);
-    fprintf (stderr, "%*ssecBufferLength: %04x \n", indent, "", negotiate$response_smb2->secbufferlength);
-    negotiate$response_smb2->negcontextoff = get32_e (thePDU, endianness);
-    fprintf (stderr, "%*snegContextOff: %08x \n", indent, "", negotiate$response_smb2->negcontextoff);
-    if (!lengthRemaining (thePDU, negotiate$response_smb2->secbufferlength, progname)) {
+    response$nodialect_smb2->capabilities = get32_e (thePDU, endianness);
+    fprintf (stderr, "%*scapabilities: %08x \n", indent, "", response$nodialect_smb2->capabilities);
+    response$nodialect_smb2->maxtransize = get32_e (thePDU, endianness);
+    fprintf (stderr, "%*smaxTranSize: %08x \n", indent, "", response$nodialect_smb2->maxtransize);
+    response$nodialect_smb2->maxreadsize = get32_e (thePDU, endianness);
+    fprintf (stderr, "%*smaxReadSize: %08x \n", indent, "", response$nodialect_smb2->maxreadsize);
+    response$nodialect_smb2->maxwritesize = get32_e (thePDU, endianness);
+    fprintf (stderr, "%*smaxWriteSize: %08x \n", indent, "", response$nodialect_smb2->maxwritesize);
+    response$nodialect_smb2->syetemtime = get64_e (thePDU, endianness);
+    fprintf (stderr, "%*ssyetemTime: %016lx \n", indent, "", response$nodialect_smb2->syetemtime);
+    response$nodialect_smb2->serverstarttime = get64_e (thePDU, endianness);
+    fprintf (stderr, "%*sserverStartTime: %016lx \n", indent, "", response$nodialect_smb2->serverstarttime);
+    response$nodialect_smb2->secbufferoffset = get16_e (thePDU, endianness);
+    fprintf (stderr, "%*ssecBufferOffset: %04x \n", indent, "", response$nodialect_smb2->secbufferoffset);
+    response$nodialect_smb2->secbufferlength = get16_e (thePDU, endianness);
+    fprintf (stderr, "%*ssecBufferLength: %04x \n", indent, "", response$nodialect_smb2->secbufferlength);
+    response$nodialect_smb2->reserved2 = get32_e (thePDU, endianness);
+    fprintf (stderr, "%*sreserved2: %08x \n", indent, "", response$nodialect_smb2->reserved2);
+    if (!lengthRemaining (thePDU, response$nodialect_smb2->secbufferlength, progname)) {
         return false;
     }
-    negotiate$response_smb2->buffer = (unsigned char *) malloc (sizeof (unsigned char) * (negotiate$response_smb2->secbufferlength));
-    if (negotiate$response_smb2->buffer == NULL) {
+    response$nodialect_smb2->buffer = (unsigned char *) malloc (sizeof (unsigned char) * (response$nodialect_smb2->secbufferlength));
+    if (response$nodialect_smb2->buffer == NULL) {
         fprintf (stderr, "%s: internal malloc error file: %s line: %d \n", progname, __FILE__, __LINE__);
         return false;
     }
-    negotiate$response_smb2->buffer_length = negotiate$response_smb2->secbufferlength;
-    memcpy (negotiate$response_smb2->buffer, &thePDU->data[thePDU->curPos], negotiate$response_smb2->secbufferlength);
-    thePDU->curPos += negotiate$response_smb2->secbufferlength;
-    if (negotiate$response_smb2->buffer[negotiate$response_smb2->secbufferlength - 1] != '\0') {
+    response$nodialect_smb2->buffer_length = response$nodialect_smb2->secbufferlength;
+    memcpy (response$nodialect_smb2->buffer, &thePDU->data[thePDU->curPos], response$nodialect_smb2->secbufferlength);
+    thePDU->curPos += response$nodialect_smb2->secbufferlength;
+    if (response$nodialect_smb2->buffer[response$nodialect_smb2->secbufferlength - 1] != '\0') {
     }
     fprintf (stderr, "%*sbuffer: ", indent, "");
-    for (int q = 0; q < negotiate$response_smb2->secbufferlength; q++) {
-        fprintf (stderr, "%02x ", negotiate$response_smb2->buffer[q]);
+    for (int q = 0; q < response$nodialect_smb2->secbufferlength; q++) {
+        fprintf (stderr, "%02x ", response$nodialect_smb2->buffer[q]);
     }
     fprintf (stderr, "\n");
-    if (!lengthRemaining (thePDU, 8 - ((64 + 64 + negotiate$response_smb2->secbufferlength) % 8), progname)) {
+    indent -= 2;
+    fprintf (stderr, "%*s*END RESPONSE$NODIALECT*\n", indent, "");
+    return true;
+}
+
+bool parseRESPONSE$DIALECT (RESPONSE$DIALECT_SMB2 *response$dialect_smb2, PDUP *thePDU, char *progname, uint8_t endianness) {
+    fprintf (stderr, "%*s*Parse RESPONSE$DIALECT*\n", indent, "");
+    indent += 2;
+    if (!lengthRemaining (thePDU, 64, progname)) {
         return false;
     }
-    negotiate$response_smb2->padding = (unsigned char *) malloc (sizeof (unsigned char) * (8 - ((64 + 64 + negotiate$response_smb2->secbufferlength) % 8)));
-    if (negotiate$response_smb2->padding == NULL) {
+    response$dialect_smb2->buffer = NULL;
+    response$dialect_smb2->padding = NULL;
+    response$dialect_smb2->negcontextlist = NULL;
+    HEADER_SMB2 header;
+    if (!parseHEADER (&header, thePDU, progname, endianness)) {
+        return false;
+    }
+    response$dialect_smb2->header = header;
+    response$dialect_smb2->structuresize = get16_e (thePDU, endianness);
+    fprintf (stderr, "%*sstructureSize: %04x \n", indent, "", response$dialect_smb2->structuresize);
+    if (!(response$dialect_smb2->structuresize == 65)) {
+        return false;
+    }
+    response$dialect_smb2->securitymode = get16_e (thePDU, endianness);
+    fprintf (stderr, "%*ssecurityMode: %04x \n", indent, "", response$dialect_smb2->securitymode);
+    if (!(response$dialect_smb2->securitymode == 0x0001 ||response$dialect_smb2->securitymode == 0x0002)) {
+        return false;
+    }
+    response$dialect_smb2->dialectrevision = get16_e (thePDU, endianness);
+    fprintf (stderr, "%*sdialectRevision: %04x \n", indent, "", response$dialect_smb2->dialectrevision);
+    if (!(response$dialect_smb2->dialectrevision == 0x0311)) {
+        return false;
+    }
+    response$dialect_smb2->negcontextcnt = get16_e (thePDU, endianness);
+    fprintf (stderr, "%*snegContextCnt: %04x \n", indent, "", response$dialect_smb2->negcontextcnt);
+    memcpy (response$dialect_smb2->serverguid, &thePDU->data[thePDU->curPos], 16);
+    thePDU->curPos += 16;
+    if (response$dialect_smb2->serverguid[16 - 1] != '\0') {
+    }
+    fprintf (stderr, "%*sserverGuid: ", indent, "");
+    for (int q = 0; q < 16; q++) {
+        fprintf (stderr, "%02x ", response$dialect_smb2->serverguid[q]);
+    }
+    fprintf (stderr, "\n");
+    response$dialect_smb2->capabilities = get32_e (thePDU, endianness);
+    fprintf (stderr, "%*scapabilities: %08x \n", indent, "", response$dialect_smb2->capabilities);
+    response$dialect_smb2->maxtransize = get32_e (thePDU, endianness);
+    fprintf (stderr, "%*smaxTranSize: %08x \n", indent, "", response$dialect_smb2->maxtransize);
+    response$dialect_smb2->maxreadsize = get32_e (thePDU, endianness);
+    fprintf (stderr, "%*smaxReadSize: %08x \n", indent, "", response$dialect_smb2->maxreadsize);
+    response$dialect_smb2->maxwritesize = get32_e (thePDU, endianness);
+    fprintf (stderr, "%*smaxWriteSize: %08x \n", indent, "", response$dialect_smb2->maxwritesize);
+    response$dialect_smb2->syetemtime = get64_e (thePDU, endianness);
+    fprintf (stderr, "%*ssyetemTime: %016lx \n", indent, "", response$dialect_smb2->syetemtime);
+    response$dialect_smb2->serverstarttime = get64_e (thePDU, endianness);
+    fprintf (stderr, "%*sserverStartTime: %016lx \n", indent, "", response$dialect_smb2->serverstarttime);
+    response$dialect_smb2->secbufferoffset = get16_e (thePDU, endianness);
+    fprintf (stderr, "%*ssecBufferOffset: %04x \n", indent, "", response$dialect_smb2->secbufferoffset);
+    response$dialect_smb2->secbufferlength = get16_e (thePDU, endianness);
+    fprintf (stderr, "%*ssecBufferLength: %04x \n", indent, "", response$dialect_smb2->secbufferlength);
+    response$dialect_smb2->negcontextoff = get32_e (thePDU, endianness);
+    fprintf (stderr, "%*snegContextOff: %08x \n", indent, "", response$dialect_smb2->negcontextoff);
+    if (!lengthRemaining (thePDU, response$dialect_smb2->secbufferlength, progname)) {
+        return false;
+    }
+    response$dialect_smb2->buffer = (unsigned char *) malloc (sizeof (unsigned char) * (response$dialect_smb2->secbufferlength));
+    if (response$dialect_smb2->buffer == NULL) {
         fprintf (stderr, "%s: internal malloc error file: %s line: %d \n", progname, __FILE__, __LINE__);
         return false;
     }
-    negotiate$response_smb2->padding_length = 8 - ((64 + 64 + negotiate$response_smb2->secbufferlength) % 8);
-    memcpy (negotiate$response_smb2->padding, &thePDU->data[thePDU->curPos], 8 - ((64 + 64 + negotiate$response_smb2->secbufferlength) % 8));
-    thePDU->curPos += 8 - ((64 + 64 + negotiate$response_smb2->secbufferlength) % 8);
-    if (negotiate$response_smb2->padding[8 - ((64 + 64 + negotiate$response_smb2->secbufferlength) % 8) - 1] != '\0') {
+    response$dialect_smb2->buffer_length = response$dialect_smb2->secbufferlength;
+    memcpy (response$dialect_smb2->buffer, &thePDU->data[thePDU->curPos], response$dialect_smb2->secbufferlength);
+    thePDU->curPos += response$dialect_smb2->secbufferlength;
+    if (response$dialect_smb2->buffer[response$dialect_smb2->secbufferlength - 1] != '\0') {
     }
-    fprintf (stderr, "%*spadding: ", indent, "");
-    for (int q = 0; q < 8 - ((64 + 64 + negotiate$response_smb2->secbufferlength) % 8); q++) {
-        fprintf (stderr, "%02x ", negotiate$response_smb2->padding[q]);
+    fprintf (stderr, "%*sbuffer: ", indent, "");
+    for (int q = 0; q < response$dialect_smb2->secbufferlength; q++) {
+        fprintf (stderr, "%02x ", response$dialect_smb2->buffer[q]);
     }
     fprintf (stderr, "\n");
-    negotiate$response_smb2->negcontextlistcount = negotiate$response_smb2->negcontextcnt;
-    negotiate$response_smb2->negcontextlistlength = thePDU->curPos;
-    negotiate$response_smb2->negcontextlist = parseSetOfNEGOTIATECONTEXT$RESPONSE (thePDU, negotiate$response_smb2->negcontextcnt, progname, endianness);
-    if (negotiate$response_smb2->negcontextlist == NULL) {
+    if (!lengthRemaining (thePDU, 8 - ((64 + 64 + response$dialect_smb2->secbufferlength) % 8), progname)) {
         return false;
     }
-    negotiate$response_smb2->negcontextlistlength = thePDU->curPos - negotiate$response_smb2->negcontextlistlength;
-    fprintf (stderr, "%*sEND NEGOTIATE$RESPONSE\n", indent, "");
+    response$dialect_smb2->padding = (unsigned char *) malloc (sizeof (unsigned char) * (8 - ((64 + 64 + response$dialect_smb2->secbufferlength) % 8)));
+    if (response$dialect_smb2->padding == NULL) {
+        fprintf (stderr, "%s: internal malloc error file: %s line: %d \n", progname, __FILE__, __LINE__);
+        return false;
+    }
+    response$dialect_smb2->padding_length = 8 - ((64 + 64 + response$dialect_smb2->secbufferlength) % 8);
+    memcpy (response$dialect_smb2->padding, &thePDU->data[thePDU->curPos], 8 - ((64 + 64 + response$dialect_smb2->secbufferlength) % 8));
+    thePDU->curPos += 8 - ((64 + 64 + response$dialect_smb2->secbufferlength) % 8);
+    if (response$dialect_smb2->padding[8 - ((64 + 64 + response$dialect_smb2->secbufferlength) % 8) - 1] != '\0') {
+    }
+    fprintf (stderr, "%*spadding: ", indent, "");
+    for (int q = 0; q < 8 - ((64 + 64 + response$dialect_smb2->secbufferlength) % 8); q++) {
+        fprintf (stderr, "%02x ", response$dialect_smb2->padding[q]);
+    }
+    fprintf (stderr, "\n");
+    response$dialect_smb2->negcontextlistcount = response$dialect_smb2->negcontextcnt;
+    response$dialect_smb2->negcontextlistlength = thePDU->curPos;
+    response$dialect_smb2->negcontextlist = parseSetOfNEGOTIATECONTEXT$RESPONSE (thePDU, response$dialect_smb2->negcontextcnt, progname, endianness);
+    if (response$dialect_smb2->negcontextlist == NULL) {
+        return false;
+    }
+    response$dialect_smb2->negcontextlistlength = thePDU->curPos - response$dialect_smb2->negcontextlistlength;
     indent -= 2;
+    fprintf (stderr, "%*s*END RESPONSE$DIALECT*\n", indent, "");
     return true;
 }
 
 bool parseNEGOTIATECONTEXT$RESPONSE (NEGOTIATECONTEXT$RESPONSE_SMB2 *negotiatecontext$response_smb2, PDUP *thePDU, char *progname, uint8_t endianness) {
-    fprintf (stderr, "%*sParse NEGOTIATECONTEXT$RESPONSE\n", indent, "");
+    fprintf (stderr, "%*s*Parse NEGOTIATECONTEXT$RESPONSE*\n", indent, "");
     indent += 2;
     if (!lengthRemaining (thePDU, 8, progname)) {
         return false;
@@ -499,8 +611,8 @@ bool parseNEGOTIATECONTEXT$RESPONSE (NEGOTIATECONTEXT$RESPONSE_SMB2 *negotiateco
         }
         fprintf (stderr, "\n");
     }
-    fprintf (stderr, "%*sEND NEGOTIATECONTEXT$RESPONSE\n", indent, "");
     indent -= 2;
+    fprintf (stderr, "%*s*END NEGOTIATECONTEXT$RESPONSE*\n", indent, "");
     return true;
 }
 
@@ -511,6 +623,8 @@ bool parseCONTEXTDATA$RESPONSE (CONTEXTDATA$RESPONSE_SMB2 *contextdata$response_
         contextdata$response_smb2->type = INTEGRITY$RESPONSE_SMB2_VAL;
         return true;
     }
+    indent += -2;
+    fprintf (stderr, "\n%*s**BACKTRACKING**\n\n", indent, "");
     thePDU->curPos = pos;
     thePDU->remaining = remaining;
     if (parseENCRYPTION$RESPONSE (&contextdata$response_smb2->ptr.encryption$response_smb2, thePDU, progname, endianness)) {
@@ -521,7 +635,7 @@ bool parseCONTEXTDATA$RESPONSE (CONTEXTDATA$RESPONSE_SMB2 *contextdata$response_
 }
 
 bool parseINTEGRITY$RESPONSE (INTEGRITY$RESPONSE_SMB2 *integrity$response_smb2, PDUP *thePDU, char *progname, uint8_t endianness) {
-    fprintf (stderr, "%*sParse INTEGRITY$RESPONSE\n", indent, "");
+    fprintf (stderr, "%*s*Parse INTEGRITY$RESPONSE*\n", indent, "");
     indent += 2;
     if (!lengthRemaining (thePDU, 4, progname)) {
         return false;
@@ -560,13 +674,13 @@ bool parseINTEGRITY$RESPONSE (INTEGRITY$RESPONSE_SMB2 *integrity$response_smb2, 
         fprintf (stderr, "%02x ", integrity$response_smb2->salt[q]);
     }
     fprintf (stderr, "\n");
-    fprintf (stderr, "%*sEND INTEGRITY$RESPONSE\n", indent, "");
     indent -= 2;
+    fprintf (stderr, "%*s*END INTEGRITY$RESPONSE*\n", indent, "");
     return true;
 }
 
 bool parseENCRYPTION$RESPONSE (ENCRYPTION$RESPONSE_SMB2 *encryption$response_smb2, PDUP *thePDU, char *progname, uint8_t endianness) {
-    fprintf (stderr, "%*sParse ENCRYPTION$RESPONSE\n", indent, "");
+    fprintf (stderr, "%*s*Parse ENCRYPTION$RESPONSE*\n", indent, "");
     indent += 2;
     if (!lengthRemaining (thePDU, 2, progname)) {
         return false;
@@ -584,42 +698,12 @@ bool parseENCRYPTION$RESPONSE (ENCRYPTION$RESPONSE_SMB2 *encryption$response_smb
         return false;
     }
     encryption$response_smb2->cipherslength = thePDU->curPos - encryption$response_smb2->cipherslength;
-    fprintf (stderr, "%*sEND ENCRYPTION$RESPONSE\n", indent, "");
     indent -= 2;
+    fprintf (stderr, "%*s*END ENCRYPTION$RESPONSE*\n", indent, "");
     return true;
 }
 
 void freePDU_SMB2 (PDU_SMB2 *mainpdu) {
-    if (mainpdu->type == NEGOTIATE_SMB2_VAL) {
-        if (mainpdu->ptr.negotiate_smb2.dialects != NULL) {
-            for (int i = 0; i < mainpdu->ptr.negotiate_smb2.dialectscount; ++i) {
-                if (&mainpdu->ptr.negotiate_smb2.dialects [i] != NULL) {
-                }
-            }
-            if (mainpdu->ptr.negotiate_smb2.dialects != NULL) {
-                free (mainpdu->ptr.negotiate_smb2.dialects);
-                mainpdu->ptr.negotiate_smb2.dialects = NULL;
-            }
-        }
-        if (mainpdu->ptr.negotiate_smb2.padding != NULL) {
-            free (mainpdu->ptr.negotiate_smb2.padding);
-            mainpdu->ptr.negotiate_smb2.padding = NULL;
-        }
-        if (mainpdu->ptr.negotiate_smb2.negcontextlist != NULL) {
-            for (int i = 0; i < mainpdu->ptr.negotiate_smb2.negcontextlistcount; ++i) {
-                if (&mainpdu->ptr.negotiate_smb2.negcontextlist [i] != NULL) {
-                    if (mainpdu->ptr.negotiate_smb2.negcontextlist [i].padding != NULL) {
-                        free (mainpdu->ptr.negotiate_smb2.negcontextlist [i].padding);
-                        mainpdu->ptr.negotiate_smb2.negcontextlist [i].padding = NULL;
-                    }
-                }
-            }
-            if (mainpdu->ptr.negotiate_smb2.negcontextlist != NULL) {
-                free (mainpdu->ptr.negotiate_smb2.negcontextlist);
-                mainpdu->ptr.negotiate_smb2.negcontextlist = NULL;
-            }
-        }
-    }
 }
 
 DIALECT_SMB2 *parseSetOfDIALECT (PDUP *thePDU, int size, char *progname, uint8_t endianness) {

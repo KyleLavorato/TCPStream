@@ -8,11 +8,14 @@
 #include "packet.h"
 #include "globals.h"
 #define NEGOTIATE_SMB2_VAL (1)
-#define HEADER$SYNC_SMB2_VAL (2)
-#define INTEGRITY_SMB2_VAL (3)
-#define ENCRYPTION_SMB2_VAL (4)
-#define INTEGRITY$RESPONSE_SMB2_VAL (5)
-#define ENCRYPTION$RESPONSE_SMB2_VAL (6)
+#define REQUEST_SMB2_VAL (2)
+#define RESPONSE$NODIALECT_SMB2_VAL (3)
+#define RESPONSE$DIALECT_SMB2_VAL (4)
+#define HEADER$SYNC_SMB2_VAL (5)
+#define INTEGRITY_SMB2_VAL (6)
+#define ENCRYPTION_SMB2_VAL (7)
+#define INTEGRITY$RESPONSE_SMB2_VAL (8)
+#define ENCRYPTION$RESPONSE_SMB2_VAL (9)
 typedef struct {
     uint32_t protoid;
     uint16_t structuresize;
@@ -95,13 +98,26 @@ typedef struct {
     unsigned long negcontextlistlength;
     unsigned long negcontextlistcount;
     NEGOTIATECONTEXT_SMB2 *negcontextlist;
-} NEGOTIATE_SMB2;
+} REQUEST_SMB2;
 typedef struct {
-    uint32_t type;
-    union {
-        NEGOTIATE_SMB2 negotiate_smb2;
-    } ptr;
-} PDU_SMB2;
+    HEADER_SMB2 header;
+    uint16_t structuresize;
+    uint16_t securitymode;
+    uint16_t dialectrevision;
+    uint16_t reserved;
+    unsigned char serverguid [16];
+    uint32_t capabilities;
+    uint32_t maxtransize;
+    uint32_t maxreadsize;
+    uint32_t maxwritesize;
+    uint64_t syetemtime;
+    uint64_t serverstarttime;
+    uint16_t secbufferoffset;
+    uint16_t secbufferlength;
+    uint32_t reserved2;
+    unsigned long buffer_length;
+    unsigned char *buffer;
+} RESPONSE$NODIALECT_SMB2;
 typedef struct {
     uint16_t hashalgcnt;
     uint16_t saltlength;
@@ -155,7 +171,21 @@ typedef struct {
     unsigned long negcontextlistlength;
     unsigned long negcontextlistcount;
     NEGOTIATECONTEXT$RESPONSE_SMB2 *negcontextlist;
-} NEGOTIATE$RESPONSE_SMB2;
+} RESPONSE$DIALECT_SMB2;
+typedef struct {
+    uint32_t type;
+    union {
+        REQUEST_SMB2 request_smb2;
+        RESPONSE$NODIALECT_SMB2 response$nodialect_smb2;
+        RESPONSE$DIALECT_SMB2 response$dialect_smb2;
+    } ptr;
+} NEGOTIATE_SMB2;
+typedef struct {
+    uint32_t type;
+    union {
+        NEGOTIATE_SMB2 negotiate_smb2;
+    } ptr;
+} PDU_SMB2;
 bool parseSMB2 (PDU_SMB2 * pdu_smb2, PDUP * thePDU, char * name, uint8_t endianness);
 void freePDU_SMB2 (PDU_SMB2 * mainpdu);
 #endif
