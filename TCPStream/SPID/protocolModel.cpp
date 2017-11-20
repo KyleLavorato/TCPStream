@@ -13,7 +13,7 @@ ProtocolModel::ProtocolModel(){
 	AttributeFingerprintHandler byteOffsets = AttributeFingerprintHandler("offests");
 }
 
-void ProtocolModel::AddObservation (byte packetData[], time_t packetTimestamp, int packetDirection){
+void ProtocolModel::AddObservation (const byte packetData[], time_t packetTimestamp, int packetDirection){
   observationCount++;
   packetSize.AddObservation(packetData, packetTimestamp, packetDirection, observationCount);
   packetSource.AddObservation(packetData, packetTimestamp, packetDirection, observationCount);

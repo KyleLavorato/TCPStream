@@ -1,9 +1,7 @@
 #include <iostream>
 #include <tins/tcp_ip/stream_follower.h>
 #include <tins/tins.h>
-#include "parser.h"
-#include "globals.h"
-//#include "SPIDinterface.h"
+#include "SPIDinterface.h"
 
 using namespace Tins;
 using namespace std;
@@ -24,19 +22,19 @@ void on_client_data(Stream& stream) {
 
     // As per Kyle's request, call parseData from packet.h with the data and size
     // TODO: get the first argument here
-    parseData(argString, payload.data(), payload.size());
+    //parseData(argString, payload.data(), payload.size());
 
-    //SPIDalgorithm(argString, payload.data(), 1);
+    //SPIDalgorithm(payload.data(), 1);
 
 
 
-    //cout << "Client data:" << endl;
+    cout << "Client data:" << endl;
 
     for (i = 0; i < payload.size(); i++) {
-        //cout << hex << payload[i];
+        cout << hex << payload[i];
     }
 
-    //cout << endl;
+    cout << endl;
 }
 
 // This will be called when there's new server data
@@ -52,15 +50,15 @@ void on_server_data(Stream& stream) {
 
     // As per Kyle's request, call parseData from packet.h with the data and size
     // TODO: get the first argument here
-    parseData(argString, payload.data(), payload.size());
+    //parseData(argString, payload.data(), payload.size());
 
-    //SPIDalgorithm(argString, payload.data(), 0);
+    //SPIDalgorithm(payload.data(), 0);
 
-    //cout << "Server data:" << endl;
+    cout << "Server data:" << endl;
     for (i = 0; i < payload.size(); i++) {
-        //cout << hex << payload[i];
+        cout << hex << payload[i];
     }
-    //cout << endl;
+    cout << endl;
 }
 
 // A stream closed properly

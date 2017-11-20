@@ -3,18 +3,17 @@
 #include <tins/tins.h>
 
 #include "segment.h"
-#include "parser.h"
-//#include "SPIDinterface.h"
+//#include "parser.h"
+#include "SPIDinterface.h"
 
 using namespace Tins;
 using namespace std;
 using Tins::TCPIP::Stream;
 using Tins::TCPIP::StreamFollower;
-
-char * argString;
+//char * argString;
 
 int main(int argc, char *argv[]) {
-	
+	cout << "HELLO \n" << endl;
 	////// ARG CHECKS //////
 	if (argc < 2 || argc > 2) {
 		cerr << "Usage:" << endl;
@@ -27,7 +26,7 @@ int main(int argc, char *argv[]) {
 		cerr << "./tcpstream <PCAP location>" << endl;
 		return -1;
 	}
-	argString = argv[1];
+	//argString = argv[1];
 	////// END ARG CHECKS //////
 
 

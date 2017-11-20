@@ -5,5 +5,5 @@
 
 using namespace std;
 
-void SPIDalgorithm (char *progname, byte packetData[], int packetDirection);
+void SPIDalgorithm (const byte packetData[], int packetDirection);
 

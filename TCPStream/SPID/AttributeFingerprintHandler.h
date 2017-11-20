@@ -3,6 +3,7 @@
 #include <iostream>
 #include <tuple>
 #include <ctime>
+#include <vector>
 #include "Fingerprint.h"
 
 using namespace std;
@@ -16,8 +17,8 @@ public:
 	int counter;
 	AttributeFingerprintHandler();
 	AttributeFingerprintHandler(string name);
-	void AddObservation (byte packetData[], time_t packetTimestamp, int packetDirection, int packetOrderNumberInSession);
+	void AddObservation (const byte packetData[], time_t packetTimestamp, int packetDirection, int packetOrderNumberInSession);
 	double GetAverageKullbackLeiblerDivergenceFrom (AttributeFingerprintHandler model);
 	AttributeFingerprintHandler MergeWith(Fingerprint otherFingerprint);
-	int* GetMeasurements(byte packetData[], time_t packetTimestamp, int packetDirection, int packetOrderNumberInSession);
+	vector<int> GetMeasurements(const byte packetData[], time_t packetTimestamp, int packetDirection, int packetOrderNumberInSession);
 };

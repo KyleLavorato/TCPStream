@@ -1,17 +1,18 @@
-#pragma once 
-
-#include <iostream>
-#include <tuple>
+#include "Fingerprint.h"
 
 using namespace std;
 
-class Fingerprint {
-public:
-	int size;
-	double probabilityDistributionVector[][2];
-	Fingerprint ();
-	Fingerprint (int counter);
-	void IncrementFingerprintCounterAtIndex(int index);
-	Fingerprint MergeWith (Fingerprint otherFingerprint);
-private:
-};
+Fingerprint::Fingerprint(){};
+
+Fingerprint::Fingerprint(int counter){
+	int size = counter;
+	int probabilityDistributionVector [size][2] = {{}};
+}
+
+void Fingerprint::IncrementFingerprintCounterAtIndex(int index){
+	probabilityDistributionVector[index][0]++;
+}
+
+Fingerprint Fingerprint::MergeWith(Fingerprint otherFingerprint){
+
+}

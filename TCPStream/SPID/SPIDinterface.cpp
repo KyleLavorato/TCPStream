@@ -4,15 +4,15 @@
 
 ProtocolModel currentModel;
 
-void SPIDalgorithm(char *progname, byte packetData[], int packetDirection){
+void SPIDalgorithm(const byte packetData[], int packetDirection){
 	string filename = "FTP.txt";
 	time_t currentTime = time(0);
 
 	currentModel.AddObservation(packetData, currentTime, packetDirection);
-	for (int i = 0, i < 2; i++){
+	for (int i = 0; i < 2; i++){
 		cout << currentModel.packetSource.attributeFingerprint.probabilityDistributionVector[i][0];
 	}
-	count << endl;
+	cout << endl;
 }
 
 

@@ -1,7 +1,7 @@
 CXX=g++
 CPPFLAGS=-std=c++11
 LDLIBS=-ltins -lboost_regex
-OBJS= segment.o SMB2_Generated.o putilities.o packet.o parser.o
+OBJS= segment.o protocolModel.o Fingerprint.o SPIDinterface.o AttributeFingerprintHandler.o
 
 all: tcpstream
 
@@ -12,13 +12,15 @@ clean:
 	rm -f *.o ./tcpstream
 
 # MAIN
-pmain.o: globals.h segment.h
+pmain.o: segment.h
 
 # SUPPORT
-segment.o: segment.h
+segment.o: segment.h SPIDinterface.h
 
-parser.o: globals.h parser.h
+protocolModel.o: protocolModel.h AttributeFingerprintHandler.h Fingerprint.h
 
-SMB2_Generated.o: pglobals.h SMB2_Generated.h
-putilities.o: putilities.h
-packet.o: globals.h packet.h
+AttributeFingerprintHandler.o: AttributeFingerprintHandler.h Fingerprint.h
+
+fingerprint.o: Fingerprint.h
+
+SPIDinterface.o: SPIDinterface.h protocolModel.h
