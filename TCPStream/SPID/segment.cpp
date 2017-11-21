@@ -23,18 +23,20 @@ void on_client_data(Stream& stream) {
     // As per Kyle's request, call parseData from packet.h with the data and size
     // TODO: get the first argument here
     //parseData(argString, payload.data(), payload.size());
-
-    //SPIDalgorithm(payload.data(), 1);
-
-
-
     cout << "Client data:" << endl;
-
-    for (i = 0; i < payload.size(); i++) {
-        cout << hex << payload[i];
+    cout << payload.data() << endl;
+    if (payload.size() > 0) {
+        SPIDalgorithm(payload.data(), 1);
     }
 
-    cout << endl;
+
+    //cout << "Client data:" << endl;
+
+    //for (i = 0; i < payload.size(); i++) {
+    //    cout << hex << payload[i];
+    //}
+
+    //cout << endl;
 }
 
 // This will be called when there's new server data
@@ -51,13 +53,16 @@ void on_server_data(Stream& stream) {
     // As per Kyle's request, call parseData from packet.h with the data and size
     // TODO: get the first argument here
     //parseData(argString, payload.data(), payload.size());
-
-    //SPIDalgorithm(payload.data(), 0);
-
     cout << "Server data:" << endl;
-    for (i = 0; i < payload.size(); i++) {
-        cout << hex << payload[i];
+    cout << payload.size() << endl;
+    if (payload.size() > 0) {
+        SPIDalgorithm(payload.data(), 0);
     }
+
+    //cout << "Server data:" << endl;
+    //for (i = 0; i < payload.size(); i++) {
+    //    cout << hex << payload[i];
+    //}
     cout << endl;
 }
 

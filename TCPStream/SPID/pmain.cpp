@@ -13,7 +13,6 @@ using Tins::TCPIP::StreamFollower;
 //char * argString;
 
 int main(int argc, char *argv[]) {
-	cout << "HELLO \n" << endl;
 	////// ARG CHECKS //////
 	if (argc < 2 || argc > 2) {
 		cerr << "Usage:" << endl;

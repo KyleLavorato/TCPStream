@@ -1,7 +1,7 @@
 CXX=g++
 CPPFLAGS=-std=c++11
 LDLIBS=-ltins -lboost_regex
-OBJS= segment.o protocolModel.o Fingerprint.o SPIDinterface.o AttributeFingerprintHandler.o
+OBJS= segment.o SPIDinterface.o Fingerprint.o AttributeFingerprintHandler.o protocolModel.o
 
 all: tcpstream
 
@@ -21,6 +21,6 @@ protocolModel.o: protocolModel.h AttributeFingerprintHandler.h Fingerprint.h
 
 AttributeFingerprintHandler.o: AttributeFingerprintHandler.h Fingerprint.h
 
-fingerprint.o: Fingerprint.h
+Fingerprint.o: Fingerprint.h
 
 SPIDinterface.o: SPIDinterface.h protocolModel.h

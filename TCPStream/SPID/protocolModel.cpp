@@ -4,22 +4,28 @@ using namespace std;
 
 
 ProtocolModel::ProtocolModel(){
+	cout << "begin protocolModel" << endl;
 	trainingSessionCount = 0;
 	observationCount = 0;
-	AttributeFingerprintHandler packetSize = AttributeFingerprintHandler("size");
-	AttributeFingerprintHandler packetSource = AttributeFingerprintHandler("direction");
-	AttributeFingerprintHandler byteFrequency = AttributeFingerprintHandler("frequency");
-	AttributeFingerprintHandler byteSequences = AttributeFingerprintHandler("sequences");
-	AttributeFingerprintHandler byteOffsets = AttributeFingerprintHandler("offests");
+	packetSize = AttributeFingerprintHandler("size");
+	packetSource = AttributeFingerprintHandler("direction");
+	byteFrequency = AttributeFingerprintHandler("frequency");
+	//byteSequences = AttributeFingerprintHandler("sequences");
+	byteOffsets = AttributeFingerprintHandler("offset");
 }
 
 void ProtocolModel::AddObservation (const byte packetData[], time_t packetTimestamp, int packetDirection){
   observationCount++;
+  cout << "adding observations" <<endl;
   packetSize.AddObservation(packetData, packetTimestamp, packetDirection, observationCount);
+  cout << "done size" <<endl;
   packetSource.AddObservation(packetData, packetTimestamp, packetDirection, observationCount);
+  cout << "done source"<<endl;
   byteFrequency.AddObservation(packetData, packetTimestamp, packetDirection, observationCount);
-  byteSequences.AddObservation(packetData, packetTimestamp, packetDirection, observationCount);
+  cout << "done frequency"<<endl;
+  //byteSequences.AddObservation(packetData, packetTimestamp, packetDirection, observationCount);
   byteOffsets.AddObservation(packetData, packetTimestamp, packetDirection, observationCount);
+  cout << "done offset" <<endl;
 }
 
 double ProtocolModel::GetAverageKullbackLeiblerDivergenceFrom (ProtocolModel model){
