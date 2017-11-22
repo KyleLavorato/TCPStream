@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <sys/stat.h>
 #include <tins/tcp_ip/stream_follower.h>
 #include <tins/tins.h>
 
@@ -24,6 +25,11 @@ void write_stream_file(
     myfile.close();
 }
 
+bool folder_exists(const char* name) {
+    struct stat sb;
+    return stat(name, &sb) == 0 && S_ISDIR(sb.st_mode);
+}
+
 // From https://stackoverflow.com/a/440240 because I'm lazy
 void gen_random_string(char *s, const int len) {
     static const char alphanum[] =
@@ -42,6 +48,11 @@ void gen_random_string(char *s, const int len) {
 void on_stream_closed(Stream& stream) {
     const char* folder = "streams/";
     const char* extension = ".txt";
+
+    if (!folder_exists(folder)) {
+        cout << "Error: `streams` folder does not exist! Exiting." << endl;
+        exit(1);
+    }
 
     int length = 6;
     char filename[6];

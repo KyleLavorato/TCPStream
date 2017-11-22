@@ -1,4 +1,6 @@
 #include <iostream>
+#include <fstream>
+#include <sys/stat.h>
 #include <tins/tcp_ip/stream_follower.h>
 #include <tins/tins.h>
 
@@ -24,3 +26,6 @@ void write_stream_file(
 
 // Generates a random string
 void gen_random_string(char *s, const int len);
+
+// Checks if a folder exists or not
+bool folder_exists(const char* name);
