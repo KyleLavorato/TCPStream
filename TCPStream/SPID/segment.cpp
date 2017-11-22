@@ -2,11 +2,15 @@
 #include <tins/tcp_ip/stream_follower.h>
 #include <tins/tins.h>
 #include "SPIDinterface.h"
+#include "protocolModel.h"
+#include <fstream>
 
 using namespace Tins;
 using namespace std;
 using Tins::TCPIP::Stream;
 using Tins::TCPIP::StreamFollower;
+
+ProtocolModel currentModel;
 
 // This will be called when there's new client data
 void on_client_data(Stream& stream) {
@@ -26,7 +30,7 @@ void on_client_data(Stream& stream) {
     cout << "Client data:" << endl;
     cout << payload.data() << endl;
     if (payload.size() > 0) {
-        SPIDalgorithm(payload.data(), 1);
+        SPIDalgorithm(payload.data(), 1, currentModel);
     }
 
 
@@ -56,7 +60,7 @@ void on_server_data(Stream& stream) {
     cout << "Server data:" << endl;
     cout << payload.size() << endl;
     if (payload.size() > 0) {
-        SPIDalgorithm(payload.data(), 0);
+        SPIDalgorithm(payload.data(), 0, currentModel);
     }
 
     //cout << "Server data:" << endl;
@@ -66,9 +70,52 @@ void on_server_data(Stream& stream) {
     cout << endl;
 }
 
+void writeToFile(){
+    ofstream myFile;
+    myFile.open ("SPIDmodels/FTP.txt");
+    myFile << "Byte Frequency" << endl;
+    for (int i = 0; i < 256; i++){
+        myFile << currentModel.byteFrequency.attributeFingerprint.probabilityDistributionVector[i][0] << " ";
+    }
+    myFile << endl;
+    for (int i = 0; i < 256; i++){
+        myFile << currentModel.byteFrequency.attributeFingerprint.probabilityDistributionVector[i][1] << " ";
+    }
+    myFile << endl;
+    myFile << "Size" << endl;
+    for (int i = 0; i < 700; i++){
+        myFile << currentModel.packetSize.attributeFingerprint.probabilityDistributionVector[i][0] << " ";
+    }
+    myFile << endl;
+    for (int i = 0; i < 700; i++){
+        myFile << currentModel.packetSize.attributeFingerprint.probabilityDistributionVector[i][1] << " ";
+    }
+    myFile << endl;
+    myFile << "Direction" << endl;
+    for (int i = 0; i < 2; i++){
+        myFile << currentModel.packetSource.attributeFingerprint.probabilityDistributionVector[i][0] << " ";
+    }
+    myFile << endl;
+    for (int i = 0; i < 2; i++){
+        myFile << currentModel.packetSource.attributeFingerprint.probabilityDistributionVector[i][1] << " ";
+    }
+    myFile << endl;
+    myFile << "Offset" << endl;
+    for (int i = 0; i < 257; i++){
+        myFile << currentModel.byteOffsets.attributeFingerprint.probabilityDistributionVector[i][0] << " ";
+    }
+    myFile << endl;
+    for (int i = 0; i < 257; i++){
+        myFile << currentModel.byteOffsets.attributeFingerprint.probabilityDistributionVector[i][1] << " ";
+    }
+    myFile << endl;
+    myFile.close();
+}
+
 // A stream closed properly
 void on_stream_closed(Stream& stream) {
     cout << "Stream from " << stream.client_addr_v4() << ":" << stream.client_port() << " to " << stream.server_addr_v4() << ":" << stream.server_port() << " closed" << endl;
+    writeToFile();
 }
 
 // A stream was terminated. The second argument is the reason why it was terminated
@@ -84,5 +131,3 @@ void on_new_stream(Stream& stream) {
     stream.client_data_callback(&on_client_data);
     stream.server_data_callback(&on_server_data);
 }
-
-

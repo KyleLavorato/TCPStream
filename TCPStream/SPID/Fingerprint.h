@@ -1,14 +1,14 @@
 #pragma once 
 
 #include <iostream>
-#include <tuple>
+#include <vector>
 
 using namespace std;
 
 class Fingerprint {
 public:
 	int size;
-	double probabilityDistributionVector[][2];
+	vector <vector <double>> probabilityDistributionVector;
 	Fingerprint ();
 	Fingerprint (int counter);
 	void IncrementFingerprintCounterAtIndex(int index);
