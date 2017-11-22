@@ -24,6 +24,7 @@
 extern unsigned long long count;
 extern unsigned long long failed;
 extern char * argString;
+extern int indent;
 
 struct HeaderInfo {
 	uint32_t srcIP;

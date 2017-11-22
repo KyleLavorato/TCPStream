@@ -7,43 +7,38 @@
 #include <inttypes.h>
 #include "packet.h"
 #include "globals.h"
-#define TEST_SMB2_VAL (1)
-#define NEGOTIATE_SMB2_VAL (2)
-#define HEADER$ASYNC_SMB2_VAL (3)
-#define HEADER$SYNC_SMB2_VAL (4)
-#define INTEGRITY_SMB2_VAL (5)
-#define ENCRYPTION_SMB2_VAL (6)
+#define NEGOTIATE_SMB2_VAL (1)
+#define REQUEST_SMB2_VAL (2)
+#define RESPONSE$NODIALECT_SMB2_VAL (3)
+#define RESPONSE$DIALECT_SMB2_VAL (4)
+#define HEADER$SYNC_SMB2_VAL (5)
+#define INTEGRITY_SMB2_VAL (6)
+#define ENCRYPTION_SMB2_VAL (7)
+#define INTEGRITY$RESPONSE_SMB2_VAL (8)
+#define ENCRYPTION$RESPONSE_SMB2_VAL (9)
 typedef struct {
     uint32_t type;
     union {
-        TEST_SMB2 test_smb2;
         NEGOTIATE_SMB2 negotiate_smb2;
     } ptr;
 } PDU_SMB2;
+typedef struct {
+    uint32_t type;
+    union {
+        REQUEST_SMB2 request_smb2;
+        RESPONSE$NODIALECT_SMB2 response$nodialect_smb2;
+        RESPONSE$DIALECT_SMB2 response$dialect_smb2;
+    } ptr;
+} NEGOTIATE_SMB2;
 typedef struct {
     HEADER_SMB2 header;
 } TEST_SMB2;
 typedef struct {
     uint32_t type;
     union {
-        HEADER$ASYNC_SMB2 header$async_smb2;
         HEADER$SYNC_SMB2 header$sync_smb2;
     } ptr;
 } HEADER_SMB2;
-typedef struct {
-    uint32_t protoid;
-    uint16_t structuresize;
-    uint16_t creditcharge;
-    uint32_t ntstatus;
-    uint16_t command;
-    uint16_t creditreq;
-    uint32_t flags;
-    uint32_t nextcommand;
-    uint64_t messageid;
-    uint64_t asyncid;
-    uint64_t sessionid;
-    unsigned char signature [16];
-} HEADER$ASYNC_SMB2;
 typedef struct {
     uint32_t protoid;
     uint16_t structuresize;
@@ -78,7 +73,7 @@ typedef struct {
     unsigned long negcontextlistlength;
     unsigned long negcontextlistcount;
     NEGOTIATECONTEXT_SMB2 *negcontextlist;
-} NEGOTIATE_SMB2;
+} REQUEST_SMB2;
 typedef struct {
     uint16_t value;
 } DIALECT_SMB2;
@@ -118,6 +113,79 @@ typedef struct {
 typedef struct {
     uint16_t cipherdata;
 } CIPHER_SMB2;
+typedef struct {
+    HEADER_SMB2 header;
+    uint16_t structuresize;
+    uint16_t securitymode;
+    uint16_t dialectrevision;
+    uint16_t reserved;
+    unsigned char serverguid [16];
+    uint32_t capabilities;
+    uint32_t maxtransize;
+    uint32_t maxreadsize;
+    uint32_t maxwritesize;
+    uint64_t syetemtime;
+    uint64_t serverstarttime;
+    uint16_t secbufferoffset;
+    uint16_t secbufferlength;
+    uint32_t reserved2;
+    unsigned long buffer_length;
+    unsigned char *buffer;
+} RESPONSE$NODIALECT_SMB2;
+typedef struct {
+    HEADER_SMB2 header;
+    uint16_t structuresize;
+    uint16_t securitymode;
+    uint16_t dialectrevision;
+    uint16_t negcontextcnt;
+    unsigned char serverguid [16];
+    uint32_t capabilities;
+    uint32_t maxtransize;
+    uint32_t maxreadsize;
+    uint32_t maxwritesize;
+    uint64_t syetemtime;
+    uint64_t serverstarttime;
+    uint16_t secbufferoffset;
+    uint16_t secbufferlength;
+    uint32_t negcontextoff;
+    unsigned long buffer_length;
+    unsigned char *buffer;
+    unsigned long padding_length;
+    unsigned char *padding;
+    unsigned long negcontextlistlength;
+    unsigned long negcontextlistcount;
+    NEGOTIATECONTEXT$RESPONSE_SMB2 *negcontextlist;
+} RESPONSE$DIALECT_SMB2;
+typedef struct {
+    uint16_t contexttype;
+    uint16_t datalength;
+    uint32_t reserved;
+    CONTEXTDATA$RESPONSE_SMB2 data;
+    unsigned long padding_length;
+    unsigned char *padding;
+} NEGOTIATECONTEXT$RESPONSE_SMB2;
+typedef struct {
+    uint32_t type;
+    union {
+        INTEGRITY$RESPONSE_SMB2 integrity$response_smb2;
+        ENCRYPTION$RESPONSE_SMB2 encryption$response_smb2;
+    } ptr;
+} CONTEXTDATA$RESPONSE_SMB2;
+typedef struct {
+    uint16_t hashalgcnt;
+    uint16_t saltlength;
+    unsigned long hashalglength;
+    unsigned long hashalgcount;
+    HASHALG_SMB2 *hashalg;
+    unsigned long salt_length;
+    unsigned char *salt;
+} INTEGRITY$RESPONSE_SMB2;
+typedef struct {
+    uint16_t ciphercnt;
+    unsigned long cipherslength;
+    unsigned long cipherscount;
+    CIPHER_SMB2 *ciphers;
+} ENCRYPTION$RESPONSE_SMB2;
 bool parseSMB2 (PDU_SMB2 *pdu_smb2, PDU *thePDU, char *name, uint8_t endianness);
 void freePDU_SMB2 (PDU_SMB2 *mainpdu);
 #endif

@@ -4,7 +4,9 @@ SMB2 DEFINITIONS ::= BEGIN
 
 EXPORTS PDU;
 
-PDU ::= (TEST | NEGOTIATE)
+PDU ::= (NEGOTIATE)
+
+NEGOTIATE ::= (REQUEST | RESPONSE_NODIALECT | RESPONSE_DIALECT)
 
 TEST ::= SEQUENCE {
 	Header	HEADER (SIZE DEFINED)
@@ -15,27 +17,27 @@ TEST ::= SEQUENCE {
 -- Back { Header.command <= 0x0012 }
 </transfer>
 
-HEADER ::= (HEADER_ASYNC | HEADER_SYNC)
+HEADER ::= (HEADER_SYNC)
 
-HEADER_ASYNC ::= SEQUENCE {
-	protoID			OCTET STRING (SIZE 4 BYTES),
-	structureSize	INTEGER (SIZE 2 BYTES),
-	creditCharge	INTEGER (SIZE 2 BYTES),
-	ntStatus		INTEGER (SIZE 4 BYTES),
-	command			INTEGER (SIZE 2 BYTES),
-	creditREQ		INTEGER (SIZE 2 BYTES),
-	flags			OCTET STRING (SIZE 4 BYTES),
-	nextCommand		INTEGER (SIZE 4 BYTES),
-	messageId		INTEGER (SIZE 8 BYTES),
-	asyncId			INTEGER (SIZE 8 BYTES),
-	sessionId		INTEGER (SIZE 8 BYTES),
-	signature		OCTET STRING (SIZE 16 BYTES)
-} (ENCODED BY CUSTOM)
-<transfer>
-Back {protoID == 0xFE534D42} -- 0xFE 'S' 'M' 'B'
-Back {structureSize == 64 }
-Back {(flags & 0x00000002) == 2} -- ASYNC bit is set
-</transfer>
+-- HEADER_ASYNC ::= SEQUENCE {
+-- 	protoID			OCTET STRING (SIZE 4 BYTES),
+-- 	structureSize	INTEGER (SIZE 2 BYTES),
+-- 	creditCharge	INTEGER (SIZE 2 BYTES),
+-- 	ntStatus		INTEGER (SIZE 4 BYTES),
+-- 	command			INTEGER (SIZE 2 BYTES),
+-- 	creditREQ		INTEGER (SIZE 2 BYTES),
+-- 	flags			OCTET STRING (SIZE 4 BYTES),
+-- 	nextCommand		INTEGER (SIZE 4 BYTES),
+-- 	messageId		INTEGER (SIZE 8 BYTES),
+-- 	asyncId			INTEGER (SIZE 8 BYTES),
+-- 	sessionId		INTEGER (SIZE 8 BYTES),
+-- 	signature		OCTET STRING (SIZE 16 BYTES)
+-- } (ENCODED BY CUSTOM)
+-- <transfer>
+-- Back {protoID == 0xFE534D42} -- 0xFE 'S' 'M' 'B'
+-- Back {structureSize == 64 }
+-- Back {(flags & 0x00000002) == 2} -- ASYNC bit is set
+-- </transfer>
 
 HEADER_SYNC ::= SEQUENCE {
 	protoID			OCTET STRING (SIZE 4 BYTES),
@@ -59,7 +61,7 @@ Back {(flags & 0x00000002) != 2} -- ASYNC bit is set
 </transfer>
 
 -- For this version, dialects must contain 0x0311
-NEGOTIATE ::= SEQUENCE {
+REQUEST ::= SEQUENCE {
 	Header	HEADER (SIZE DEFINED),
 	structureSize	INTEGER (SIZE 2 BYTES),
 	dialectCount	INTEGER (SIZE 2 BYTES),
@@ -77,7 +79,8 @@ NEGOTIATE ::= SEQUENCE {
 <transfer>
 Back {securityMode == 0x0001 || securityMode == 0x0002}
 -- Back {EXISTS(dialects) == 0x0311}
-Forward {LENGTH(padding) == (SIZEOF(Header) + 36 + SIZEOF(dialects) - negContextOff)}
+Forward {CARDINALITY(dialects) == dialectCount}
+Forward {PADDING(padding) == 8 - ((64 + 36 + dialectCount * 2) % 8)}
 Forward {CARDINALITY(negContextList) == negContextCnt}
 </transfer>
 
@@ -97,7 +100,7 @@ NEGOTIATECONTEXT ::= SEQUENCE {
 } (ENCODED BY CUSTOM)
 <transfer>
 Back {contextType == 0x0001 || contextType == 0x0002}
-Forward {LENGTH(padding) == (10 + SIZEOF(data) % 8)}
+Forward {PADDING(padding) == (8 - ((8 + dataLength) % 8))}
 </transfer>
 
 CONTEXTDATA ::= (INTEGRITY | ENCRYPTION)
@@ -131,6 +134,98 @@ CIPHER ::= SEQUENCE {
 	cipherData 	INTEGER (SIZE 2 BYTES)
 } (ENCODED BY CUSTOM)
 <transfer>
+</transfer>
+
+-- This is the version if dialect is not 0x0311
+RESPONSE_NODIALECT ::= SEQUENCE {
+	Header			HEADER (SIZE DEFINED),
+	structureSize	INTEGER (SIZE 2 BYTES),
+	securityMode	INTEGER (SIZE 2 BYTES),
+	dialectRevision	INTEGER (SIZE 2 BYTES),
+	reserved 		INTEGER (SIZE 2 BYTES),
+	serverGuid		OCTET STRING (SIZE 16 BYTES),
+	capabilities	INTEGER (SIZE 4 BYTES),
+	maxTranSize		INTEGER (SIZE 4 BYTES),
+	maxReadSize		INTEGER (SIZE 4 BYTES),
+	maxWriteSize	INTEGER (SIZE 4 BYTES),
+	syetemTime		INTEGER (SIZE 8 BYTES),
+	serverStartTime	INTEGER (SIZE 8 BYTES),
+	secBufferOffset	INTEGER (SIZE 2 BYTES),
+	secBufferLength	INTEGER (SIZE 2 BYTES),
+	reserved2		INTEGER (SIZE 4 BYTES),
+	buffer 			OCTET STRING (SIZE CONSTRAINED),
+} (ENCODED BY CUSTOM)
+<transfer>
+Back {structureSize == 65}
+Back {securityMode == 0x0001 || securityMode == 0x0002}
+Back {dialectRevision != 0x0311}
+-- Back {EXISTS(dialects) == 0x0311}
+Forward {LENGTH(buffer) == secBufferLength}
+</transfer>
+
+RESPONSE_DIALECT ::= SEQUENCE {
+	Header			HEADER (SIZE DEFINED),
+	structureSize	INTEGER (SIZE 2 BYTES),
+	securityMode	INTEGER (SIZE 2 BYTES),
+	dialectRevision	INTEGER (SIZE 2 BYTES),
+	negContextCnt	INTEGER (SIZE 2 BYTES),
+	serverGuid		OCTET STRING (SIZE 16 BYTES),
+	capabilities	INTEGER (SIZE 4 BYTES),
+	maxTranSize		INTEGER (SIZE 4 BYTES),
+	maxReadSize		INTEGER (SIZE 4 BYTES),
+	maxWriteSize	INTEGER (SIZE 4 BYTES),
+	syetemTime		INTEGER (SIZE 8 BYTES),
+	serverStartTime	INTEGER (SIZE 8 BYTES),
+	secBufferOffset	INTEGER (SIZE 2 BYTES),
+	secBufferLength	INTEGER (SIZE 2 BYTES),
+	negContextOff	INTEGER (SIZE 4 BYTES),
+	buffer 			OCTET STRING (SIZE CONSTRAINED),
+	padding			OCTET STRING (SIZE CONSTRAINED),
+	negContextList	SET OF NEGOTIATECONTEXT_RESPONSE (SIZE CONSTRAINED)
+} (ENCODED BY CUSTOM)
+<transfer>
+Back {structureSize == 65}
+Back {securityMode == 0x0001 || securityMode == 0x0002}
+Back {dialectRevision == 0x0311}
+-- Back {EXISTS(dialects) == 0x0311}
+Forward {LENGTH(buffer) == secBufferLength}
+Forward {LENGTH(padding) == 8 - ((64 + 64 + secBufferLength) % 8)}
+Forward {CARDINALITY(negContextList) == negContextCnt}
+</transfer>
+
+NEGOTIATECONTEXT_RESPONSE ::= SEQUENCE {
+	contextType	INTEGER (SIZE 2 BYTES),
+	dataLength	INTEGER (SIZE 2 BYTES),
+	reserved 	INTEGER (SIZE 4 BYTES),
+	data 		CONTEXTDATA_RESPONSE (SIZE DEFINED),
+	padding 	OCTET STRING (SIZE CONSTRAINED)
+} (ENCODED BY CUSTOM)
+<transfer>
+Back {contextType == 0x0001 || contextType == 0x0002}
+Forward {PADDING(padding) == (8 - ((8 + dataLength) % 8))}
+</transfer>
+
+CONTEXTDATA_RESPONSE ::= (INTEGRITY_RESPONSE | ENCRYPTION_RESPONSE)
+
+INTEGRITY_RESPONSE ::= SEQUENCE {
+	hashAlgCnt	INTEGER (SIZE 2 BYTES),
+	saltLength	INTEGER	(SIZE 2 BYTES),
+	hashAlg 	SET OF HASHALG (SIZE CONSTRAINED),
+	salt 		OCTET STRING (SIZE CONSTRAINED)
+} (ENCODED BY CUSTOM)
+<transfer>
+Back {hashAlgCnt == 1}
+Forward {CARDINALITY(hashAlg) == hashAlgCnt}
+Forward {LENGTH(salt) == saltLength}
+</transfer>
+
+ENCRYPTION_RESPONSE ::= SEQUENCE {
+	cipherCnt	INTEGER (SIZE 2 BYTES),
+	ciphers		SET OF CIPHER (SIZE CONSTRAINED)
+} (ENCODED BY CUSTOM)
+<transfer>
+Back {cipherCnt == 1}
+Forward {CARDINALITY(ciphers) == cipherCnt}
 </transfer>
 
 END

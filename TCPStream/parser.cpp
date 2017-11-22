@@ -2,11 +2,13 @@
 #include "packet.h" 
 #include "SMB2_Generated.h"
 #include "putilities.h"
+using namespace std;
 
 #define BIGENDIAN (0x0)
 #define LITTLEENDIAN (0x1)
 
 void parseData(char *progname, const unsigned char *data, const unsigned long dataLength) {
+	//std::cout << "PARSE START" << std::endl << std::endl;
 	bool parsedPDU;
 	PDUP * thePDU;
 	thePDU = (PDUP*)malloc(sizeof(PDUP));
@@ -28,13 +30,14 @@ void parseData(char *progname, const unsigned char *data, const unsigned long da
 	uint8_t endianness = LITTLEENDIAN;
 	PDU_SMB2 pdu_smb2;
 
-	uint32_t NETBIOS = get32_e (thePDU, endianness);
+	uint32_t NETBIOS = get32_e (thePDU, endianness); // Skip the NETBIOS 4 byte layer
 
+	indent = 0;
 	parsedPDU = parseSMB2(&pdu_smb2, thePDU, progname, endianness);
 	if (parsedPDU == true){
-		std::cout << "Parsed SMB" << std::endl;
+		cout << endl << "#### Parsed SMB ####" << endl;
 	} else { 
-		std::cout << "FAILED PARSE" << std::endl;
+		cout << endl << "#### FAILED PARSE ####" << endl;
 	}
 	freePDU_SMB2(&pdu_smb2);
 	free(thePDU);

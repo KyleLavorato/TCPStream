@@ -24,14 +24,18 @@ void on_client_data(Stream& stream) {
 
     // As per Kyle's request, call parseData from packet.h with the data and size
     // TODO: get the first argument here
+    //cout << endl << "Cleint Packet - SIZE: " << payload.size() << endl;
+    
+    cout << endl << "********** Client Packet - SIZE: " << payload.size() << " **********" << endl;
     parseData(argString, payload.data(), payload.size());
+
 
     //SPIDalgorithm(argString, payload.data(), 1);
 
 
+    cout << endl << "************** End Client Packet **************" << endl;
 
     //cout << "Client data:" << endl;
-
     for (i = 0; i < payload.size(); i++) {
         //cout << hex << payload[i];
     }
@@ -44,7 +48,7 @@ void on_server_data(Stream& stream) {
     int i;
 
     if (stream.is_partial_stream()) {
-        cout << "Skipping partial stream" << endl;
+        cout << endl << "Skipping partial stream" << endl;
         return;
     }
 
@@ -52,7 +56,10 @@ void on_server_data(Stream& stream) {
 
     // As per Kyle's request, call parseData from packet.h with the data and size
     // TODO: get the first argument here
+
+    cout << endl << "********** Server Packet - SIZE: " << payload.size() << " **********" << endl;
     parseData(argString, payload.data(), payload.size());
+    cout << endl << "************** End Server Packet **************" << endl;
 
     //SPIDalgorithm(argString, payload.data(), 0);
 

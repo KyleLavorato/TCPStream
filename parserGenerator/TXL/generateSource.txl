@@ -136,6 +136,9 @@ function main
 	construct noCallbackArg [number]
 		num [checkTXLargs]
 	export noCallbackArg
+	construct debugArg [number] %% $$$
+		num [checkDebugTXLArgs]
+	export debugArg
 	construct FunctionDeclarations [repeat rule_definition]
 	export FunctionDeclarations
 	construct AuxFunctions [repeat rule_definition]
@@ -174,6 +177,17 @@ function checkTXLargs
 	import TXLargs [repeat stringlit]
 	deconstruct * [stringlit] TXLargs
 		"-nocallback"
+	replace [number]
+		num [number]
+	by
+		'1
+end function
+
+%% $$$
+function checkDebugTXLArgs 
+	import TXLargs [repeat stringlit]
+	deconstruct * [stringlit] TXLargs
+		"-debug"
 	replace [number]
 		num [number]
 	by
@@ -407,14 +421,53 @@ rule doSimpleTypeRule ModName [id] TPRULES [repeat type_rule_definition] TPDECS 
 		TypeRule [doChoiceOptimizedTypeRule ModName TPRULES TPDECS]
 	construct optimizedTypeRuleDef [repeat function_definition_or_declaration]
 		_ [^ optimizedTypeRule]
+	construct initialPrintStmt [repeat declaration_or_statement] %% $$$
+		_ [simpleTypeRuleDebugStart SHORT]
+	construct endPrintStmt [repeat declaration_or_statement] %% $$$
+		_ [simpleTypeRuleDebugEnd SHORT]
 	by
 		%bool pName (MNPDU * mainpdu, PDU * thePDU, char * 'progname) {
 		%bool pName (LONG LONG[tolower] , PDU * thePDU, char * 'progname) {
 		bool pName (LONG * LONG[tolower] , PDU * thePDU, char * 'progname, uint8_t endianness) {
-			mainFunctionBody [. globalCheck] [. lengthCheck] [. initializePointers] [. parseBySizes] [. callback] [. return]
+			mainFunctionBody [. initialPrintStmt] [. globalCheck] [. lengthCheck] [. initializePointers] [. parseBySizes] [. callback] [. endPrintStmt] [. return]
 		}
 		optimizedTypeRuleDef
 end rule
+
+%% $$$  $$$ %%
+function simpleTypeRuleDebugStart SHORT [id]
+	import debugArg [number]
+	deconstruct debugArg
+		'1
+	replace [repeat declaration_or_statement]
+		Stmts [repeat declaration_or_statement]
+	construct content [stringlit]
+		_ [+ "%*s*Parse "] [+ SHORT] [+ "*\n"]
+	construct PrintStmt [declaration_or_statement] %% $$$
+		fprintf (stderr, content, indent, "");
+	construct PrintIndentIncrease [declaration_or_statement] %% $$$
+		indent += 2;
+	by
+		Stmts [. PrintStmt] [. PrintIndentIncrease]
+end function
+
+function simpleTypeRuleDebugEnd SHORT [id]
+	import debugArg [number]
+	deconstruct debugArg
+		'1
+	replace [repeat declaration_or_statement]
+		Stmts [repeat declaration_or_statement]
+	construct content2 [stringlit]
+		_ [+ "%*s*END "] [+ SHORT] [+ "*\n"]
+	construct PrintStmt [declaration_or_statement] %% $$$
+		fprintf (stderr, content2, indent, "");
+	construct PrintIndentDecrease [declaration_or_statement] %% $$$
+		indent -= 2;
+	by
+		Stmts [. PrintIndentDecrease] [. PrintStmt]
+end function
+%% $$$  $$$ %%
+
 function addGlobalCheck OPSCL [opt scl_additions]
 	deconstruct * [transfer_statement] OPSCL
 		'Back '{ 'GLOBAL '( ID [id] ') '== REST [relational_expression] '}
@@ -947,6 +1000,8 @@ function parseSimpleTypeDecision mallocName [id]  LONG [id] OP [opt scl_addition
 		_ [genCallback OP ID IDTOPASS] [genAnnotatedCallback OP ID IDTOPASS]
 	construct return [declaration_or_statement]
 		return true;
+	construct PrintStmt [repeat declaration_or_statement] %% $$$
+		_ [unindentFail]
 	construct Stmt [repeat declaration_or_statement]
 		thePDU ->curPos = pos;
 		thePDU ->remaining = remaining;
@@ -954,8 +1009,26 @@ function parseSimpleTypeDecision mallocName [id]  LONG [id] OP [opt scl_addition
 			body [. callback] [. return]
 		}
 	by
-		Stmts [. Stmt]
+		Stmts [. PrintStmt] [. Stmt]
 end function
+
+%% $$$
+function unindentFail
+	import debugArg [number]
+	deconstruct debugArg
+		'1
+	replace [repeat declaration_or_statement]
+		Stmts [repeat declaration_or_statement]
+	construct content [stringlit]
+		_ [+ "\n%*s**BACKTRACKING**\n\n"]
+	construct PrintStmt [declaration_or_statement] %% $$$
+		fprintf (stderr, content, indent, "");
+	construct PrintIndentDecrease [declaration_or_statement] %% $$$
+		indent += -2; 
+	by
+		Stmts [. PrintIndentDecrease] [. PrintStmt]
+end function
+%% $$$
 
 function parseByOptimizedDecision mallocName [id] RuleName [id] TD [type_decision] LONG [id] OP [opt scl_additions] GLOB [id]
 	replace [repeat declaration_or_statement]
@@ -1583,11 +1656,119 @@ function parseIntegerTypebySize mallocName [id] RuleName [id] ET [element_type]
 		%mallocName -> RuleName '. SHORT = size(thePDU);
 		%RuleName[tolower] '.SHORT[tolower] = size(thePDU);
 		RuleName[tolower] '->SHORT[tolower] = size(thePDU, getEndianness);
+	construct PrintStmt [repeat declaration_or_statement]
+		_ [createPrintInt1 RuleName SHORT getSize] [createPrintInt2 RuleName SHORT getSize] [createPrintInt4 RuleName SHORT getSize] [createPrintInt8 RuleName SHORT getSize]
 	replace [repeat declaration_or_statement]
 		Stmts [repeat declaration_or_statement]
 	by
-		Stmts [. Stmt]
+		Stmts [. Stmt] [. PrintStmt]
 end function
+
+%% $$$ FOR TCP TESTING $$$ %%
+
+function createPrintInt1 RuleName [id] SHORT [id] SIZE [number]
+	import debugArg [number]
+	deconstruct debugArg
+		'1
+	where 
+		SIZE [= 8]
+	replace [repeat declaration_or_statement]
+		Stmts [repeat declaration_or_statement]
+	construct content [stringlit]
+		_ [+ "%*s"] [+ SHORT] [+ ": %02x \n"]
+	construct PrintStmt [declaration_or_statement]
+		fprintf (stderr, content, indent, "", RuleName[tolower] '->SHORT[tolower]);
+	by
+		Stmts [. PrintStmt]
+end function
+
+function createPrintInt2 RuleName [id] SHORT [id] SIZE [number]
+	import debugArg [number]
+	deconstruct debugArg
+		'1
+	where 
+		SIZE [= 16]
+	replace [repeat declaration_or_statement]
+		Stmts [repeat declaration_or_statement]
+	construct content [stringlit]
+		_ [+ "%*s"] [+ SHORT] [+ ": %04x \n"]
+	construct PrintStmt [declaration_or_statement]
+		fprintf (stderr, content, indent, "", RuleName[tolower] '->SHORT[tolower]);
+	by
+		Stmts [. PrintStmt]
+end function
+
+function createPrintInt4 RuleName [id] SHORT [id] SIZE [number]
+	import debugArg [number]
+	deconstruct debugArg
+		'1
+	where 
+		SIZE [= 32]
+	replace [repeat declaration_or_statement]
+		Stmts [repeat declaration_or_statement]
+	construct content [stringlit]
+		_ [+ "%*s"] [+ SHORT] [+ ": %08x \n"]
+	construct PrintStmt [declaration_or_statement]
+		fprintf (stderr, content, indent, "", RuleName[tolower] '->SHORT[tolower]);
+	by
+		Stmts [. PrintStmt]
+end function
+
+function createPrintInt8 RuleName [id] SHORT [id] SIZE [number]
+	import debugArg [number]
+	deconstruct debugArg
+		'1
+	where 
+		SIZE [= 64]
+	replace [repeat declaration_or_statement]
+		Stmts [repeat declaration_or_statement]
+	construct content [stringlit]
+		_ [+ "%*s"] [+ SHORT] [+ ": %016lx \n"]
+	construct PrintStmt [declaration_or_statement]
+		fprintf (stderr, content, indent, "", RuleName[tolower] '->SHORT[tolower]);
+	by
+		Stmts [. PrintStmt]
+end function
+
+function createPrintIntOctetLarge RuleName [id] SHORT [id] SIZE [number]
+	import debugArg [number]
+	deconstruct debugArg
+		'1
+	replace [repeat declaration_or_statement]
+		Stmts [repeat declaration_or_statement]
+	construct content [stringlit]
+		_ [+ "%*s"] [+ SHORT] [+ ": "]
+	construct PrintStmt [declaration_or_statement]
+		fprintf (stderr, content, indent, "");
+	construct PrintLoop [repeat declaration_or_statement]
+		for(int q = 0; q < SIZE; q++) {
+	    	fprintf(stderr, "%02x ", RuleName[tolower] '->SHORT[tolower]'[ q ']);
+	  	}
+	  	fprintf(stderr, "\n");
+	by
+		Stmts [. PrintStmt] [. PrintLoop]
+end function
+
+function createPrintIntOctetConstrained RuleName [id] SHORT [id] SIZE [constant]
+	import debugArg [number]
+	deconstruct debugArg
+		'1
+	replace [repeat declaration_or_statement]
+		Stmts [repeat declaration_or_statement]
+	construct content [stringlit]
+		_ [+ "%*s"] [+ SHORT] [+ ": "]
+	construct PrintStmt [declaration_or_statement]
+		fprintf (stderr, content, indent, "");
+	construct PrintLoop [repeat declaration_or_statement]
+		for(int q = 0; q < SIZE; q++) {
+	    	fprintf(stderr, "%02x ", RuleName[tolower] '->SHORT[tolower]'[ q ']);
+	  	}
+	  	fprintf(stderr, "\n");
+	by
+		Stmts [. PrintStmt] [. PrintLoop]
+end function
+
+%% $$$ $$$ %%
 
 function parseIntegerTypebySizeKnown mallocName [id] RuleName [id] ET [element_type]
 	deconstruct ET
@@ -1667,14 +1848,18 @@ function parseOctetStringTypebySize mallocName [id] RuleName [id] ET [element_ty
 		_ [+ "get"] [+ getSize] [+ "_e"]
 	construct getEndianness [id]
 		_ [getEndianness ET]
+	construct PrintStmt [repeat declaration_or_statement] %% $$$
+		_ [createPrintInt1 RuleName SHORT getSize] [createPrintInt2 RuleName SHORT getSize] [createPrintInt4 RuleName SHORT getSize] [createPrintInt8 RuleName SHORT getSize]
 	construct Stmt [declaration_or_statement]
 		%RuleName[tolower] '.SHORT[tolower] = size(thePDU);
 		RuleName[tolower] '->SHORT[tolower] = size(thePDU, getEndianness);
 	replace [repeat declaration_or_statement]
 		Stmts [repeat declaration_or_statement]
 	by
-		Stmts [. Stmt]
+		Stmts [. Stmt] [. PrintStmt]
 end function
+
+
 
 function parseOctetStringTypebyLargeSize mallocName [id] RuleName [id] ET [element_type]
 	deconstruct ET
@@ -1706,10 +1891,12 @@ function parseOctetStringTypebyLargeSize mallocName [id] RuleName [id] ET [eleme
 			%fprintf(stderr, nullerr,progname, __FILE__ , __LINE__);
 			%exit(1);
 		}
+	construct PrintStmt [repeat declaration_or_statement] %% $$$
+		_ [createPrintIntOctetLarge RuleName SHORT SZ]
 	replace [repeat declaration_or_statement]
 		Stmts [repeat declaration_or_statement]
 	by
-		Stmts [. Stmt]
+		Stmts [. Stmt] [. PrintStmt]
 end function
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1730,14 +1917,14 @@ function parseOctetStringTypeConstrained mallocName [id] RuleName [id] OP [opt s
 		CST [opt constraints_block]
 	construct lengthCheck [repeat declaration_or_statement]
 	construct convertedExpression [repeat declaration_or_statement]
-		lengthCheck [checkLengthToParse LONG RETR RuleName LET]
+		lengthCheck [checkLengthToParse SHORT LONG RETR RuleName LET] [checkLengthToParseAsPadding SHORT LONG RETR RuleName LET]
 	replace [repeat declaration_or_statement]
 		Stmts [repeat declaration_or_statement]
 	by
 		Stmts [. convertedExpression]
 end function
 
-function checkLengthToParse LONG [id] RETR [repeat transfer_statement] RuleName [id] LET [list element_type]
+function checkLengthToParse SHORT [id] LONG [id] RETR [repeat transfer_statement] RuleName [id] LET [list element_type]
 	replace [repeat declaration_or_statement]
 		Stmts [repeat declaration_or_statement]
 	deconstruct * [transfer_statement] RETR
@@ -1759,13 +1946,15 @@ function checkLengthToParse LONG [id] RETR [repeat transfer_statement] RuleName 
 		thePDU [+ "->data"]
 	construct curPos [referencable_primaries]
 		thePDU [+ "->curPos"]
-	construct saveLength [repeat declaration_or_statement]
-		unsigned 'long remaining = thePDU ->remaining;
+	%construct saveLength [repeat declaration_or_statement]
+	%	unsigned 'long remaining = thePDU ->remaining;
 	construct lengthCheck [repeat declaration_or_statement]
 		if(!lengthRemaining(thePDU, expression , progname)) {
 			%fprintf(stderr, lengtherr ,progname,__FILE__,__LINE__);
 			return false;
 		}
+	construct PrintStmt [repeat declaration_or_statement] %% $$$
+		_ [createPrintIntOctetConstrained RuleName SHORT expression] 
 	construct convertExpression [repeat declaration_or_statement]
 		RuleName[tolower]->LONG[convertIDToShort] '= (unsigned char *)malloc(sizeof(unsigned char) * ( expression ));
 		if( RuleName[tolower]->LONG[convertIDToShort] == 'NULL) {
@@ -1782,7 +1971,60 @@ function checkLengthToParse LONG [id] RETR [repeat transfer_statement] RuleName 
 			%exit(1);
 		}
 	by
-		Stmts [. saveLength][. lengthCheck] [. convertExpression]
+		Stmts [. lengthCheck] [. convertExpression] [. PrintStmt]
+end function
+
+%% $$$
+% Padding is a term we only parse if there is room to parse it; Parse does not fail if
+% it is not there (eg if it is the last thing in a structure it does not need to be parsed
+function checkLengthToParseAsPadding SHORT [id] LONG [id] RETR [repeat transfer_statement] RuleName [id] LET [list element_type]
+	replace [repeat declaration_or_statement]
+		Stmts [repeat declaration_or_statement]
+	deconstruct * [transfer_statement] RETR
+		'Forward '{ 'PADDING ( LONG ) '== REST [relational_expression] '}
+	construct RESTConverted [relational_expression]
+		REST [convertIDToShort] [checkOptionalLengths LET RuleName] [convertSizeOf] [convertPOS] [convertPDUREMAINING] 
+	%construct expression [cexpression]
+	construct expression [constant]
+		RESTConverted [convertToFullID RuleName]
+	construct lengtherr [stringlit]
+		_ [+ "%s: incorrect PDU length or type: %s line: %d\n"]
+	construct err [stringlit]
+		_ [+ "%s: internal malloc error file: %s line: %d \n"]
+	construct nullerr [stringlit]
+		_ [+ "%s: WARNING, slack is NOT null terminated. file: %s line: %d\n"]
+	construct thePDU [id]
+		'thePDU
+	construct data [referencable_primaries]
+		thePDU [+ "->data"]
+	construct curPos [referencable_primaries]
+		thePDU [+ "->curPos"]
+	%construct saveLength [repeat declaration_or_statement]
+	%	unsigned 'long remaining = thePDU ->remaining;
+	construct PrintStmt [repeat declaration_or_statement] %% $$$
+		_ [createPrintIntOctetConstrained RuleName SHORT expression] 
+	construct convertExpression [repeat declaration_or_statement]
+		RuleName[tolower]->LONG[convertIDToShort] '= (unsigned char *)malloc(sizeof(unsigned char) * ( expression ));
+		if( RuleName[tolower]->LONG[convertIDToShort] == 'NULL) {
+			fprintf(stderr, err ,progname,__FILE__,__LINE__);
+			%exit(1);
+			return false;
+		}
+		RuleName[tolower]->LONG[convertIDToShort][+ "_length"] = expression;
+		memcpy( RuleName[tolower]->LONG[convertIDToShort], '& data'[curPos'], expression );
+		curPos += expression ;
+
+		if( RuleName[tolower]->LONG[convertIDToShort] '[ expression '- '1 '] != ''\0'' ) {
+			%fprintf(stderr, nullerr,progname, __FILE__ , __LINE__);
+			%exit(1);
+		}
+	construct parseBody [repeat declaration_or_statement]
+	construct lengthCheck [repeat declaration_or_statement]
+		if(lengthRemaining(thePDU, expression , progname)) {
+			parseBody [. convertExpression] [. PrintStmt]
+		}
+	by
+		Stmts [. lengthCheck]
 end function
 
 rule checkOptionalLengths LET [list element_type] RuleName [id]

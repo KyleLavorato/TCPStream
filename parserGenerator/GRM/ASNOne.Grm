@@ -425,6 +425,7 @@ define range_constraint_left_side
 	'VALUE '( [referenced_element] ')
 	| VALUE '( 'CARDINALITY '( [referenced_element] ') ')
 	| VALUE '( 'LENGTH '( [referenced_element] ') ')
+  | VALUE '( 'PADDING '( [referenced_element] ') ')
 end define
 
 define range_constraint_right_side
@@ -578,6 +579,7 @@ end define
 define construction_parameter
 	CARDINALITY '( [referenced_element] ') = [additive_expression]
  | 	LENGTH '( [referenced_element] ') = [additive_expression] [opt size_unit]
+ |  PADDING '( [referenced_element] ') = [additive_expression] [opt size_unit]
 
 end define
 
@@ -729,7 +731,7 @@ define length_expression
 end define
 
 define length_functor
-    'LENGTH | 'BITLENGTH
+    'LENGTH | 'BITLENGTH | PADDING
 end define
 
 define endianness_expression

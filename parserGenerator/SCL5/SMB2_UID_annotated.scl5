@@ -1,31 +1,13 @@
 SMB2 DEFINITIONS ::= BEGIN
     EXPORTS PDU_SMB2 ^ PDU;
-    PDU_SMB2 ^ PDU ::= (TEST_SMB2 | NEGOTIATE_SMB2)
+    PDU_SMB2 ^ PDU ::= (NEGOTIATE_SMB2)
+    NEGOTIATE_SMB2 ^ NEGOTIATE ::= (REQUEST_SMB2 | RESPONSE$NODIALECT_SMB2 @ 2 65 | RESPONSE$DIALECT_SMB2 @ 2 65)
     TEST_SMB2 ^ TEST ::= SEQUENCE {
         Header_TEST_SMB2 ^ Header HEADER_SMB2 (SIZE DEFINED)
     } (ENCODED BY CUSTOM)
     < transfer >
     </ transfer >
-    HEADER_SMB2 ^ HEADER ::= (HEADER$ASYNC_SMB2 @ 2 64 | HEADER$SYNC_SMB2 @ 2 64)
-    HEADER$ASYNC_SMB2 ^ HEADER$ASYNC @ 2 64 ::= SEQUENCE {
-        protoID_HEADER$ASYNC_SMB2 ^ protoID OCTET STRING (SIZE 4 BYTES),
-        structureSize_HEADER$ASYNC_SMB2 ^ structureSize INTEGER (SIZE 2 BYTES),
-        creditCharge_HEADER$ASYNC_SMB2 ^ creditCharge INTEGER (SIZE 2 BYTES),
-        ntStatus_HEADER$ASYNC_SMB2 ^ ntStatus INTEGER (SIZE 4 BYTES),
-        command_HEADER$ASYNC_SMB2 ^ command INTEGER (SIZE 2 BYTES),
-        creditREQ_HEADER$ASYNC_SMB2 ^ creditREQ INTEGER (SIZE 2 BYTES),
-        flags_HEADER$ASYNC_SMB2 ^ flags OCTET STRING (SIZE 4 BYTES),
-        nextCommand_HEADER$ASYNC_SMB2 ^ nextCommand INTEGER (SIZE 4 BYTES),
-        messageId_HEADER$ASYNC_SMB2 ^ messageId INTEGER (SIZE 8 BYTES),
-        asyncId_HEADER$ASYNC_SMB2 ^ asyncId INTEGER (SIZE 8 BYTES),
-        sessionId_HEADER$ASYNC_SMB2 ^ sessionId INTEGER (SIZE 8 BYTES),
-        signature_HEADER$ASYNC_SMB2 ^ signature OCTET STRING (SIZE 16 BYTES)
-    } (ENCODED BY CUSTOM)
-    < transfer >
-        Back {protoID_HEADER$ASYNC_SMB2 == 0xFE534D42}
-        Back {structureSize_HEADER$ASYNC_SMB2 == 64}
-        Back {(flags_HEADER$ASYNC_SMB2& 0x00000002) == 2}
-    </ transfer >
+    HEADER_SMB2 ^ HEADER ::= (HEADER$SYNC_SMB2 @ 2 64)
     HEADER$SYNC_SMB2 ^ HEADER$SYNC @ 2 64 ::= SEQUENCE {
         protoID_HEADER$SYNC_SMB2 ^ protoID OCTET STRING (SIZE 4 BYTES),
         structureSize_HEADER$SYNC_SMB2 ^ structureSize INTEGER (SIZE 2 BYTES),
@@ -46,25 +28,26 @@ SMB2 DEFINITIONS ::= BEGIN
         Back {structureSize_HEADER$SYNC_SMB2 == 64}
         Back {(flags_HEADER$SYNC_SMB2& 0x00000002) != 2}
     </ transfer >
-    NEGOTIATE_SMB2 ^ NEGOTIATE ::= SEQUENCE {
-        Header_NEGOTIATE_SMB2 ^ Header HEADER_SMB2 (SIZE DEFINED),
-        structureSize_NEGOTIATE_SMB2 ^ structureSize INTEGER (SIZE 2 BYTES),
-        dialectCount_NEGOTIATE_SMB2 ^ dialectCount INTEGER (SIZE 2 BYTES),
-        securityMode_NEGOTIATE_SMB2 ^ securityMode INTEGER (SIZE 2 BYTES),
-        reserved_NEGOTIATE_SMB2 ^ reserved INTEGER (SIZE 2 BYTES),
-        capabilities_NEGOTIATE_SMB2 ^ capabilities INTEGER (SIZE 4 BYTES),
-        clientGuid_NEGOTIATE_SMB2 ^ clientGuid OCTET STRING (SIZE 16 BYTES),
-        negContextOff_NEGOTIATE_SMB2 ^ negContextOff INTEGER (SIZE 4 BYTES),
-        negContextCnt_NEGOTIATE_SMB2 ^ negContextCnt INTEGER (SIZE 2 BYTES),
-        reserved2_NEGOTIATE_SMB2 ^ reserved2 INTEGER (SIZE 2 BYTES),
-        dialects_NEGOTIATE_SMB2 ^ dialects SET OF DIALECT_SMB2 (SIZE CONSTRAINED),
-        padding_NEGOTIATE_SMB2 ^ padding OCTET STRING (SIZE CONSTRAINED),
-        negContextList_NEGOTIATE_SMB2 ^ negContextList SET OF NEGOTIATECONTEXT_SMB2 (SIZE CONSTRAINED)
+    REQUEST_SMB2 ^ REQUEST ::= SEQUENCE {
+        Header_REQUEST_SMB2 ^ Header HEADER_SMB2 (SIZE DEFINED),
+        structureSize_REQUEST_SMB2 ^ structureSize INTEGER (SIZE 2 BYTES),
+        dialectCount_REQUEST_SMB2 ^ dialectCount INTEGER (SIZE 2 BYTES),
+        securityMode_REQUEST_SMB2 ^ securityMode INTEGER (SIZE 2 BYTES),
+        reserved_REQUEST_SMB2 ^ reserved INTEGER (SIZE 2 BYTES),
+        capabilities_REQUEST_SMB2 ^ capabilities INTEGER (SIZE 4 BYTES),
+        clientGuid_REQUEST_SMB2 ^ clientGuid OCTET STRING (SIZE 16 BYTES),
+        negContextOff_REQUEST_SMB2 ^ negContextOff INTEGER (SIZE 4 BYTES),
+        negContextCnt_REQUEST_SMB2 ^ negContextCnt INTEGER (SIZE 2 BYTES),
+        reserved2_REQUEST_SMB2 ^ reserved2 INTEGER (SIZE 2 BYTES),
+        dialects_REQUEST_SMB2 ^ dialects SET OF DIALECT_SMB2 (SIZE CONSTRAINED),
+        padding_REQUEST_SMB2 ^ padding OCTET STRING (SIZE CONSTRAINED),
+        negContextList_REQUEST_SMB2 ^ negContextList SET OF NEGOTIATECONTEXT_SMB2 (SIZE CONSTRAINED)
     } (ENCODED BY CUSTOM)
     < transfer >
-        Back {securityMode_NEGOTIATE_SMB2 == 0x0001 || securityMode_NEGOTIATE_SMB2 == 0x0002}
-        Forward {LENGTH (padding_NEGOTIATE_SMB2) == (SIZEOF (Header_NEGOTIATE_SMB2) + 36 + SIZEOF (dialects_NEGOTIATE_SMB2) - negContextOff_NEGOTIATE_SMB2)}
-        Forward {CARDINALITY (negContextList_NEGOTIATE_SMB2) == negContextCnt_NEGOTIATE_SMB2}
+        Back {securityMode_REQUEST_SMB2 == 0x0001 || securityMode_REQUEST_SMB2 == 0x0002}
+        Forward {CARDINALITY (dialects_REQUEST_SMB2) == dialectCount_REQUEST_SMB2}
+        Forward {PADDING (padding_REQUEST_SMB2) == 8 - ((64 + 36 + dialectCount_REQUEST_SMB2 * 2) % 8)}
+        Forward {CARDINALITY (negContextList_REQUEST_SMB2) == negContextCnt_REQUEST_SMB2}
     </ transfer >
     DIALECT_SMB2 ^ DIALECT ::= SEQUENCE {
         value_DIALECT_SMB2 ^ value INTEGER (SIZE 2 BYTES)
@@ -82,7 +65,7 @@ SMB2 DEFINITIONS ::= BEGIN
     } (ENCODED BY CUSTOM)
     < transfer >
         Back {contextType_NEGOTIATECONTEXT_SMB2 == 0x0001 || contextType_NEGOTIATECONTEXT_SMB2 == 0x0002}
-        Forward {LENGTH (padding_NEGOTIATECONTEXT_SMB2) == (10 + SIZEOF (data_NEGOTIATECONTEXT_SMB2) % 8)}
+        Forward {PADDING (padding_NEGOTIATECONTEXT_SMB2) == (8 - ((8 + dataLength_NEGOTIATECONTEXT_SMB2) % 8))}
     </ transfer >
     CONTEXTDATA_SMB2 ^ CONTEXTDATA ::= (INTEGRITY_SMB2 | ENCRYPTION_SMB2)
     INTEGRITY_SMB2 ^ INTEGRITY ::= SEQUENCE {
@@ -111,6 +94,89 @@ SMB2 DEFINITIONS ::= BEGIN
         cipherData_CIPHER_SMB2 ^ cipherData INTEGER (SIZE 2 BYTES)
     } (ENCODED BY CUSTOM)
     < transfer >
+    </ transfer >
+    RESPONSE$NODIALECT_SMB2 ^ RESPONSE$NODIALECT @ 2 65 ::= SEQUENCE {
+        Header_RESPONSE$NODIALECT_SMB2 ^ Header HEADER_SMB2 (SIZE DEFINED),
+        structureSize_RESPONSE$NODIALECT_SMB2 ^ structureSize INTEGER (SIZE 2 BYTES),
+        securityMode_RESPONSE$NODIALECT_SMB2 ^ securityMode INTEGER (SIZE 2 BYTES),
+        dialectRevision_RESPONSE$NODIALECT_SMB2 ^ dialectRevision INTEGER (SIZE 2 BYTES),
+        reserved_RESPONSE$NODIALECT_SMB2 ^ reserved INTEGER (SIZE 2 BYTES),
+        serverGuid_RESPONSE$NODIALECT_SMB2 ^ serverGuid OCTET STRING (SIZE 16 BYTES),
+        capabilities_RESPONSE$NODIALECT_SMB2 ^ capabilities INTEGER (SIZE 4 BYTES),
+        maxTranSize_RESPONSE$NODIALECT_SMB2 ^ maxTranSize INTEGER (SIZE 4 BYTES),
+        maxReadSize_RESPONSE$NODIALECT_SMB2 ^ maxReadSize INTEGER (SIZE 4 BYTES),
+        maxWriteSize_RESPONSE$NODIALECT_SMB2 ^ maxWriteSize INTEGER (SIZE 4 BYTES),
+        syetemTime_RESPONSE$NODIALECT_SMB2 ^ syetemTime INTEGER (SIZE 8 BYTES),
+        serverStartTime_RESPONSE$NODIALECT_SMB2 ^ serverStartTime INTEGER (SIZE 8 BYTES),
+        secBufferOffset_RESPONSE$NODIALECT_SMB2 ^ secBufferOffset INTEGER (SIZE 2 BYTES),
+        secBufferLength_RESPONSE$NODIALECT_SMB2 ^ secBufferLength INTEGER (SIZE 2 BYTES),
+        reserved2_RESPONSE$NODIALECT_SMB2 ^ reserved2 INTEGER (SIZE 4 BYTES),
+        buffer_RESPONSE$NODIALECT_SMB2 ^ buffer OCTET STRING (SIZE CONSTRAINED),
+    } (ENCODED BY CUSTOM)
+    < transfer >
+        Back {structureSize_RESPONSE$NODIALECT_SMB2 == 65}
+        Back {securityMode_RESPONSE$NODIALECT_SMB2 == 0x0001 || securityMode_RESPONSE$NODIALECT_SMB2 == 0x0002}
+        Back {dialectRevision_RESPONSE$NODIALECT_SMB2 != 0x0311}
+        Forward {LENGTH (buffer_RESPONSE$NODIALECT_SMB2) == secBufferLength_RESPONSE$NODIALECT_SMB2}
+    </ transfer >
+    RESPONSE$DIALECT_SMB2 ^ RESPONSE$DIALECT @ 2 65 ::= SEQUENCE {
+        Header_RESPONSE$DIALECT_SMB2 ^ Header HEADER_SMB2 (SIZE DEFINED),
+        structureSize_RESPONSE$DIALECT_SMB2 ^ structureSize INTEGER (SIZE 2 BYTES),
+        securityMode_RESPONSE$DIALECT_SMB2 ^ securityMode INTEGER (SIZE 2 BYTES),
+        dialectRevision_RESPONSE$DIALECT_SMB2 ^ dialectRevision INTEGER (SIZE 2 BYTES),
+        negContextCnt_RESPONSE$DIALECT_SMB2 ^ negContextCnt INTEGER (SIZE 2 BYTES),
+        serverGuid_RESPONSE$DIALECT_SMB2 ^ serverGuid OCTET STRING (SIZE 16 BYTES),
+        capabilities_RESPONSE$DIALECT_SMB2 ^ capabilities INTEGER (SIZE 4 BYTES),
+        maxTranSize_RESPONSE$DIALECT_SMB2 ^ maxTranSize INTEGER (SIZE 4 BYTES),
+        maxReadSize_RESPONSE$DIALECT_SMB2 ^ maxReadSize INTEGER (SIZE 4 BYTES),
+        maxWriteSize_RESPONSE$DIALECT_SMB2 ^ maxWriteSize INTEGER (SIZE 4 BYTES),
+        syetemTime_RESPONSE$DIALECT_SMB2 ^ syetemTime INTEGER (SIZE 8 BYTES),
+        serverStartTime_RESPONSE$DIALECT_SMB2 ^ serverStartTime INTEGER (SIZE 8 BYTES),
+        secBufferOffset_RESPONSE$DIALECT_SMB2 ^ secBufferOffset INTEGER (SIZE 2 BYTES),
+        secBufferLength_RESPONSE$DIALECT_SMB2 ^ secBufferLength INTEGER (SIZE 2 BYTES),
+        negContextOff_RESPONSE$DIALECT_SMB2 ^ negContextOff INTEGER (SIZE 4 BYTES),
+        buffer_RESPONSE$DIALECT_SMB2 ^ buffer OCTET STRING (SIZE CONSTRAINED),
+        padding_RESPONSE$DIALECT_SMB2 ^ padding OCTET STRING (SIZE CONSTRAINED),
+        negContextList_RESPONSE$DIALECT_SMB2 ^ negContextList SET OF NEGOTIATECONTEXT$RESPONSE_SMB2 (SIZE CONSTRAINED)
+    } (ENCODED BY CUSTOM)
+    < transfer >
+        Back {structureSize_RESPONSE$DIALECT_SMB2 == 65}
+        Back {securityMode_RESPONSE$DIALECT_SMB2 == 0x0001 || securityMode_RESPONSE$DIALECT_SMB2 == 0x0002}
+        Back {dialectRevision_RESPONSE$DIALECT_SMB2 == 0x0311}
+        Forward {LENGTH (buffer_RESPONSE$DIALECT_SMB2) == secBufferLength_RESPONSE$DIALECT_SMB2}
+        Forward {LENGTH (padding_RESPONSE$DIALECT_SMB2) == 8 - ((64 + 64 + secBufferLength_RESPONSE$DIALECT_SMB2) % 8)}
+        Forward {CARDINALITY (negContextList_RESPONSE$DIALECT_SMB2) == negContextCnt_RESPONSE$DIALECT_SMB2}
+    </ transfer >
+    NEGOTIATECONTEXT$RESPONSE_SMB2 ^ NEGOTIATECONTEXT$RESPONSE ::= SEQUENCE {
+        contextType_NEGOTIATECONTEXT$RESPONSE_SMB2 ^ contextType INTEGER (SIZE 2 BYTES),
+        dataLength_NEGOTIATECONTEXT$RESPONSE_SMB2 ^ dataLength INTEGER (SIZE 2 BYTES),
+        reserved_NEGOTIATECONTEXT$RESPONSE_SMB2 ^ reserved INTEGER (SIZE 4 BYTES),
+        data_NEGOTIATECONTEXT$RESPONSE_SMB2 ^ data CONTEXTDATA$RESPONSE_SMB2 (SIZE DEFINED),
+        padding_NEGOTIATECONTEXT$RESPONSE_SMB2 ^ padding OCTET STRING (SIZE CONSTRAINED)
+    } (ENCODED BY CUSTOM)
+    < transfer >
+        Back {contextType_NEGOTIATECONTEXT$RESPONSE_SMB2 == 0x0001 || contextType_NEGOTIATECONTEXT$RESPONSE_SMB2 == 0x0002}
+        Forward {PADDING (padding_NEGOTIATECONTEXT$RESPONSE_SMB2) == (8 - ((8 + dataLength_NEGOTIATECONTEXT$RESPONSE_SMB2) % 8))}
+    </ transfer >
+    CONTEXTDATA$RESPONSE_SMB2 ^ CONTEXTDATA$RESPONSE ::= (INTEGRITY$RESPONSE_SMB2 @ 2 1 | ENCRYPTION$RESPONSE_SMB2 @ 2 1)
+    INTEGRITY$RESPONSE_SMB2 ^ INTEGRITY$RESPONSE @ 2 1 ::= SEQUENCE {
+        hashAlgCnt_INTEGRITY$RESPONSE_SMB2 ^ hashAlgCnt INTEGER (SIZE 2 BYTES),
+        saltLength_INTEGRITY$RESPONSE_SMB2 ^ saltLength INTEGER (SIZE 2 BYTES),
+        hashAlg_INTEGRITY$RESPONSE_SMB2 ^ hashAlg SET OF HASHALG_SMB2 (SIZE CONSTRAINED),
+        salt_INTEGRITY$RESPONSE_SMB2 ^ salt OCTET STRING (SIZE CONSTRAINED)
+    } (ENCODED BY CUSTOM)
+    < transfer >
+        Back {hashAlgCnt_INTEGRITY$RESPONSE_SMB2 == 1}
+        Forward {CARDINALITY (hashAlg_INTEGRITY$RESPONSE_SMB2) == hashAlgCnt_INTEGRITY$RESPONSE_SMB2}
+        Forward {LENGTH (salt_INTEGRITY$RESPONSE_SMB2) == saltLength_INTEGRITY$RESPONSE_SMB2}
+    </ transfer >
+    ENCRYPTION$RESPONSE_SMB2 ^ ENCRYPTION$RESPONSE @ 2 1 ::= SEQUENCE {
+        cipherCnt_ENCRYPTION$RESPONSE_SMB2 ^ cipherCnt INTEGER (SIZE 2 BYTES),
+        ciphers_ENCRYPTION$RESPONSE_SMB2 ^ ciphers SET OF CIPHER_SMB2 (SIZE CONSTRAINED)
+    } (ENCODED BY CUSTOM)
+    < transfer >
+        Back {cipherCnt_ENCRYPTION$RESPONSE_SMB2 == 1}
+        Forward {CARDINALITY (ciphers_ENCRYPTION$RESPONSE_SMB2) == cipherCnt_ENCRYPTION$RESPONSE_SMB2}
     </ transfer >
 
 END
