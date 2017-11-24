@@ -3,7 +3,7 @@
 #include "protocolModel.h"
 
 
-void SPIDalgorithm(const byte packetData[], int packetDirection, ProtocolModel currentModel){
+ProtocolModel SPIDalgorithm(const byte packetData[], int packetDirection, ProtocolModel currentModel){
 	cout <<"SPIDalgorithm begin"<<endl;
 	//cout << packetData[0] << endl;
 	string filename = "FTP.txt";
@@ -17,6 +17,7 @@ void SPIDalgorithm(const byte packetData[], int packetDirection, ProtocolModel c
 	//	cout << currentModel.packetSource.attributeFingerprint.probabilityDistributionVector[i][0] << endl;;
 	//}
 	cout << "SPIDalgorithm end" << endl;
+	return currentModel;
 }
 
 

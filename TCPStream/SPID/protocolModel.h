@@ -14,7 +14,7 @@ public:
 	//packetDirection is 1 for client data, and 0 for server data
 	void AddObservation (const byte packetData[], time_t packetTimestamp, int packetDirection);
 	double GetAverageKullbackLeiblerDivergenceFrom (ProtocolModel model);
-	ProtocolModel MergeWith(ProtocolModel otherModel);
+	void MergeWith(ProtocolModel otherModel);
 	int trainingSessionCount;
 	unsigned long observationCount;
 	AttributeFingerprintHandler packetSize;

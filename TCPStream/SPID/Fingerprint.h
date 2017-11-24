@@ -12,6 +12,6 @@ public:
 	Fingerprint ();
 	Fingerprint (int counter);
 	void IncrementFingerprintCounterAtIndex(int index);
-	Fingerprint MergeWith (Fingerprint otherFingerprint);
+	void MergeWith (Fingerprint otherFingerprint);
 private:
 };

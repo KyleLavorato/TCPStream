@@ -27,12 +27,12 @@ void ProtocolModel::AddObservation (const byte packetData[], time_t packetTimest
   byteOffsets.AddObservation(packetData, packetTimestamp, packetDirection, observationCount);
   //cout << "done offset" <<endl;
   cout << "Byte frequency" << endl;
-  for (int i = 0; i < 256; i++){
-      cout << byteFrequency.attributeFingerprint.probabilityDistributionVector[i][0] << " ";
+  for (int i = 0; i < 2; i++){
+      cout << packetSource.attributeFingerprint.probabilityDistributionVector[i][0] << " ";
   }
   cout << endl;
-  for (int i = 0; i < 256; i++){
-      cout << byteFrequency.attributeFingerprint.probabilityDistributionVector[i][1] << " ";
+  for (int i = 0; i < 2; i++){
+      cout << packetSource.attributeFingerprint.probabilityDistributionVector[i][1] << " ";
   }
 }
 
@@ -40,6 +40,9 @@ double ProtocolModel::GetAverageKullbackLeiblerDivergenceFrom (ProtocolModel mod
 
 }
 
-ProtocolModel ProtocolModel::MergeWith (ProtocolModel otherModel){
-
+void ProtocolModel::MergeWith (ProtocolModel otherModel){
+	packetSize.MergeWith(otherModel.packetSize);
+	packetSource.MergeWith(otherModel.packetSource);
+	byteFrequency.MergeWith(otherModel.byteFrequency);
+	byteOffsets.MergeWith(otherModel.byteOffsets);
 }

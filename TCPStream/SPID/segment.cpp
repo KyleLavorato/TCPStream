@@ -15,6 +15,7 @@ ProtocolModel currentModel;
 // This will be called when there's new client data
 void on_client_data(Stream& stream) {
     int i;
+    ProtocolModel tempModel;
 
     if (stream.is_partial_stream()) {
         cout << "Skipping partial stream" << endl;
@@ -30,7 +31,8 @@ void on_client_data(Stream& stream) {
     cout << "Client data:" << endl;
     cout << payload.data() << endl;
     if (payload.size() > 0) {
-        SPIDalgorithm(payload.data(), 1, currentModel);
+        tempModel = SPIDalgorithm(payload.data(), 1, tempModel);
+        currentModel.MergeWith(tempModel);
     }
 
 
@@ -46,6 +48,7 @@ void on_client_data(Stream& stream) {
 // This will be called when there's new server data
 void on_server_data(Stream& stream) {
     int i;
+    ProtocolModel tempModel;
 
     if (stream.is_partial_stream()) {
         cout << "Skipping partial stream" << endl;
@@ -60,13 +63,14 @@ void on_server_data(Stream& stream) {
     cout << "Server data:" << endl;
     cout << payload.size() << endl;
     if (payload.size() > 0) {
-        SPIDalgorithm(payload.data(), 0, currentModel);
+        tempModel = SPIDalgorithm(payload.data(), 0, tempModel);
+        currentModel.MergeWith(tempModel);
     }
 
     //cout << "Server data:" << endl;
-    //for (i = 0; i < payload.size(); i++) {
-    //    cout << hex << payload[i];
-    //}
+    for (i = 0; i < payload.size(); i++) {
+        cout << hex << payload[i];
+    }
     cout << endl;
 }
 

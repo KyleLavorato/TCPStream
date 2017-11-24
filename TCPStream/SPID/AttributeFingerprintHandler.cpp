@@ -60,8 +60,8 @@ double AttributeFingerprintHandler::GetAverageKullbackLeiblerDivergenceFrom (Att
 	//Nothing yet
 }
 
-AttributeFingerprintHandler AttributeFingerprintHandler::MergeWith (Fingerprint otherFingerprint){
-	//Nothing yet
+void AttributeFingerprintHandler::MergeWith (AttributeFingerprintHandler otherAttributeHandler){
+	attributeFingerprint.MergeWith(otherAttributeHandler.attributeFingerprint);
 }
 
 vector<int> AttributeFingerprintHandler::GetMeasurements (const byte* packetData, time_t packetTimestamp, int packetDirection, int packetOrderNumberInSession){
