@@ -1,5 +1,6 @@
 #include "AttributeFingerprintHandler.h"
 #include <valarray>
+#include <math.h>
 
 using namespace std;
 
@@ -56,8 +57,13 @@ void AttributeFingerprintHandler::AddObservation (const byte packetData[], time_
   }
 }
 
-double AttributeFingerprintHandler::GetAverageKullbackLeiblerDivergenceFrom (AttributeFingerprintHandler model){
-	//Nothing yet
+double AttributeFingerprintHandler::GetAverageKullbackLeiblerDivergenceFrom (double* attributeArray){
+	double divergence;
+	divergence = 0;
+	for (int i = 0; i < attributeFingerprint.size; i++){
+		divergence += attributeArray[i] * log(attributeArray[i] / attributeFingerprint.probabilityDistributionVector[i][1]);
+	}
+	return divergence;
 }
 
 void AttributeFingerprintHandler::MergeWith (AttributeFingerprintHandler otherAttributeHandler){

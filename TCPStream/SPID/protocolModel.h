@@ -13,7 +13,7 @@ public:
 	//packetTimestamp is time of recieving packet
 	//packetDirection is 1 for client data, and 0 for server data
 	void AddObservation (const byte packetData[], time_t packetTimestamp, int packetDirection);
-	double GetAverageKullbackLeiblerDivergenceFrom (ProtocolModel model);
+	double GetAverageKullbackLeiblerDivergenceFrom (double** attributeModel);
 	void MergeWith(ProtocolModel otherModel);
 	int trainingSessionCount;
 	unsigned long observationCount;
