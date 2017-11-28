@@ -4,6 +4,8 @@
 #include "SPIDinterface.h"
 #include "protocolModel.h"
 #include <fstream>
+#include <string>
+#include <stdlib.h>
 
 using namespace Tins;
 using namespace std;
@@ -11,6 +13,7 @@ using Tins::TCPIP::Stream;
 using Tins::TCPIP::StreamFollower;
 
 ProtocolModel currentModel;
+double model[4][700];
 
 // This will be called when there's new client data
 void on_client_data(Stream& stream) {
@@ -28,21 +31,23 @@ void on_client_data(Stream& stream) {
     // As per Kyle's request, call parseData from packet.h with the data and size
     // TODO: get the first argument here
     //parseData(argString, payload.data(), payload.size());
-    cout << "Client data:" << endl;
-    cout << payload.data() << endl;
+    //cout << "Client data:" << endl;
+    //cout << payload.data() << endl;
+
+
     if (payload.size() > 0) {
         tempModel = SPIDalgorithm(payload.data(), 1, tempModel);
         currentModel.MergeWith(tempModel);
     }
 
 
-    //cout << "Client data:" << endl;
+    // cout << "Client data:" << endl;
 
-    //for (i = 0; i < payload.size(); i++) {
+    // for (i = 0; i < payload.size(); i++) {
     //    cout << hex << payload[i];
-    //}
+    // }
 
-    //cout << endl;
+    // cout << endl;
 }
 
 // This will be called when there's new server data
@@ -55,23 +60,25 @@ void on_server_data(Stream& stream) {
         return;
     }
 
-    const Stream::payload_type& payload = stream.client_payload();
+    const Stream::payload_type& payload = stream.server_payload();
 
     // As per Kyle's request, call parseData from packet.h with the data and size
     // TODO: get the first argument here
     //parseData(argString, payload.data(), payload.size());
-    cout << "Server data:" << endl;
-    cout << payload.size() << endl;
+    //cout << "Server data:" << endl;
+    //cout << payload.size() << endl;
+
+
     if (payload.size() > 0) {
         tempModel = SPIDalgorithm(payload.data(), 0, tempModel);
         currentModel.MergeWith(tempModel);
     }
 
-    //cout << "Server data:" << endl;
+/*    cout << "Server data:" << endl;
     for (i = 0; i < payload.size(); i++) {
         cout << hex << payload[i];
     }
-    cout << endl;
+    cout << endl;*/
 }
 
 void writeToFile(){
@@ -116,10 +123,56 @@ void writeToFile(){
     myFile.close();
 }
 
+void readFromFile(string filename){
+    //double model[4][700];
+    ifstream inFile;
+    string x, y;
+    int counter = 0;
+    inFile.open(filename);
+    if (!inFile) {
+        cerr << "Unable to open file." << endl;
+        exit(1);
+    }
+    for (int i = 0; i < 4; i++){
+        getline(inFile, x);
+        getline(inFile, x);
+        getline(inFile, x);
+        istringstream iss(x);
+        counter = 0;
+        while (getline(iss, y, ' ')){
+            //cout << y << ' ';
+            model[i][counter] = stod(y);
+            counter ++;
+        }
+        //cout << endl;
+    }
+    inFile.close();
+}
+
+void compareProtocols(){
+    double result, currentResult;
+    string streamType = "unidentified";
+    //writeToFile();
+    readFromFile("SPIDmodels/FTP.txt");
+    result = currentModel.GetAverageKullbackLeiblerDivergenceFrom(model);
+    if (result < 5){
+        currentResult = result;
+        streamType = "FTP";
+    }
+    readFromFile("SPIDmodels/HTTP.txt");
+    result = currentModel.GetAverageKullbackLeiblerDivergenceFrom(model);
+    if (result < 5 and result < currentResult){
+        currentResult = result;
+        streamType = "HTTP";
+    }
+    cout << "Stream type is : " << streamType << endl;
+}
+
 // A stream closed properly
 void on_stream_closed(Stream& stream) {
     cout << "Stream from " << stream.client_addr_v4() << ":" << stream.client_port() << " to " << stream.server_addr_v4() << ":" << stream.server_port() << " closed" << endl;
-    writeToFile();
+    //writeToFile();
+    compareProtocols();
 }
 
 // A stream was terminated. The second argument is the reason why it was terminated

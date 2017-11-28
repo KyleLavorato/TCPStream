@@ -4,7 +4,7 @@
 
 
 ProtocolModel SPIDalgorithm(const byte packetData[], int packetDirection, ProtocolModel currentModel){
-	cout <<"SPIDalgorithm begin"<<endl;
+	//cout <<"SPIDalgorithm begin"<<endl;
 	//cout << packetData[0] << endl;
 	string filename = "FTP.txt";
 	time_t currentTime = time(0);
@@ -16,7 +16,7 @@ ProtocolModel SPIDalgorithm(const byte packetData[], int packetDirection, Protoc
 	//	cout << "i " << i << endl;
 	//	cout << currentModel.packetSource.attributeFingerprint.probabilityDistributionVector[i][0] << endl;;
 	//}
-	cout << "SPIDalgorithm end" << endl;
+	//cout << "SPIDalgorithm end" << endl;
 	return currentModel;
 }
 
