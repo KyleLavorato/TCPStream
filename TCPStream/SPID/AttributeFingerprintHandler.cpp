@@ -11,7 +11,7 @@ AttributeFingerprintHandler::AttributeFingerprintHandler(string name){
 	attributeName = name;
 	int counter = 0; // counter is the number of indices to be incremented. Will be calculated in GetMeasurements
 	if (attributeName == "size") {
-		counter = 700; //Average packet size is ~557 bytes.  This gives room for above average packet sizes
+		counter = 1500; //Most are under 1500 bytes, so any over is counted as 1499.  This gives room for above average packet sizes
 	}
 	else if (attributeName == "direction"){
 		counter = 2; //Packet can be going one of two directions
@@ -30,14 +30,14 @@ AttributeFingerprintHandler::AttributeFingerprintHandler(string name){
 	//cout <<"end attributeFingerprintHandler " <<endl;
 }
 
-void AttributeFingerprintHandler::AddObservation (const byte packetData[], time_t packetTimestamp, int packetDirection, int packetOrderNumberInSession){
+void AttributeFingerprintHandler::AddObservation (const byte packetData[], time_t packetTimestamp, int packetDirection, int packetOrderNumberInSession, const unsigned long packetLength){
   //int* measurements;
   //cout << "observation for " << attributeName << endl;
   vector<int> measurements;
   int total = 0;
   int measurementsLength;
   //Gets the indicies of values to be incremented
-  measurements = GetMeasurements(packetData,  packetTimestamp, packetDirection, packetOrderNumberInSession);
+  measurements = GetMeasurements(packetData,  packetTimestamp, packetDirection, packetOrderNumberInSession, packetLength);
   measurementsLength = measurements.size();
   //cout << measurements[0] << endl;
   //Increments all approiate counter vector indicies
@@ -73,11 +73,14 @@ void AttributeFingerprintHandler::MergeWith (AttributeFingerprintHandler otherAt
 	attributeFingerprint.MergeWith(otherAttributeHandler.attributeFingerprint);
 }
 
-vector<int> AttributeFingerprintHandler::GetMeasurements (const byte* packetData, time_t packetTimestamp, int packetDirection, int packetOrderNumberInSession){
+vector<int> AttributeFingerprintHandler::GetMeasurements (const byte* packetData, time_t packetTimestamp, int packetDirection, int packetOrderNumberInSession, const unsigned long packetLength){
 	//cout << attributeName << endl;
 	if (attributeName == "size"){
 		//calculates size of packet
-		int length = sizeof(packetData)/sizeof(*packetData);
+		int length = packetLength;
+		if (length >= 1500){
+			length = 1499;
+		}
 		//int* indiciesToBeIncremented = new int [1];
 		vector<int> indiciesToBeIncremented(1);
 		indiciesToBeIncremented[0] = length;
@@ -92,7 +95,8 @@ vector<int> AttributeFingerprintHandler::GetMeasurements (const byte* packetData
 	}
 	else if (attributeName == "frequency"){
 		// for each ascii value, the corresponding value in the counter vector is increased
-		int length = sizeof(packetData)/sizeof(*packetData);
+		//int length = sizeof(packetData)/sizeof(*packetData);
+		int length = packetLength;
 		//int* indiciesToBeIncremented = new int [length];
 		vector<int> indiciesToBeIncremented(length);
 		//cout <<"but did we get here?" << endl;

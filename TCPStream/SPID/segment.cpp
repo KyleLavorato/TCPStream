@@ -13,7 +13,7 @@ using Tins::TCPIP::Stream;
 using Tins::TCPIP::StreamFollower;
 
 ProtocolModel currentModel;
-double model[4][700];
+double model[4][1500];
 
 // This will be called when there's new client data
 void on_client_data(Stream& stream) {
@@ -34,14 +34,16 @@ void on_client_data(Stream& stream) {
     //cout << "Client data:" << endl;
     //cout << payload.data() << endl;
 
+     //cout << "Client data:" << endl;
+     //cout << payload.size() << endl;
+
 
     if (payload.size() > 0) {
-        tempModel = SPIDalgorithm(payload.data(), 1, tempModel);
+        tempModel = SPIDalgorithm(payload.data(), 1, tempModel, payload.size());
         currentModel.MergeWith(tempModel);
     }
 
 
-    // cout << "Client data:" << endl;
 
     // for (i = 0; i < payload.size(); i++) {
     //    cout << hex << payload[i];
@@ -68,9 +70,11 @@ void on_server_data(Stream& stream) {
     //cout << "Server data:" << endl;
     //cout << payload.size() << endl;
 
+    //cout << "Server data:" << endl;
+    //cout << payload.size() << endl;
 
     if (payload.size() > 0) {
-        tempModel = SPIDalgorithm(payload.data(), 0, tempModel);
+        tempModel = SPIDalgorithm(payload.data(), 0, tempModel, payload.size());
         currentModel.MergeWith(tempModel);
     }
 
@@ -81,9 +85,9 @@ void on_server_data(Stream& stream) {
     cout << endl;*/
 }
 
-void writeToFile(){
+void writeToFile(string filename){
     ofstream myFile;
-    myFile.open ("SPIDmodels/FTP.txt");
+    myFile.open (filename);
     myFile << "Byte Frequency" << endl;
     for (int i = 0; i < 256; i++){
         myFile << currentModel.byteFrequency.attributeFingerprint.probabilityDistributionVector[i][0] << " ";
@@ -94,11 +98,11 @@ void writeToFile(){
     }
     myFile << endl;
     myFile << "Size" << endl;
-    for (int i = 0; i < 700; i++){
+    for (int i = 0; i < 1500; i++){
         myFile << currentModel.packetSize.attributeFingerprint.probabilityDistributionVector[i][0] << " ";
     }
     myFile << endl;
-    for (int i = 0; i < 700; i++){
+    for (int i = 0; i < 1500; i++){
         myFile << currentModel.packetSize.attributeFingerprint.probabilityDistributionVector[i][1] << " ";
     }
     myFile << endl;
@@ -151,8 +155,9 @@ void readFromFile(string filename){
 
 void compareProtocols(){
     double result, currentResult;
+    currentResult = 0;
     string streamType = "unidentified";
-    //writeToFile();
+    //writeToFile("SPIDmodels/HTTP.txt");
     readFromFile("SPIDmodels/FTP.txt");
     result = currentModel.GetAverageKullbackLeiblerDivergenceFrom(model);
     if (result < 5){
@@ -170,7 +175,7 @@ void compareProtocols(){
 
 // A stream closed properly
 void on_stream_closed(Stream& stream) {
-    cout << "Stream from " << stream.client_addr_v4() << ":" << stream.client_port() << " to " << stream.server_addr_v4() << ":" << stream.server_port() << " closed" << endl;
+    //cout << "Stream from " << stream.client_addr_v4() << ":" << stream.client_port() << " to " << stream.server_addr_v4() << ":" << stream.server_port() << " closed" << endl;
     //writeToFile();
     compareProtocols();
 }
@@ -182,7 +187,7 @@ void on_stream_terminated(Stream& stream, StreamFollower::TerminationReason reas
 
 // New stream is seen
 void on_new_stream(Stream& stream) {
-    cout << "New stream from " << stream.client_addr_v4() << ":" << stream.client_port() << " to " << stream.server_addr_v4() << ":" << stream.server_port() << endl;
+    //cout << "New stream from " << stream.client_addr_v4() << ":" << stream.client_port() << " to " << stream.server_addr_v4() << ":" << stream.server_port() << endl;
 
     stream.stream_closed_callback(&on_stream_closed);
     stream.client_data_callback(&on_client_data);

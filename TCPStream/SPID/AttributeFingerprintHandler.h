@@ -17,8 +17,8 @@ public:
 	int counter;
 	AttributeFingerprintHandler();
 	AttributeFingerprintHandler(string name);
-	void AddObservation (const byte packetData[], time_t packetTimestamp, int packetDirection, int packetOrderNumberInSession);
+	void AddObservation (const byte packetData[], time_t packetTimestamp, int packetDirection, int packetOrderNumberInSession, const unsigned long packetLength);
 	double GetAverageKullbackLeiblerDivergenceFrom (double* attributeArray);
 	void MergeWith(AttributeFingerprintHandler otherAttributeHandler);
-	vector<int> GetMeasurements(const byte packetData[], time_t packetTimestamp, int packetDirection, int packetOrderNumberInSession);
+	vector<int> GetMeasurements(const byte packetData[], time_t packetTimestamp, int packetDirection, int packetOrderNumberInSession, const unsigned long packetLength);
 };

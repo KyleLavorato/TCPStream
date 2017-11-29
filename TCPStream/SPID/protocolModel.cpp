@@ -14,17 +14,17 @@ ProtocolModel::ProtocolModel(){
 	byteOffsets = AttributeFingerprintHandler("offset");
 }
 
-void ProtocolModel::AddObservation (const byte packetData[], time_t packetTimestamp, int packetDirection){
+void ProtocolModel::AddObservation (const byte packetData[], time_t packetTimestamp, int packetDirection, const unsigned long packetLength){
   observationCount++;
   //cout << "adding observations" <<endl;
-  packetSize.AddObservation(packetData, packetTimestamp, packetDirection, observationCount);
+  packetSize.AddObservation(packetData, packetTimestamp, packetDirection, observationCount, packetLength);
   //cout << "done size" <<endl;
-  packetSource.AddObservation(packetData, packetTimestamp, packetDirection, observationCount);
+  packetSource.AddObservation(packetData, packetTimestamp, packetDirection, observationCount, packetLength);
   //cout << "done source"<<endl;
-  byteFrequency.AddObservation(packetData, packetTimestamp, packetDirection, observationCount);
+  byteFrequency.AddObservation(packetData, packetTimestamp, packetDirection, observationCount, packetLength);
   //cout << "done frequency"<<endl;
   //byteSequences.AddObservation(packetData, packetTimestamp, packetDirection, observationCount);
-  byteOffsets.AddObservation(packetData, packetTimestamp, packetDirection, observationCount);
+  byteOffsets.AddObservation(packetData, packetTimestamp, packetDirection, observationCount, packetLength);
   //cout << "done offset" <<endl;
   // cout << "Byte frequency" << endl;
   // for (int i = 0; i < 2; i++){
@@ -36,7 +36,7 @@ void ProtocolModel::AddObservation (const byte packetData[], time_t packetTimest
   // }
 }
 
-double ProtocolModel::GetAverageKullbackLeiblerDivergenceFrom (double attritbuteModel[][700]){
+double ProtocolModel::GetAverageKullbackLeiblerDivergenceFrom (double attritbuteModel[][1500]){
   double sizeDiv, sourceDiv, frequencyDiv, offsetDiv, sum;
   sizeDiv = packetSize.GetAverageKullbackLeiblerDivergenceFrom(attritbuteModel[1]);
   cout << "sizeDIV = " << sizeDiv << endl;

@@ -5,5 +5,5 @@
 
 using namespace std;
 
-ProtocolModel SPIDalgorithm (const byte packetData[], int packetDirection, ProtocolModel currentModel);
+ProtocolModel SPIDalgorithm (const byte packetData[], int packetDirection, ProtocolModel currentModel, const unsigned long packetLength);
 
