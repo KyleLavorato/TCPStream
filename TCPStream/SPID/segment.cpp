@@ -14,6 +14,7 @@ using Tins::TCPIP::StreamFollower;
 
 ProtocolModel currentModel;
 double model[4][1500];
+double inf = std::numeric_limits<double>::infinity();
 
 // This will be called when there's new client data
 void on_client_data(Stream& stream) {
@@ -155,7 +156,7 @@ void readFromFile(string filename){
 
 void compareProtocols(){
     double result, currentResult;
-    currentResult = 0;
+    currentResult = inf;
     string streamType = "unidentified";
     //writeToFile("SPIDmodels/HTTP.txt");
     readFromFile("SPIDmodels/FTP.txt");
