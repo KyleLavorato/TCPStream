@@ -161,13 +161,15 @@ void compareProtocols(){
     //writeToFile("SPIDmodels/HTTP.txt");
     readFromFile("SPIDmodels/FTP.txt");
     result = currentModel.GetAverageKullbackLeiblerDivergenceFrom(model);
-    if (result < 5){
+    cout << "FTP comparison result = " << result << endl;
+    if (result < 1){
         currentResult = result;
         streamType = "FTP";
     }
     readFromFile("SPIDmodels/HTTP.txt");
     result = currentModel.GetAverageKullbackLeiblerDivergenceFrom(model);
-    if (result < 5 and result < currentResult){
+    cout << "HTTP comparison result = " << result << endl;
+    if (result < 1 and result < currentResult){
         currentResult = result;
         streamType = "HTTP";
     }
