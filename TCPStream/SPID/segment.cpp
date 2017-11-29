@@ -35,8 +35,8 @@ void on_client_data(Stream& stream) {
     //cout << "Client data:" << endl;
     //cout << payload.data() << endl;
 
-     //cout << "Client data:" << endl;
-     //cout << payload.size() << endl;
+     cout << "Client data:" << endl;
+     cout << payload.size() << endl;
 
 
     if (payload.size() > 0) {
@@ -71,8 +71,8 @@ void on_server_data(Stream& stream) {
     //cout << "Server data:" << endl;
     //cout << payload.size() << endl;
 
-    //cout << "Server data:" << endl;
-    //cout << payload.size() << endl;
+    cout << "Server data:" << endl;
+    cout << payload.size() << endl;
 
     if (payload.size() > 0) {
         tempModel = SPIDalgorithm(payload.data(), 0, tempModel, payload.size());

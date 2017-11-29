@@ -39,13 +39,13 @@ void ProtocolModel::AddObservation (const byte packetData[], time_t packetTimest
 double ProtocolModel::GetAverageKullbackLeiblerDivergenceFrom (double attritbuteModel[][1500]){
   double sizeDiv, sourceDiv, frequencyDiv, offsetDiv, sum;
   sizeDiv = packetSize.GetAverageKullbackLeiblerDivergenceFrom(attritbuteModel[1]);
-  cout << "sizeDIV = " << sizeDiv << endl;
+  //cout << "sizeDIV = " << sizeDiv << endl;
   sourceDiv = packetSource.GetAverageKullbackLeiblerDivergenceFrom(attritbuteModel[2]);
-  cout << "sourceDIV = " << sourceDiv << endl;
+  //cout << "sourceDIV = " << sourceDiv << endl;
   frequencyDiv = byteFrequency.GetAverageKullbackLeiblerDivergenceFrom(attritbuteModel[0]);
-  cout << "frequencyDIV = " << frequencyDiv << endl;
+  //cout << "frequencyDIV = " << frequencyDiv << endl;
   offsetDiv = byteOffsets.GetAverageKullbackLeiblerDivergenceFrom(attritbuteModel[3]);
-  cout << "offsetDIV = " << offsetDiv << endl;
+  //cout << "offsetDIV = " << offsetDiv << endl;
   sum = sizeDiv + sourceDiv + frequencyDiv + offsetDiv;
   return sum;
 
