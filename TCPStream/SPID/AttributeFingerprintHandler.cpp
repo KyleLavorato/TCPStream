@@ -7,7 +7,6 @@ using namespace std;
 AttributeFingerprintHandler::AttributeFingerprintHandler(){};
 
 AttributeFingerprintHandler::AttributeFingerprintHandler(string name){
-	//cout << "begin attributeFingerprintHandler" <<endl;
 	attributeName = name;
 	int counter = 0; // counter is the number of indices to be incremented. Will be calculated in GetMeasurements
 	if (attributeName == "size") {
@@ -25,33 +24,23 @@ AttributeFingerprintHandler::AttributeFingerprintHandler(string name){
 	else if (attributeName == "offset"){
 		counter = 257; //First 128 bits of application data
 	}
-	//cout << attributeName << endl;
 	attributeFingerprint = Fingerprint(counter);
-	//cout <<"end attributeFingerprintHandler " <<endl;
 }
 
 void AttributeFingerprintHandler::AddObservation (const byte packetData[], time_t packetTimestamp, int packetDirection, int packetOrderNumberInSession, const unsigned long packetLength){
-  //int* measurements;
-  //cout << "observation for " << attributeName << endl;
   vector<int> measurements;
   int total = 0;
   int measurementsLength;
   //Gets the indicies of values to be incremented
   measurements = GetMeasurements(packetData,  packetTimestamp, packetDirection, packetOrderNumberInSession, packetLength);
   measurementsLength = measurements.size();
-  //cout << measurements[0] << endl;
   //Increments all approiate counter vector indicies
   for (int i = 0; i < measurementsLength; i++){
-  	//cout << i << "  " << measurementsLength << endl;
   	attributeFingerprint.IncrementFingerprintCounterAtIndex(measurements[i]);
   }
-  //cout << "we good? " <<endl;
   for (int i = 0; i < attributeFingerprint.size; i++){
-  	//cout << total << endl;
   	total += attributeFingerprint.probabilityDistributionVector[i][0];
   }
-  //cout << "problem with dis vector" << endl;
-  //cout << "still gucci?" << endl;
   for (int i = 0; i < attributeFingerprint.size; i++){
   	attributeFingerprint.probabilityDistributionVector[i][1] = attributeFingerprint.probabilityDistributionVector[i][0] / total;
   }
@@ -62,10 +51,10 @@ double AttributeFingerprintHandler::GetAverageKullbackLeiblerDivergenceFrom (dou
 	divergence = 0;
 	for (int i = 0; i < attributeFingerprint.size; i++){
 		if (attributeArray[i] != 0 and attributeFingerprint.probabilityDistributionVector[i][1] != 0){
-			divergence += attributeArray[i] * log(attributeArray[i] / attributeFingerprint.probabilityDistributionVector[i][1]);
+			divergence += abs(attributeArray[i] * log2(attributeArray[i] / attributeFingerprint.probabilityDistributionVector[i][1]));
+			//divergence += -(attributeArray[i] * log2(attributeFingerprint.probabilityDistributionVector[i][1] / attributeArray[i]));
 		}
 	}
-	//cout << attributeArray[0] << endl;
 	return divergence;
 }
 
@@ -73,39 +62,38 @@ void AttributeFingerprintHandler::MergeWith (AttributeFingerprintHandler otherAt
 	attributeFingerprint.MergeWith(otherAttributeHandler.attributeFingerprint);
 }
 
+void AttributeFingerprintHandler::MergeWith (double* attributeArray){
+	attributeFingerprint.MergeWith(attributeArray);
+}
+
+void AttributeFingerprintHandler::reset(){
+	attributeFingerprint.reset();
+}
+
 vector<int> AttributeFingerprintHandler::GetMeasurements (const byte* packetData, time_t packetTimestamp, int packetDirection, int packetOrderNumberInSession, const unsigned long packetLength){
-	//cout << attributeName << endl;
 	if (attributeName == "size"){
 		//calculates size of packet
 		int length = packetLength;
 		if (length >= 1500){
 			length = 1499;
 		}
-		//int* indiciesToBeIncremented = new int [1];
 		vector<int> indiciesToBeIncremented(1);
 		indiciesToBeIncremented[0] = length;
 		return indiciesToBeIncremented;
 	}
 	else if (attributeName == "direction"){
 		//puts 0 or 1 to be incremented depeding on packet direction
-		//int* indiciesToBeIncremented = new int [1];
 		vector<int> indiciesToBeIncremented(1);
 		indiciesToBeIncremented[0] = packetDirection;
 		return indiciesToBeIncremented;
 	}
 	else if (attributeName == "frequency"){
 		// for each ascii value, the corresponding value in the counter vector is increased
-		//int length = sizeof(packetData)/sizeof(*packetData);
 		int length = packetLength;
-		//int* indiciesToBeIncremented = new int [length];
 		vector<int> indiciesToBeIncremented(length);
-		//cout <<"but did we get here?" << endl;
-		//cout << length << endl;
 		for (int i = 0; i < length; i++){
-			//cout << packetData[i] << endl;
 			indiciesToBeIncremented[i] = int(packetData[i]);
 		}
-		//cout << "holla at me bois if we got here" <<endl;
 		return indiciesToBeIncremented;
 	}
 	else if (attributeName == "sequences"){
@@ -113,9 +101,7 @@ vector<int> AttributeFingerprintHandler::GetMeasurements (const byte* packetData
 	}
 	else if (attributeName == "offset"){
 		int length = sizeof(packetData)/sizeof(*packetData);
-		//int* indiciesToBeIncremented = new int [128];
 		vector<int> indiciesToBeIncremented(128);
-		//cout << "did we make it?" << endl;
 		for (int i = 0; i < 128; i++){
 			if (packetData[i]) {
 				indiciesToBeIncremented[i] = 2*i;

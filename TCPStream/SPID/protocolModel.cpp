@@ -4,7 +4,6 @@ using namespace std;
 
 
 ProtocolModel::ProtocolModel(){
-	//cout << "begin protocolModel" << endl;
 	trainingSessionCount = 0;
 	observationCount = 0;
 	packetSize = AttributeFingerprintHandler("size");
@@ -16,37 +15,25 @@ ProtocolModel::ProtocolModel(){
 
 void ProtocolModel::AddObservation (const byte packetData[], time_t packetTimestamp, int packetDirection, const unsigned long packetLength){
   observationCount++;
-  //cout << "adding observations" <<endl;
   packetSize.AddObservation(packetData, packetTimestamp, packetDirection, observationCount, packetLength);
-  //cout << "done size" <<endl;
   packetSource.AddObservation(packetData, packetTimestamp, packetDirection, observationCount, packetLength);
-  //cout << "done source"<<endl;
   byteFrequency.AddObservation(packetData, packetTimestamp, packetDirection, observationCount, packetLength);
-  //cout << "done frequency"<<endl;
   //byteSequences.AddObservation(packetData, packetTimestamp, packetDirection, observationCount);
   byteOffsets.AddObservation(packetData, packetTimestamp, packetDirection, observationCount, packetLength);
-  //cout << "done offset" <<endl;
-  // cout << "Byte frequency" << endl;
-  // for (int i = 0; i < 2; i++){
-  //     cout << packetSource.attributeFingerprint.probabilityDistributionVector[i][0] << " ";
-  // }
-  // cout << endl;
-  // for (int i = 0; i < 2; i++){
-  //     cout << packetSource.attributeFingerprint.probabilityDistributionVector[i][1] << " ";
-  // }
 }
 
-double ProtocolModel::GetAverageKullbackLeiblerDivergenceFrom (double attritbuteModel[][1500]){
+double ProtocolModel::GetAverageKullbackLeiblerDivergenceFrom (double attributeModel[][1500]){
   double sizeDiv, sourceDiv, frequencyDiv, offsetDiv, sum;
-  sizeDiv = packetSize.GetAverageKullbackLeiblerDivergenceFrom(attritbuteModel[1]);
-  //cout << "sizeDIV = " << sizeDiv << endl;
-  sourceDiv = packetSource.GetAverageKullbackLeiblerDivergenceFrom(attritbuteModel[2]);
-  //cout << "sourceDIV = " << sourceDiv << endl;
-  frequencyDiv = byteFrequency.GetAverageKullbackLeiblerDivergenceFrom(attritbuteModel[0]);
-  //cout << "frequencyDIV = " << frequencyDiv << endl;
-  offsetDiv = byteOffsets.GetAverageKullbackLeiblerDivergenceFrom(attritbuteModel[3]);
-  //cout << "offsetDIV = " << offsetDiv << endl;
+  sizeDiv = packetSize.GetAverageKullbackLeiblerDivergenceFrom(attributeModel[1]);
+  sourceDiv = packetSource.GetAverageKullbackLeiblerDivergenceFrom(attributeModel[2]);
+  frequencyDiv = byteFrequency.GetAverageKullbackLeiblerDivergenceFrom(attributeModel[0]);
+  offsetDiv = byteOffsets.GetAverageKullbackLeiblerDivergenceFrom(attributeModel[3]);
+  // cout << "sizeDIV = " << sizeDiv << endl;
+  // cout << "sourceDIV = " << sourceDiv << endl;
+  // cout << "frequencyDIV = " << frequencyDiv << endl;
+  // cout << "offsetDIV = " << offsetDiv << endl;
   sum = sizeDiv + sourceDiv + frequencyDiv + offsetDiv;
+  sum /= 4;
   return sum;
 
 }
@@ -56,4 +43,18 @@ void ProtocolModel::MergeWith (ProtocolModel otherModel){
 	packetSource.MergeWith(otherModel.packetSource);
 	byteFrequency.MergeWith(otherModel.byteFrequency);
 	byteOffsets.MergeWith(otherModel.byteOffsets);
+}
+
+void ProtocolModel::MergeWith (double attributeModel[][1500]){
+	packetSize.MergeWith(attributeModel[1]);
+	packetSource.MergeWith(attributeModel[2]);
+	byteFrequency.MergeWith(attributeModel[0]);
+	byteOffsets.MergeWith(attributeModel[3]);
+}
+
+void ProtocolModel::reset(){
+	packetSize.reset();
+	packetSource.reset();
+	byteFrequency.reset();
+	byteOffsets.reset();
 }

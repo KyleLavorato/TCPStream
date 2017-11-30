@@ -24,3 +24,21 @@ void Fingerprint::MergeWith(Fingerprint otherFingerprint){
 		probabilityDistributionVector[i][1] = probabilityDistributionVector[i][0] / total;		
 	}
 }
+
+void Fingerprint::MergeWith(double* attributeArray){
+	int total = 0;
+	for (int i = 0; i < size; i++){
+		probabilityDistributionVector[i][0] += attributeArray[i];
+		total += probabilityDistributionVector[i][0];
+	}
+	for (int i = 0; i < size; i++){
+		probabilityDistributionVector[i][1] = probabilityDistributionVector[i][0] / total;
+	}
+}
+
+void Fingerprint::reset(){
+	for (int i = 0; i < size; i++){
+		probabilityDistributionVector[i][0] = 0;
+		probabilityDistributionVector[i][1] = 0;
+	}
+}

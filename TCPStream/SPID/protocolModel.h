@@ -15,6 +15,8 @@ public:
 	void AddObservation (const byte packetData[], time_t packetTimestamp, int packetDirection, const unsigned long packetLength);
 	double GetAverageKullbackLeiblerDivergenceFrom (double attributeModel[][1500]);
 	void MergeWith(ProtocolModel otherModel);
+	void MergeWith(double attributeModel[][1500]);
+	void reset();
 	int trainingSessionCount;
 	unsigned long observationCount;
 	AttributeFingerprintHandler packetSize;

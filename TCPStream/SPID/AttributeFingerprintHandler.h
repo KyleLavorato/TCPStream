@@ -20,5 +20,7 @@ public:
 	void AddObservation (const byte packetData[], time_t packetTimestamp, int packetDirection, int packetOrderNumberInSession, const unsigned long packetLength);
 	double GetAverageKullbackLeiblerDivergenceFrom (double* attributeArray);
 	void MergeWith(AttributeFingerprintHandler otherAttributeHandler);
+	void MergeWith(double* attributeArray);
+	void reset();
 	vector<int> GetMeasurements(const byte packetData[], time_t packetTimestamp, int packetDirection, int packetOrderNumberInSession, const unsigned long packetLength);
 };
