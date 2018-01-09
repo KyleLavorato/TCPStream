@@ -39,8 +39,8 @@ void on_client_data(Stream& stream) {
     if (payload.size() > 0) {
         addData(payload.data(), 1, payload.size());
         compareProtocols();
-        //mergeWithModel("SPIDmodels/HTTP.txt");
-        //writeToFile("SPIDmodels/SMB.txt");
+        //mergeWithModel("SPIDmodels/SMB.txt");
+        //writeToFile("SPIDmodels/HTTP.txt");
     }
 
     // for (i = 0; i < payload.size(); i++) {
@@ -74,8 +74,8 @@ void on_server_data(Stream& stream) {
     if (payload.size() > 0) {
         addData(payload.data(), 0, payload.size());
         compareProtocols();
-        //mergeWithModel("SPIDmodels/HTTP.txt");
-        //writeToFile("SPIDmodels/SMB.txt");
+        //mergeWithModel("SPIDmodels/SMB.txt");
+        //writeToFile("SPIDmodels/HTTP.txt");
     }
 
 /*    cout << "Server data:" << endl;

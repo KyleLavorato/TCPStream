@@ -51,11 +51,11 @@ double AttributeFingerprintHandler::GetAverageKullbackLeiblerDivergenceFrom (dou
 	divergence = 0;
 	for (int i = 0; i < attributeFingerprint.size; i++){
 		if (attributeArray[i] != 0 and attributeFingerprint.probabilityDistributionVector[i][1] != 0){
-			divergence += abs(attributeArray[i] * log2(attributeArray[i] / attributeFingerprint.probabilityDistributionVector[i][1]));
+			divergence += (attributeArray[i] * log2(attributeArray[i] / attributeFingerprint.probabilityDistributionVector[i][1]));
 			//divergence += -(attributeArray[i] * log2(attributeFingerprint.probabilityDistributionVector[i][1] / attributeArray[i]));
 		}
 		if (attributeFingerprint.probabilityDistributionVector[i][1] == 0 and attributeArray[i] != 0){
-			divergence += 1;
+			divergence += 0;
 		}
 	}
 	return divergence;

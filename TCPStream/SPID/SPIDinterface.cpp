@@ -1,10 +1,11 @@
 #include "SPIDinterface.h"
 #include <string>
 #include <sstream>
+#include <math.h>
 
 double model[4][300];
 double inf = std::numeric_limits<double>::infinity();
-double threshold = 10;
+double threshold = 0.5;
 ProtocolModel currentModel;
 
 
@@ -113,6 +114,7 @@ void compareProtocols(){
     string streamType = "unidentified";
     readProbabilityVector("SPIDmodels/FTP.txt");
     result = currentModel.GetAverageKullbackLeiblerDivergenceFrom(model);
+    result = fabs(result);
     cout << "FTP comparison result = " << result << endl;
     if (result < threshold){
         currentResult = result;
