@@ -22,7 +22,7 @@ void ProtocolModel::AddObservation (const byte packetData[], time_t packetTimest
   byteOffsets.AddObservation(packetData, packetTimestamp, packetDirection, observationCount, packetLength);
 }
 
-double ProtocolModel::GetAverageKullbackLeiblerDivergenceFrom (double attributeModel[][1500]){
+double ProtocolModel::GetAverageKullbackLeiblerDivergenceFrom (double attributeModel[][300]){
   double sizeDiv, sourceDiv, frequencyDiv, offsetDiv, sum;
   sizeDiv = packetSize.GetAverageKullbackLeiblerDivergenceFrom(attributeModel[1]);
   sourceDiv = packetSource.GetAverageKullbackLeiblerDivergenceFrom(attributeModel[2]);
@@ -45,7 +45,7 @@ void ProtocolModel::MergeWith (ProtocolModel otherModel){
 	byteOffsets.MergeWith(otherModel.byteOffsets);
 }
 
-void ProtocolModel::MergeWith (double attributeModel[][1500]){
+void ProtocolModel::MergeWith (double attributeModel[][300]){
 	packetSize.MergeWith(attributeModel[1]);
 	packetSource.MergeWith(attributeModel[2]);
 	byteFrequency.MergeWith(attributeModel[0]);

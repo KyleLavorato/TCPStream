@@ -10,7 +10,7 @@ AttributeFingerprintHandler::AttributeFingerprintHandler(string name){
 	attributeName = name;
 	int counter = 0; // counter is the number of indices to be incremented. Will be calculated in GetMeasurements
 	if (attributeName == "size") {
-		counter = 1500; //Most are under 1500 bytes, so any over is counted as 1499.  This gives room for above average packet sizes
+		counter = 300; //Most are under 1500 bytes, so any over is counted as 1499.  This gives room for above average packet sizes
 	}
 	else if (attributeName == "direction"){
 		counter = 2; //Packet can be going one of two directions
@@ -54,6 +54,9 @@ double AttributeFingerprintHandler::GetAverageKullbackLeiblerDivergenceFrom (dou
 			divergence += abs(attributeArray[i] * log2(attributeArray[i] / attributeFingerprint.probabilityDistributionVector[i][1]));
 			//divergence += -(attributeArray[i] * log2(attributeFingerprint.probabilityDistributionVector[i][1] / attributeArray[i]));
 		}
+		if (attributeFingerprint.probabilityDistributionVector[i][1] == 0 and attributeArray[i] != 0){
+			divergence += 1;
+		}
 	}
 	return divergence;
 }
@@ -73,9 +76,9 @@ void AttributeFingerprintHandler::reset(){
 vector<int> AttributeFingerprintHandler::GetMeasurements (const byte* packetData, time_t packetTimestamp, int packetDirection, int packetOrderNumberInSession, const unsigned long packetLength){
 	if (attributeName == "size"){
 		//calculates size of packet
-		int length = packetLength;
-		if (length >= 1500){
-			length = 1499;
+		int length = packetLength / 5;
+		if (length >= 300){
+			length = 299;
 		}
 		vector<int> indiciesToBeIncremented(1);
 		indiciesToBeIncremented[0] = length;
@@ -100,14 +103,14 @@ vector<int> AttributeFingerprintHandler::GetMeasurements (const byte* packetData
 
 	}
 	else if (attributeName == "offset"){
-		int length = sizeof(packetData)/sizeof(*packetData);
+		//int length = sizeof(packetData)/sizeof(*packetData);
 		vector<int> indiciesToBeIncremented(128);
 		for (int i = 0; i < 128; i++){
 			if (packetData[i]) {
-				indiciesToBeIncremented[i] = 2*i;
+				indiciesToBeIncremented[i] = 2*i+1;
 			}
 			else{
-				indiciesToBeIncremented[i] = 2*i+1;
+				indiciesToBeIncremented[i] = 2*i;
 			}
 		}
 		return indiciesToBeIncremented;

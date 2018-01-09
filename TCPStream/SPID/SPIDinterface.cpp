@@ -2,15 +2,15 @@
 #include <string>
 #include <sstream>
 
-double model[4][1500];
+double model[4][300];
 double inf = std::numeric_limits<double>::infinity();
+double threshold = 10;
 ProtocolModel currentModel;
 
 
 void addData(const byte packetData[], int packetDirection, const unsigned long packetLength){
 	time_t currentTime = time(0);
 	currentModel.AddObservation(packetData, currentTime, packetDirection, packetLength);
-	//return currentModel;
 }
 
 void readCounterVector(string filename){
@@ -51,11 +51,11 @@ void writeToFile(string filename){
     }
     myFile << endl;
     myFile << "Size" << endl;
-    for (int i = 0; i < 1500; i++){
+    for (int i = 0; i < 300; i++){
         myFile << currentModel.packetSize.attributeFingerprint.probabilityDistributionVector[i][0] << " ";
     }
     myFile << endl;
-    for (int i = 0; i < 1500; i++){
+    for (int i = 0; i < 300; i++){
         myFile << currentModel.packetSize.attributeFingerprint.probabilityDistributionVector[i][1] << " ";
     }
     myFile << endl;
@@ -114,7 +114,7 @@ void compareProtocols(){
     readProbabilityVector("SPIDmodels/FTP.txt");
     result = currentModel.GetAverageKullbackLeiblerDivergenceFrom(model);
     cout << "FTP comparison result = " << result << endl;
-    if (result < 0.4){
+    if (result < threshold){
         currentResult = result;
         streamType = "FTP";
         flag = true;
@@ -122,7 +122,7 @@ void compareProtocols(){
     readProbabilityVector("SPIDmodels/HTTP.txt");
     result = currentModel.GetAverageKullbackLeiblerDivergenceFrom(model);
     cout << "HTTP comparison result = " << result << endl;
-    if (result < 0.4 and result < currentResult){
+    if (result < threshold and result < currentResult){
         currentResult = result;
         streamType = "HTTP";
         flag = true;
@@ -130,7 +130,7 @@ void compareProtocols(){
     readProbabilityVector("SPIDmodels/SMB.txt");
     result = currentModel.GetAverageKullbackLeiblerDivergenceFrom(model);
     cout << "SMB comparison result = " << result << endl;
-    if (result < 0.4 and result < currentResult){
+    if (result < threshold and result < currentResult){
         currentResult = result;
         streamType = "SMB";
         flag = true;
