@@ -4,9 +4,15 @@
 
 ### Problem Definition
 
-Identify the protocol used in packets.
+There are 3 parts that make up the problem:
+
+1. Segment all TCP packets into separate streams
+2. Identify the application-layer protocol used in each packet
+3. Parse each packet
 
 ### Constraints
+
+#### Problem #2
 
 * Must be configurable for different application layer protocols
 * Must only consider TCP packets
@@ -27,7 +33,11 @@ If we're strictly matching strings to identify protocols, then we may run into f
 
 ## Solution
 
-Our team has decided to try several different approaches and weigh their relative strengths and weaknesses.
+Problem #1 - stream segmenting - is handled by a library: [libtins](http://libtins.github.io).
+
+Problem #2 - application layer protocol identification - is being handled by Jo, Hunter, and Troy. They are using 3 different approaches and will compare them to weigh pros and cons.
+
+Problem #3 - packet parsing - is being handled by Kyle.
 
 ### Configuration
 

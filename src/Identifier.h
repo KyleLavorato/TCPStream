@@ -3,37 +3,40 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <tins/tcp_ip/stream_follower.h>
+#include <tins/tins.h>
 
+using namespace Tins;
 using namespace std;
+using Tins::TCPIP::Stream;
 
 class Identifier
 {
-protected:
-    vector<unsigned char*> packets;
 
 public:
-    Identifier();
-    ~Identifier();
-    
+
     /**
-     * Reads a config file and returns the lines of the file as a vector of 
-     * strings.
+     * Reads the given config file and uses internal configuration strategy
+     * specified in the handle_config_line method.
      */
-    void readConfigFile(string filepath);
+    void configure(const string& filepath);
 
-    /** Reads a stream file and returns the packets in it in a vector. */
-    void readStreamFile(string filepath);
+    /** When a new stream is seen */
+    void on_new_stream(Stream& stream);
 
-    /** Accessor for the packets vector */
-    vector<unsigned char*> get_packets();
+    /** When a stream closes successfully */
+    void on_stream_closed(Stream& stream);
 
+    /** Identify the given packet. */
+    virtual string identify(unsigned char*) = 0;
+
+
+private:
+    
     /**
      * Called for each line in the config file. Use this function to actually
      * do the parsing of your config file.
      */
-    virtual void handleConfigFileLine(string line, int i) = 0;
-
-    /** Identify the given packet. */
-    virtual string identify(unsigned char*) = 0;
+    virtual void handle_config_file_line(string line, int i) = 0;
 
 };
