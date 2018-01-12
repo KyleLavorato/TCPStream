@@ -3,11 +3,14 @@
 #include <tins/tins.h>
 #include "SPIDinterface.h"
 #include "protocolModel.h"
+#include <chrono>
 
 using namespace Tins;
 using namespace std;
 using Tins::TCPIP::Stream;
 using Tins::TCPIP::StreamFollower;
+
+auto start = std::chrono::high_resolution_clock::now();
 
 //ProtocolModel currentModel;
 // double model[4][1500];
@@ -34,14 +37,16 @@ void on_client_data(Stream& stream) {
 
     //cout << "Client data:" << endl;
     //cout << payload.size() << endl;
-
-
+    auto end = std::chrono::high_resolution_clock::now();
+    int time_difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end-start).count();
+    cout << "Client " << time_difference / 10000 << endl;
     if (payload.size() > 0) {
         addData(payload.data(), 1, payload.size());
-        compareProtocols();
+        //compareProtocols();
         //mergeWithModel("SPIDmodels/SMB.txt");
         //writeToFile("SPIDmodels/HTTP.txt");
     }
+    start = std::chrono::high_resolution_clock::now();
 
     // for (i = 0; i < payload.size(); i++) {
     //    cout << hex << payload[i];
@@ -70,13 +75,17 @@ void on_server_data(Stream& stream) {
 
     //cout << "Server data:" << endl;
     //cout << payload.size() << endl;
+    auto end = std::chrono::high_resolution_clock::now();
+    int time_difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end-start).count();
+    cout << "Server " << time_difference / 10000 << endl;
 
     if (payload.size() > 0) {
         addData(payload.data(), 0, payload.size());
-        compareProtocols();
+        //compareProtocols();
         //mergeWithModel("SPIDmodels/SMB.txt");
         //writeToFile("SPIDmodels/HTTP.txt");
     }
+    start = std::chrono::high_resolution_clock::now();
 
 /*    cout << "Server data:" << endl;
     for (i = 0; i < payload.size(); i++) {
@@ -101,7 +110,7 @@ void on_stream_terminated(Stream& stream, StreamFollower::TerminationReason reas
 // New stream is seen
 void on_new_stream(Stream& stream) {
     cout << "New stream from " << stream.client_addr_v4() << ":" << stream.client_port() << " to " << stream.server_addr_v4() << ":" << stream.server_port() << endl;
-
+    start = std::chrono::high_resolution_clock::now();
     stream.stream_closed_callback(&on_stream_closed);
     stream.client_data_callback(&on_client_data);
     stream.server_data_callback(&on_server_data);
