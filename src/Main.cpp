@@ -25,6 +25,30 @@ void usage() {
 	cerr << "Application layer protocol identification:" << endl;
 	cerr << "      --approach=APPROACH	use APPROACH to identify application layer protocol;" << endl;
 	cerr << "                           	APPROACH is 'spid', or 'string-matching'" << endl;
+	cerr << endl;
+	cerr << "Configuration file formats:" << endl;
+	cerr << endl;
+	cerr << "Each approach has a specific set of formatting rules for the config file. They" << endl;
+	cerr << "are specified in this section." << endl;
+	cerr << endl;
+	cerr << "String Matching (--aproach=string-matching):" << endl;
+	cerr << endl;
+	cerr << "Each line defines a PROTOCOL, which is an application layer protocol you'd like" << endl;
+	cerr << "to be able to identify, and a set of TOKENs, which are strings that are used" << endl;
+	cerr << "to identify if a packet is of protocol PROTOCOL. Each protocol you'd like to" << endl;
+	cerr << "identify gets one line in the config file. Each line should be formatted like" << endl;
+	cerr << "so:" << endl;
+	cerr << endl;
+	cerr << "  PROTOCOL:TOKEN_1,TOKEN_2,TOKEN_3,...,TOKEN_n" << endl;
+	cerr << endl;
+	cerr << "Tokens cannot contain commas (a workaround for this could be a future addition" << endl;
+	cerr << "to this software). Here is an example of identifying the HTTP protocol:" << endl;
+	cerr << endl;
+	cerr << "  HTTP:HTTP/1.1" << endl;
+	cerr << endl;
+	cerr << "Note that if ANY of the tokens are matched, then the packet is immediately" << endl;
+	cerr << "identified as the protocol that token belongs to." << endl;
+
 }
 
 int main(int argc, char *argv[]) {
