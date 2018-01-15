@@ -16,16 +16,16 @@ clean:
 # Executables
 #
 
-shitty_wireshark: src/pmain.o src/Identifier.o src/StringMatchingIdentifier.o
-	$(CXX) src/pmain.o src/Identifier.o src/StringMatchingIdentifier.o -o shitty_wireshark $(LDLIBS) 
+shitty_wireshark: src/Main.o src/Identifier.o src/StringMatchingIdentifier.o
+	$(CXX) src/Main.o src/Identifier.o src/StringMatchingIdentifier.o -o shitty_wireshark $(LDLIBS) 
 
 
 #
 # Object Files
 #
 
-src/pmain.o: src/pmain.cpp
-	$(CXX) $(CFLAGS) src/pmain.cpp -o src/pmain.o
+src/Main.o: src/Main.cpp
+	$(CXX) $(CFLAGS) src/Main.cpp -o src/Main.o
 
 src/Identifier.o: src/Identifier.cpp
 	$(CXX) $(CFLAGS) src/Identifier.cpp -o src/Identifier.o
