@@ -24,11 +24,14 @@ public:
     /** When a new stream is seen */
     void on_new_stream(Stream& stream);
 
+    /** When new client data arrives */
+    void on_client_data(Stream& stream);
+
     /** When a stream closes successfully */
     void on_stream_closed(Stream& stream);
 
     /** Identify the given packet. */
-    virtual string identify(unsigned char*) = 0;
+    virtual string identify_protocol(vector<uint8_t> payload) = 0;
 
 
 private:

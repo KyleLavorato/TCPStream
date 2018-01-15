@@ -20,11 +20,11 @@ void usage() {
 	cerr << "PCAP_FILE is the pcap file you're reading from." << endl;
 	cerr << endl;
 	cerr << "Miscellaneous:" << endl;
-	cerr << "  -h, --help				display this help text and exit" << endl;
+	cerr << "  -h, --help			display this help text and exit" << endl;
 	cerr << endl;
 	cerr << "Application layer protocol identification:" << endl;
 	cerr << "      --approach=APPROACH	use APPROACH to identify application layer protocol;" << endl;
-	cerr << "                           APPROACH is 'spid', or 'string-matching'" << endl;
+	cerr << "                           	APPROACH is 'spid', or 'string-matching'" << endl;
 }
 
 int main(int argc, char *argv[]) {
@@ -52,13 +52,13 @@ int main(int argc, char *argv[]) {
 	if (optionArg == "--approach=string-matching") {
 
 		// Instantiate an identifier that uses our specific approach
-		StringMatchingIdentifier identifier;
+		StringMatchingIdentifier* identifier = new StringMatchingIdentifier;
 
 		// Configure the identifier using the config file
-		identifier.configure(configFileArg);
+		identifier->configure(configFileArg);
 
 		// Set up the new stream callback
-		follower.new_stream_callback(std::bind(&StringMatchingIdentifier::on_new_stream, &identifier, _1));
+		follower.new_stream_callback(std::bind(&StringMatchingIdentifier::on_new_stream, identifier, _1));
 
 	} else if (optionArg == "--approach=spid") {
 		cerr << "Error: SPID approach not yet implemented." << endl;
@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Now create some sniffer
-	FileSniffer sniffer("tcp");
+	FileSniffer sniffer(pcapFileArg);
 	
 	// And start sniffing, forwarding all packets to our follower
 	sniffer.sniff_loop([&](PDU& pdu) {

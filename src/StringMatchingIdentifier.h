@@ -12,13 +12,13 @@ class StringMatchingIdentifier : public Identifier
 public:
 
     /** Identify the given packet. */
-    string identify(unsigned char*);
+    string identify_protocol(vector<uint8_t> payload);
 
 
 private:
 
     vector<string> protocols;
-    map<string, vector<string>> stringsToMatch;
+    map<string, vector<string>> tokens;
 
     void handle_config_file_line(string line, int i);
 

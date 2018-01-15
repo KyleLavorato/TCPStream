@@ -43,8 +43,30 @@ void Identifier::on_new_stream(Stream& stream) {
     // payloads for the entire stream to files
     stream.auto_cleanup_payloads(false);
 
+    // TODO: Remove
+    stream.client_data_callback(std::bind(&Identifier::on_client_data, this, _1));
+
     // Set the stream close callback
     stream.stream_closed_callback(std::bind(&Identifier::on_stream_closed, this, _1));
+}
+
+void Identifier::on_client_data(Stream& stream) {
+
+    unsigned int i;
+    const vector<uint8_t> payload = stream.client_payload();
+
+    string appLayerProtocol = identify_protocol(payload);
+
+    cout << "Application layer protocol identified: " << appLayerProtocol << endl;
+    // cout << "Payload size: " << payload.size() << endl;
+
+    if (appLayerProtocol != "Unknown") {
+        for (i = 0; i < payload.size(); i++) {
+            cout << payload[i];
+        }
+    }
+
+    cout << endl;
 }
 
 void Identifier::on_stream_closed(Stream& stream) {
@@ -58,6 +80,6 @@ void Identifier::on_stream_closed(Stream& stream) {
     // stream.server_payload().data()
     // stream.server_payload().size()
 
-    cout << "Client payload:" << endl;
-    cout << stream.client_payload().data() << endl;
+    // cout << "Client payload:" << endl;
+    // cout << stream.client_payload().data() << endl;
 }
