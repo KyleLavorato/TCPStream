@@ -13,9 +13,9 @@ public:
 	//packetTimestamp is time of recieving packet
 	//packetDirection is 1 for client data, and 0 for server data
 	void AddObservation (const byte packetData[], time_t packetTimestamp, int packetDirection, const unsigned long packetLength);
-	double GetAverageKullbackLeiblerDivergenceFrom (double attributeModel[][300]);
+	double GetAverageKullbackLeiblerDivergenceFrom (double attributeModel[][512]);
 	void MergeWith(ProtocolModel otherModel);
-	void MergeWith(double attributeModel[][300]);
+	void MergeWith(double attributeModel[][512]);
 	void reset();
 	int trainingSessionCount;
 	unsigned long observationCount;
@@ -24,4 +24,6 @@ public:
 	AttributeFingerprintHandler byteFrequency;
 	AttributeFingerprintHandler byteSequences;
 	AttributeFingerprintHandler byteOffsets;
+	AttributeFingerprintHandler dirNumSize;
+	AttributeFingerprintHandler dirFreq;
 };

@@ -24,6 +24,12 @@ AttributeFingerprintHandler::AttributeFingerprintHandler(string name){
 	else if (attributeName == "offset"){
 		counter = 257; //First 128 bits of application data
 	}
+	else if (attributeName == "dirnumsize"){
+		counter = 260;
+	}
+	else if (attributeName == "dirfreq"){
+		counter = 512;
+	}
 	attributeFingerprint = Fingerprint(counter);
 }
 
@@ -112,6 +118,36 @@ vector<int> AttributeFingerprintHandler::GetMeasurements (const byte* packetData
 			else{
 				indiciesToBeIncremented[i] = 2*i;
 			}
+		}
+		return indiciesToBeIncremented;
+	}
+	else if (attributeName == "dirnumsize"){
+		int length = packetLength / 10;
+		if (length >= 30){
+			length = 29;
+		}
+		if (packetOrderNumberInSession <= 100){
+			length += packetOrderNumberInSession;
+		}
+		else{
+			length += 100;
+		}
+		if (packetDirection == 0){
+			length += 130;
+		}
+		vector<int> indiciesToBeIncremented(1);
+		indiciesToBeIncremented[0] = length;
+		return indiciesToBeIncremented;
+	}
+	else if (attributeName == "dirfreq"){
+		int length = packetLength;
+		int multiplier = 1;
+		if (packetDirection == 0){
+			multiplier = 2;
+		}
+		vector<int> indiciesToBeIncremented(length);
+		for (int i = 0; i < length; i++){
+			indiciesToBeIncremented[i] = int(packetData[i] * multiplier);
 		}
 		return indiciesToBeIncremented;
 	}

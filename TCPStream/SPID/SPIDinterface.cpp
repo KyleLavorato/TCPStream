@@ -3,7 +3,7 @@
 #include <sstream>
 #include <math.h>
 
-double model[4][300];
+double model[6][512];
 double inf = std::numeric_limits<double>::infinity();
 double threshold = 0.5;
 ProtocolModel currentModel;
@@ -23,7 +23,7 @@ void readCounterVector(string filename){
         cerr << "Unable to open file." << endl;
         exit(1);
     }
-    for (int i = 0; i < 4; i++){
+    for (int i = 0; i < 6; i++){
         getline(inFile, x);
         getline(inFile, x);
         istringstream iss(x);
@@ -78,6 +78,24 @@ void writeToFile(string filename){
         myFile << currentModel.byteOffsets.attributeFingerprint.probabilityDistributionVector[i][1] << " ";
     }
     myFile << endl;
+    myFile << "DirNumSize" << endl;
+    for (int i = 0; i < 260; i++){
+        myFile << currentModel.dirNumSize.attributeFingerprint.probabilityDistributionVector[i][0] << " ";
+    }
+    myFile << endl;
+    for (int i = 0; i < 260; i++){
+        myFile << currentModel.dirNumSize.attributeFingerprint.probabilityDistributionVector[i][1] << " ";
+    }
+    myFile << endl;
+    myFile << "DirFreq" << endl;
+    for (int i = 0; i < 512; i++){
+        myFile << currentModel.dirFreq.attributeFingerprint.probabilityDistributionVector[i][0] << " ";
+    }
+    myFile << endl;
+    for (int i = 0; i < 512; i++){
+        myFile << currentModel.dirFreq.attributeFingerprint.probabilityDistributionVector[i][1] << " ";
+    }
+    myFile << endl;
     myFile.close();
 }
 
@@ -90,7 +108,7 @@ void readProbabilityVector(string filename){
         cerr << "Unable to open file." << endl;
         exit(1);
     }
-    for (int i = 0; i < 4; i++){
+    for (int i = 0; i < 6; i++){
         getline(inFile, x);
         getline(inFile, x);
         getline(inFile, x);

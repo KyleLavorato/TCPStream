@@ -37,16 +37,16 @@ void on_client_data(Stream& stream) {
 
     //cout << "Client data:" << endl;
     //cout << payload.size() << endl;
-    auto end = std::chrono::high_resolution_clock::now();
-    int time_difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end-start).count();
-    cout << "Client " << time_difference / 10000 << endl;
+    //auto end = std::chrono::high_resolution_clock::now();
+    //int time_difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end-start).count();
+    //cout << "Client " << time_difference / 10000 << endl;
     if (payload.size() > 0) {
         addData(payload.data(), 1, payload.size());
-        //compareProtocols();
-        //mergeWithModel("SPIDmodels/SMB.txt");
-        //writeToFile("SPIDmodels/HTTP.txt");
+        compareProtocols();
+        //mergeWithModel("SPIDmodels/HTTP.txt");
+        //writeToFile("SPIDmodels/FTP.txt");
     }
-    start = std::chrono::high_resolution_clock::now();
+    //start = std::chrono::high_resolution_clock::now();
 
     // for (i = 0; i < payload.size(); i++) {
     //    cout << hex << payload[i];
@@ -75,17 +75,17 @@ void on_server_data(Stream& stream) {
 
     //cout << "Server data:" << endl;
     //cout << payload.size() << endl;
-    auto end = std::chrono::high_resolution_clock::now();
-    int time_difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end-start).count();
-    cout << "Server " << time_difference / 10000 << endl;
+    //auto end = std::chrono::high_resolution_clock::now();
+    //int time_difference = std::chrono::duration_cast<std::chrono::nanoseconds>(end-start).count();
+    //cout << "Server " << time_difference / 10000 << endl;
 
     if (payload.size() > 0) {
         addData(payload.data(), 0, payload.size());
-        //compareProtocols();
-        //mergeWithModel("SPIDmodels/SMB.txt");
-        //writeToFile("SPIDmodels/HTTP.txt");
+        compareProtocols();
+        //mergeWithModel("SPIDmodels/HTTP.txt");
+        //writeToFile("SPIDmodels/FTP.txt");
     }
-    start = std::chrono::high_resolution_clock::now();
+    //start = std::chrono::high_resolution_clock::now();
 
 /*    cout << "Server data:" << endl;
     for (i = 0; i < payload.size(); i++) {
