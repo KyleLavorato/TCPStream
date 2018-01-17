@@ -44,13 +44,13 @@ void on_client_data(Stream& stream) {
         addData(payload.data(), 1, payload.size());
         compareProtocols();
         //mergeWithModel("SPIDmodels/HTTP.txt");
-        //writeToFile("SPIDmodels/FTP.txt");
+        //writeToFile("SPIDmodels/SMB.txt");
     }
     //start = std::chrono::high_resolution_clock::now();
 
-    // for (i = 0; i < payload.size(); i++) {
-    //    cout << hex << payload[i];
-    // }
+     // for (i = 0; i < payload.size(); i++) {
+     //    cout << hex << payload[i];
+     // }
 
     // cout << endl;
 }
@@ -83,15 +83,15 @@ void on_server_data(Stream& stream) {
         addData(payload.data(), 0, payload.size());
         compareProtocols();
         //mergeWithModel("SPIDmodels/HTTP.txt");
-        //writeToFile("SPIDmodels/FTP.txt");
+        //writeToFile("SPIDmodels/SMB.txt");
     }
     //start = std::chrono::high_resolution_clock::now();
 
-/*    cout << "Server data:" << endl;
-    for (i = 0; i < payload.size(); i++) {
-        cout << hex << payload[i];
-    }
-    cout << endl;*/
+    // cout << "Server data:" << endl;
+    // for (i = 0; i < payload.size(); i++) {
+    //     cout << hex << payload[i];
+    // }
+    // cout << endl;
 }
 
 

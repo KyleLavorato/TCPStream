@@ -26,4 +26,5 @@ public:
 	AttributeFingerprintHandler byteOffsets;
 	AttributeFingerprintHandler dirNumSize;
 	AttributeFingerprintHandler dirFreq;
+	AttributeFingerprintHandler dirSize;
 };

@@ -3,7 +3,7 @@
 #include <sstream>
 #include <math.h>
 
-double model[6][512];
+double model[7][512];
 double inf = std::numeric_limits<double>::infinity();
 double threshold = 0.5;
 ProtocolModel currentModel;
@@ -23,7 +23,7 @@ void readCounterVector(string filename){
         cerr << "Unable to open file." << endl;
         exit(1);
     }
-    for (int i = 0; i < 6; i++){
+    for (int i = 0; i < 7; i++){
         getline(inFile, x);
         getline(inFile, x);
         istringstream iss(x);
@@ -96,6 +96,15 @@ void writeToFile(string filename){
         myFile << currentModel.dirFreq.attributeFingerprint.probabilityDistributionVector[i][1] << " ";
     }
     myFile << endl;
+    myFile << "DirSize" << endl;
+    for (int i = 0; i < 300; i++){
+        myFile << currentModel.dirSize.attributeFingerprint.probabilityDistributionVector[i][0] << " ";
+    }
+    myFile << endl;
+    for (int i = 0; i < 300; i++){
+        myFile << currentModel.dirSize.attributeFingerprint.probabilityDistributionVector[i][1] << " ";
+    }
+    myFile << endl;
     myFile.close();
 }
 
@@ -108,7 +117,7 @@ void readProbabilityVector(string filename){
         cerr << "Unable to open file." << endl;
         exit(1);
     }
-    for (int i = 0; i < 6; i++){
+    for (int i = 0; i < 7; i++){
         getline(inFile, x);
         getline(inFile, x);
         getline(inFile, x);
