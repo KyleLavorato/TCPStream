@@ -27,8 +27,6 @@ void usage() {
 	cerr << endl;
 	cerr << "CONFIG_FILE is the configuration file needed by the APPROACH you specified." << endl;
 	cerr << endl;
-	cerr << "PCAP_FILE is the pcap file you're reading from." << endl;
-	cerr << endl;
 	cerr << "PACKET_SOURCE is either a network interface or a PCAP file, depending on what" << endl;
 	cerr << "MODE is set to." << endl;
 	cerr << endl;
