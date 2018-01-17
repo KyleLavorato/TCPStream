@@ -57,10 +57,15 @@ void Identifier::on_client_data(Stream& stream) {
 
     string appLayerProtocol = identify_protocol(payload);
 
-    cout << "Application layer protocol identified: " << appLayerProtocol << endl;
-    // cout << "Payload size: " << payload.size() << endl;
+    // Uncomment if you'd like to print out packets that weren't identified
+    //
+    // cout << "Application layer protocol identified: " << appLayerProtocol << endl;
+    // for (i = 0; i < payload.size(); i++) {
+    //     cout << payload[i];
+    // }
 
     if (appLayerProtocol != "Unknown") {
+        cout << "Application layer protocol identified: " << appLayerProtocol << endl;
         for (i = 0; i < payload.size(); i++) {
             cout << payload[i];
         }

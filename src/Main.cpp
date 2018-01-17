@@ -14,24 +14,33 @@ using Tins::TCPIP::StreamFollower;
 // TODO: Make options actually optional
 
 void usage() {
-	cerr << "Usage: shitty_wireshark OPTION CONFIG_FILE PCAP_FILE" << endl;
+	cerr << "Usage: shitty_wireshark [OPTIONS]... MODE APPROACH CONFIG_FILE PACKET_SOURCE" << endl;
 	cerr << endl;
-	cerr << "CONFIG_FILE is the configuration file needed by the --approach you specified." << endl;
+	cerr << "MODE is either 'live' or 'file' without the single quotes. In 'live' mode," << endl;
+	cerr << "PACKET_SOURCE must be a valid network interface. Run `ifconfig` to see what" << endl;
+	cerr << "interfaces are available on your machine. When in 'file' mode, the" << endl;
+	cerr << "PACKET_SOURCE must be a PCAP file that will be read from." << endl;
+	cerr << endl;
+	cerr << "APPROACH is either 'string-matching' or 'spid' without the single quotes. See" << endl;
+	cerr << "respective sections below for detailed descriptions of which approach to use" << endl;
+	cerr << "and when." << endl;
+	cerr << endl;
+	cerr << "CONFIG_FILE is the configuration file needed by the APPROACH you specified." << endl;
+	cerr << endl;
 	cerr << "PCAP_FILE is the pcap file you're reading from." << endl;
+	cerr << endl;
+	cerr << "PACKET_SOURCE is either a network interface or a PCAP file, depending on what" << endl;
+	cerr << "MODE is set to." << endl;
 	cerr << endl;
 	cerr << "Miscellaneous:" << endl;
 	cerr << "  -h, --help			display this help text and exit" << endl;
-	cerr << endl;
-	cerr << "Application layer protocol identification:" << endl;
-	cerr << "      --approach=APPROACH	use APPROACH to identify application layer protocol;" << endl;
-	cerr << "                           	APPROACH is 'spid', or 'string-matching'" << endl;
 	cerr << endl;
 	cerr << "Configuration file formats:" << endl;
 	cerr << endl;
 	cerr << "Each approach has a specific set of formatting rules for the config file. They" << endl;
 	cerr << "are specified in this section." << endl;
 	cerr << endl;
-	cerr << "String Matching (--aproach=string-matching):" << endl;
+	cerr << "String Matching:" << endl;
 	cerr << endl;
 	cerr << "Each line defines a PROTOCOL, which is an application layer protocol you'd like" << endl;
 	cerr << "to be able to identify, and a set of TOKENs, which are strings that are used" << endl;
@@ -48,32 +57,34 @@ void usage() {
 	cerr << endl;
 	cerr << "Note that if ANY of the tokens are matched, then the packet is immediately" << endl;
 	cerr << "identified as the protocol that token belongs to." << endl;
-
 }
 
 int main(int argc, char *argv[]) {
 	
 	// Check arguments for proper usage
-	if (argc < 3) {
+	if (argc != 5) {
 		usage();
 		return -1;
 	}
 
-	string optionArg = argv[1];
-	string configFileArg = argv[2];
-	string pcapFileArg = argv[3];
-	
-	if (optionArg == "-h" || optionArg == "--help") {
+	string firstArg = argv[1];
+
+	if (firstArg.size() > 0 && firstArg[0] == '-') {
 		usage();
 		return -1;
 	}
+
+	const string& modeArg = firstArg;
+	string approachArg = argv[2];
+	string configFileArg = argv[3];
+	string packetSourceArg = argv[4];
 
 	// Create our follower
 	Tins::TCPIP::StreamFollower follower;
 
 	// Set up the new stream callback with the approach specified on the
-	// command line by the user using the --approach flag
-	if (optionArg == "--approach=string-matching") {
+	// command line by the user using the APPROACH argument
+	if (approachArg == "string-matching") {
 
 		// Instantiate an identifier that uses our specific approach
 		StringMatchingIdentifier* identifier = new StringMatchingIdentifier;
@@ -84,7 +95,7 @@ int main(int argc, char *argv[]) {
 		// Set up the new stream callback
 		follower.new_stream_callback(std::bind(&StringMatchingIdentifier::on_new_stream, identifier, _1));
 
-	} else if (optionArg == "--approach=spid") {
+	} else if (approachArg == "spid") {
 		cerr << "Error: SPID approach not yet implemented." << endl;
 		return -1;
 	} else {
@@ -92,12 +103,24 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 
-	// Now create some sniffer
-	FileSniffer sniffer(pcapFileArg);
-	
-	// And start sniffing, forwarding all packets to our follower
-	sniffer.sniff_loop([&](PDU& pdu) {
-		follower.process_packet(pdu);
-		return true;
-	});
+	if (modeArg == "live") {
+		Sniffer sniffer(packetSourceArg); // packetSourceArg will be a PCAP file
+
+		// Start sniffing, forwarding all packets to our follower
+		sniffer.sniff_loop([&](PDU& pdu) {
+			follower.process_packet(pdu);
+			return true;
+		});
+	} else if (modeArg == "file") {
+		FileSniffer sniffer(packetSourceArg); // packetSourceArg will be a network interface
+
+		// Start sniffing, forwarding all packets to our follower
+		sniffer.sniff_loop([&](PDU& pdu) {
+			follower.process_packet(pdu);
+			return true;
+		});
+	} else {
+		usage();
+		return -1;
+	}
 }
