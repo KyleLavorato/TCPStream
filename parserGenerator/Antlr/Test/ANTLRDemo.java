@@ -11,10 +11,10 @@ public class ANTLRDemo {
         String query = readFile("abc.com.html");
         ANTLRInputStream input = new ANTLRInputStream(query);
         HTMLLexer lexer = new HTMLLexer(input);
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
-        HTMLParser parser = new HTMLParser(tokens);
-        ParseTree tree = parser.htmlDocument(); // begin parsing at query rule
-        //System.out.println(tree.toStringTree(parser)); // print LISP-style tree
+        // CommonTokenStream tokens = new CommonTokenStream(lexer);
+        // HTMLParser parser = new HTMLParser(tokens);
+        // ParseTree tree = parser.htmlDocument(); // begin parsing at query rule
+        // //System.out.println(tree.toStringTree(parser)); // print LISP-style tree
     }
 
     static String readFile(String path) 
