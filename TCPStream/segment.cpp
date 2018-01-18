@@ -27,7 +27,7 @@ void on_client_data(Stream& stream) {
     //cout << endl << "Cleint Packet - SIZE: " << payload.size() << endl;
     
     cout << endl << "********** Client Packet - SIZE: " << payload.size() << " **********" << endl;
-    parseData(argString, payload.data(), payload.size());
+    parseData(argString, payload.data(), payload.size(), 1);
 
 
     //SPIDalgorithm(argString, payload.data(), 1);
@@ -58,7 +58,7 @@ void on_server_data(Stream& stream) {
     // TODO: get the first argument here
 
     cout << endl << "********** Server Packet - SIZE: " << payload.size() << " **********" << endl;
-    parseData(argString, payload.data(), payload.size());
+    parseData(argString, payload.data(), payload.size(), 1);
     cout << endl << "************** End Server Packet **************" << endl;
 
     //SPIDalgorithm(argString, payload.data(), 0);

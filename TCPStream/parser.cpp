@@ -7,7 +7,10 @@ using namespace std;
 #define BIGENDIAN (0x0)
 #define LITTLEENDIAN (0x1)
 
-void parseData(char *progname, const unsigned char *data, const unsigned long dataLength) {
+#define SMB2_TYPE (1)
+#define HTTP_TYPE (2)
+
+int parseData(char *progname, const unsigned char *data, const unsigned long dataLength, int type) {
 	//std::cout << "PARSE START" << std::endl << std::endl;
 	bool parsedPDU;
 	PDUP * thePDU;
@@ -27,19 +30,33 @@ void parseData(char *progname, const unsigned char *data, const unsigned long da
 	thePDU ->curBitPos = 0;
 	thePDU ->remaining = thePDU ->len;
 	thePDU->header = NULL;
-	uint8_t endianness = LITTLEENDIAN;
-	PDU_SMB2 pdu_smb2;
+	uint8_t endianness;
 
 	uint32_t NETBIOS = get32_e (thePDU, endianness); // Skip the NETBIOS 4 byte layer
 
 	indent = 0;
-	parsedPDU = parseSMB2(&pdu_smb2, thePDU, progname, endianness);
-	if (parsedPDU == true){
-		cout << endl << "#### Parsed SMB ####" << endl;
-	} else { 
-		cout << endl << "#### FAILED PARSE ####" << endl;
+
+	switch (type) {
+		case 1:
+			PDU_SMB2 pdu_smb2;
+			endianness = LITTLEENDIAN; // SMB2 is Little Endian
+			parsedPDU = parseSMB2(&pdu_smb2, thePDU, progname, endianness);
+			if (parsedPDU == true){
+				cout << endl << "#### Parsed SMB ####" << endl;
+			} else { 
+				cout << endl << "#### FAILED PARSE ####" << endl;
+			}
+			freePDU_SMB2(&pdu_smb2);
+			break;
+		case 2:
+			// Add parseHTTP()
+			break;
+		default:
+			free(thePDU);
+			thePDU = NULL;
+			return 0;
 	}
-	freePDU_SMB2(&pdu_smb2);
 	free(thePDU);
 	thePDU = NULL;
+	return 1;
 }
