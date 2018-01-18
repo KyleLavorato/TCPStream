@@ -9,7 +9,7 @@ public class ANTLRDemo {
     public static void main(String[] args) throws Exception {
         
         try {
-            String query = readFile("TestFiles/class.cpp");
+            String query = readFile(args[0]); // File name is param
             
             ANTLRInputStream input = new ANTLRInputStream(query);
             CPP14Lexer lexer = new CPP14Lexer(input);
@@ -24,10 +24,12 @@ public class ANTLRDemo {
             walker.walk(listener, tree);
 
             //System.out.println(tree.toStringTree(parser)); // print LISP-style tree
-            System.out.println("SUCCESS");
+            //System.out.println("SUCCESS");
+            System.out.print("1"); // return 1
         } catch(Exception e) {
-            System.out.println("FAILURE");
-            System.out.println(e);
+            System.out.print("0"); // return 0
+            //System.out.println("FAILURE");
+            //System.out.println(e);
         }
     }
 
