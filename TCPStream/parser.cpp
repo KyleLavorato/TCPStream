@@ -10,8 +10,10 @@ using namespace std;
 #define SMB2_TYPE (1)
 #define HTTP_TYPE (2)
 
-int parseData(char *progname, const unsigned char *data, const unsigned long dataLength, int type) {
+int parseData(const unsigned char *data, const unsigned long dataLength, int type) {
 	//std::cout << "PARSE START" << std::endl << std::endl;
+	char *progname = argString;
+
 	bool parsedPDU;
 	PDUP * thePDU;
 	thePDU = (PDUP*)malloc(sizeof(PDUP));
