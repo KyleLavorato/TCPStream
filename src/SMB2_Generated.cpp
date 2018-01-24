@@ -3,6 +3,8 @@
 #include "SMB2_Generated.h"
 #include "pglobals.h"
 #include "putilities.h"
+char * argString;
+int indent;
 void freePDU_SMB2 (PDU_SMB2 *mainpdu);
 bool parseSMB2 (PDU_SMB2 *pdu_smb2, PDUP *thePDU, char *progname, uint8_t endianness);
 bool parseNEGOTIATE (NEGOTIATE_SMB2 *negotiate_smb2, PDUP *thePDU, char *progname, uint8_t endianness);

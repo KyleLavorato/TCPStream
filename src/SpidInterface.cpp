@@ -1,12 +1,14 @@
-#include "SPIDinterface.h"
+#include "SpidInterface.h"
 #include <string>
 #include <sstream>
 #include <math.h>
 
 double model[7][512];
 double inf = std::numeric_limits<double>::infinity();
-double threshold = 0.5;
 ProtocolModel currentModel;
+
+// TODO: Don't have the threshold hardcoded. Maybe put this in the config file?
+double threshold = 0.5;
 
 
 void addData(const byte packetData[], int packetDirection, const unsigned long packetLength){
@@ -41,7 +43,10 @@ void readCounterVector(string filename){
 
 void writeToFile(string filename){
     ofstream myFile;
-    myFile.open (filename);
+
+    // FIXME: Check if folder for file exists first
+    myFile.open(filename);
+
     myFile << "Byte Frequency" << endl;
     for (int i = 0; i < 256; i++){
         myFile << currentModel.byteFrequency.attributeFingerprint.probabilityDistributionVector[i][0] << " ";
@@ -133,41 +138,35 @@ void readProbabilityVector(string filename){
     inFile.close();
 }
 
-void compareProtocols(){
+string compareProtocols(map<string, string> protocolMap){
     double result;
     double currentResult;
-    bool flag = false;
+
     currentResult = inf;
-    string streamType = "unidentified";
-    readProbabilityVector("SPIDmodels/FTP.txt");
-    result = currentModel.GetAverageKullbackLeiblerDivergenceFrom(model);
-    result = fabs(result);
-    cout << "FTP comparison result = " << result << endl;
-    if (result < threshold){
-        currentResult = result;
-        streamType = "FTP";
-        flag = true;
+    string streamType = "Unknown";
+
+    string protocol;
+    string modelFile;
+
+    for (const auto &myPair : protocolMap) {
+        protocol = myPair.first;
+        modelFile = myPair.second;
+
+        // Set up global `model`
+        readProbabilityVector(modelFile);
+
+        // Get the divergence between the current model and the model built up from
+        // the files
+        result = currentModel.GetAverageKullbackLeiblerDivergenceFrom(model);
+
+        // Lower is better
+        if (result < threshold && result < currentResult){
+            currentResult = result;
+            streamType = protocol;
+        }
     }
-    readProbabilityVector("SPIDmodels/HTTP.txt");
-    result = currentModel.GetAverageKullbackLeiblerDivergenceFrom(model);
-    cout << "HTTP comparison result = " << result << endl;
-    if (result < threshold and result < currentResult){
-        currentResult = result;
-        streamType = "HTTP";
-        flag = true;
-    }
-    readProbabilityVector("SPIDmodels/SMB.txt");
-    result = currentModel.GetAverageKullbackLeiblerDivergenceFrom(model);
-    cout << "SMB comparison result = " << result << endl;
-    if (result < threshold and result < currentResult){
-        currentResult = result;
-        streamType = "SMB";
-        flag = true;
-    }    
-    cout << "Stream type is : " << streamType << endl;
-    if (flag == true){
-        //exit(1);
-    }
+
+    return streamType;
 }
 
 void mergeWithModel(string filename){
@@ -175,4 +174,8 @@ void mergeWithModel(string filename){
 	currentModel.MergeWith(model);
 	writeToFile(filename);
 	currentModel.reset();
+}
+
+void reset(){
+    currentModel.reset();
 }

@@ -108,9 +108,6 @@ vector<int> AttributeFingerprintHandler::GetMeasurements (const byte* packetData
 		}
 		return indiciesToBeIncremented;
 	}
-	else if (attributeName == "sequences"){
-
-	}
 	else if (attributeName == "offset"){
 		//int length = sizeof(packetData)/sizeof(*packetData);
 		vector<int> indiciesToBeIncremented(128);
@@ -154,7 +151,7 @@ vector<int> AttributeFingerprintHandler::GetMeasurements (const byte* packetData
 		}
 		return indiciesToBeIncremented;
 	}
-	else if (attributeName == "dirsize"){
+	else { // if (attributeName == "dirsize")
 		int length = packetLength / 10;
 		if (length >= 150){
 			length = 149;

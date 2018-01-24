@@ -2,15 +2,14 @@
 #include "packet.h" 
 #include "SMB2_Generated.h"
 #include "putilities.h"
+#include "Parser.h"
+
 using namespace std;
 
-#define BIGENDIAN (0x0)
-#define LITTLEENDIAN (0x1)
-
-#define SMB2_TYPE (1)
-#define HTTP_TYPE (2)
-
 int parseData(const unsigned char *data, const unsigned long dataLength, int type) {
+	char * argString;
+	int indent;
+
 	//std::cout << "PARSE START" << std::endl << std::endl;
 	char *progname = argString;
 

@@ -1,4 +1,4 @@
-#include "protocolModel.h"
+#include "ProtocolModel.h"
 
 using namespace std;
 

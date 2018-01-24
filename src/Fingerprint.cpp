@@ -6,7 +6,7 @@ Fingerprint::Fingerprint(){};
 
 Fingerprint::Fingerprint(int counter){
 	size = counter;
-	probabilityDistributionVector;
+	// probabilityDistributionVector;
 	probabilityDistributionVector.resize(size,vector<double>(2,0));
 }
 
