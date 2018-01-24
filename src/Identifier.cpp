@@ -39,58 +39,31 @@ void Identifier::configure(const string& filepath) {
 
 void Identifier::on_new_stream(Stream& stream) {
 
-    // Keep the payloads so that in `on_stream_closed` we can print the
-    // payloads for the entire stream to files
-    stream.auto_cleanup_payloads(false);
-
+    // Set the server and client data callbacks
     stream.client_data_callback(std::bind(&Identifier::on_client_data, this, _1));
     stream.server_data_callback(std::bind(&Identifier::on_server_data, this, _1));
 }
 
 void Identifier::on_client_data(Stream& stream) {
 
-    unsigned int i;
+    // Get the payload
     const vector<uint8_t> payload = stream.client_payload();
 
+    // Identify the protocol using the custom approach
     string appLayerProtocol = identify_protocol(payload);
 
-    // Uncomment if you'd like to print out packets that weren't identified
-    //
+    // Print result
     cout << "Application layer protocol identified: " << appLayerProtocol << endl;
-    // for (i = 0; i < payload.size(); i++) {
-    //     cout << payload[i];
-    // }
-
-    if (appLayerProtocol != "Unknown") {
-        cout << "Application layer protocol identified: " << appLayerProtocol << endl;
-        // for (i = 0; i < payload.size(); i++) {
-        //     cout << payload[i];
-        // }
-    }
-
-    cout << endl;
 }
 
 void Identifier::on_server_data(Stream& stream) {
 
-    unsigned int i;
+    // Get the payload
     const vector<uint8_t> payload = stream.server_payload();
 
+    // Identify the protocol using the custom approach
     string appLayerProtocol = identify_protocol(payload);
 
-    // Uncomment if you'd like to print out packets that weren't identified
-    //
-    // cout << "Application layer protocol identified: " << appLayerProtocol << endl;
-    // for (i = 0; i < payload.size(); i++) {
-    //     cout << payload[i];
-    // }
-
-    if (appLayerProtocol != "Unknown") {
-        cout << "Application layer protocol identified: " << appLayerProtocol << endl;
-        // for (i = 0; i < payload.size(); i++) {
-        //     cout << payload[i];
-        // }
-    }
-
-    cout << endl;
+    // Print result
+    cout << "Application layer protocol identified: " << appLayerProtocol << endl;
 }
