@@ -43,7 +43,10 @@ void readCounterVector(string filename){
 
 void writeToFile(string filename){
     ofstream myFile;
-    myFile.open (filename);
+
+    // FIXME: Check if folder for file exists first
+    myFile.open(filename);
+
     myFile << "Byte Frequency" << endl;
     for (int i = 0; i < 256; i++){
         myFile << currentModel.byteFrequency.attributeFingerprint.probabilityDistributionVector[i][0] << " ";
@@ -171,4 +174,8 @@ void mergeWithModel(string filename){
 	currentModel.MergeWith(model);
 	writeToFile(filename);
 	currentModel.reset();
+}
+
+void reset(){
+    currentModel.reset();
 }

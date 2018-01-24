@@ -34,6 +34,7 @@ void SpidIdentifier::handle_config_file_line(string line, int i) {
 
     // Write the model file
     writeToFile(modelFile);
+    reset();
 }
 
 void on_new_stream_training(Stream& stream) {

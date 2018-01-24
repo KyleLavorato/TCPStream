@@ -1,1 +1,3 @@
-HTTP:PCAPS/HTTP.pcap;SPIDmodel/HTTP.txt
+HTTP:PCAPS/HTTP.pcap;SpidModels/HTTP.txt
+FTP:PCAPS/FTP.pcap;SpidModels/FTP.txt
+SAMBA:PCAPS/SAMBA.pcap;SpidModels/SAMBA.txt

@@ -29,8 +29,8 @@ public:
     /** When new client data arrives */
     void on_client_data(Stream& stream);
 
-    /** When a stream closes successfully */
-    void on_stream_closed(Stream& stream);
+    /** When new server data arrives */
+    void on_server_data(Stream& stream);
 
     /** Identify the given packet. */
     virtual string identify_protocol(vector<uint8_t> payload) = 0;

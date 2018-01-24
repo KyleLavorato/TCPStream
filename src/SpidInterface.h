@@ -16,3 +16,4 @@ void readProbabilityVector (string filename);
 void readCounterVector(string filename);
 string compareProtocols(map<string, string> protocolMap);
 void mergeWithModel(string filename);
+void reset();
