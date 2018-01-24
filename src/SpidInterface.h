@@ -1,7 +1,7 @@
 #pragma once 
 
 #include <iostream>
-#include "protocolModel.h"
+#include "ProtocolModel.h"
 #include <limits>
 #include <fstream>
 #include <stdlib.h>

@@ -4,6 +4,7 @@
 #include <tins/tins.h>
 
 #include "StringMatchingIdentifier.h"
+#include "SpidIdentifier.h"
 
 using namespace Tins;
 using namespace std;
@@ -94,8 +95,16 @@ int main(int argc, char *argv[]) {
 		follower.new_stream_callback(std::bind(&StringMatchingIdentifier::on_new_stream, identifier, _1));
 
 	} else if (approachArg == "spid") {
-		cerr << "Error: SPID approach not yet implemented." << endl;
-		return -1;
+
+		// Instantiate an identifier that uses our specific approach
+		SpidIdentifier* identifier = new SpidIdentifier;
+
+		// Configure the identifier using the config file
+		identifier->configure(configFileArg);
+
+		// Set up the new stream callback
+		follower.new_stream_callback(std::bind(&SpidIdentifier::on_new_stream, identifier, _1));
+
 	} else {
 		usage();
 		return -1;

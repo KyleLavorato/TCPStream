@@ -1,5 +1,5 @@
 #include "SpidIdentifier.h"
-#include "SPIDinterface.h"
+#include "SpidInterface.h"
 
 void SpidIdentifier::handle_config_file_line(string line, int i) {
     size_t pos = 0;

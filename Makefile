@@ -1,7 +1,7 @@
 CXX=g++
 CFLAGS=-Wall -std=c++11 -c
 LDLIBS=-ltins
-OBJS=src/Main.o src/Identifier.o src/StringMatchingIdentifier.o src/SpidIdentifier.o src/SPIDinterface.o src/Fingerprint.o src/AttributeFingerprintHandler.o src/protocolModel.o
+OBJS=src/Main.o src/Identifier.o src/StringMatchingIdentifier.o src/SpidIdentifier.o src/SpidInterface.o src/Fingerprint.o src/AttributeFingerprintHandler.o src/ProtocolModel.o
 
 #
 # Utility
@@ -17,7 +17,7 @@ clean:
 # Executables
 #
 
-shitty_wireshark: src/Main.o src/Identifier.o src/StringMatchingIdentifier.o src/SpidIdentifier.o src/SPIDinterface.o src/Fingerprint.o src/AttributeFingerprintHandler.o src/protocolModel.o
+shitty_wireshark: src/Main.o src/Identifier.o src/StringMatchingIdentifier.o src/SpidIdentifier.o src/SpidInterface.o src/Fingerprint.o src/AttributeFingerprintHandler.o src/ProtocolModel.o
 	$(CXX) $(OBJS) -o shitty_wireshark $(LDLIBS) 
 
 
@@ -37,8 +37,8 @@ src/StringMatchingIdentifier.o: src/StringMatchingIdentifier.cpp
 src/SpidIdentifier.o: src/SpidIdentifier.cpp
 	$(CXX) $(CFLAGS) src/SpidIdentifier.cpp -o src/SpidIdentifier.o
 
-src/SPIDinterface.o: src/SPIDinterface.cpp
-	$(CXX) $(CFLAGS) src/SPIDinterface.cpp -o src/SPIDinterface.o
+src/SpidInterface.o: src/SpidInterface.cpp
+	$(CXX) $(CFLAGS) src/SpidInterface.cpp -o src/SpidInterface.o
 
 src/Fingerprint.o: src/Fingerprint.cpp
 	$(CXX) $(CFLAGS) src/Fingerprint.cpp -o src/Fingerprint.o
@@ -46,5 +46,5 @@ src/Fingerprint.o: src/Fingerprint.cpp
 src/AttributeFingerprintHandler.o: src/AttributeFingerprintHandler.cpp
 	$(CXX) $(CFLAGS) src/AttributeFingerprintHandler.cpp -o src/AttributeFingerprintHandler.o
 
-src/protocolModel.o: src/protocolModel.cpp
-	$(CXX) $(CFLAGS) src/protocolModel.cpp -o src/protocolModel.o
+src/ProtocolModel.o: src/ProtocolModel.cpp
+	$(CXX) $(CFLAGS) src/ProtocolModel.cpp -o src/ProtocolModel.o

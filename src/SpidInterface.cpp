@@ -1,4 +1,4 @@
-#include "SPIDinterface.h"
+#include "SpidInterface.h"
 #include <string>
 #include <sstream>
 #include <math.h>
