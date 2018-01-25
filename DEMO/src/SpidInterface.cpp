@@ -8,7 +8,7 @@ double inf = std::numeric_limits<double>::infinity();
 ProtocolModel currentModel;
 
 // TODO: Don't have the threshold hardcoded. Maybe put this in the config file?
-double threshold = 0.5;
+double threshold = 1.0;
 
 
 void addData(const byte packetData[], int packetDirection, const unsigned long packetLength){
@@ -158,6 +158,7 @@ string compareProtocols(map<string, string> protocolMap){
         // Get the divergence between the current model and the model built up from
         // the files
         result = currentModel.GetAverageKullbackLeiblerDivergenceFrom(model);
+        cout << protocol << " : " << result << endl;
 
         // Lower is better
         if (result < threshold && result < currentResult){
@@ -165,7 +166,7 @@ string compareProtocols(map<string, string> protocolMap){
             streamType = protocol;
         }
     }
-
+    //currentModel.reset();
     return streamType;
 }
 

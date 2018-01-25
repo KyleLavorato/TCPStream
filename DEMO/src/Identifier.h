@@ -34,8 +34,15 @@ public:
     /** When new server data arrives */
     void on_server_data(Stream& stream);
 
+    /** When stream is closed */
+    void on_stream_closed(Stream& stream);
+
     /** Identify the given packet. */
-    virtual string identify_protocol(vector<uint8_t> payload) = 0;
+    virtual void build_model(vector<uint8_t> payload, int direction) = 0;
+
+    virtual string identify_protocol();
+
+    virtual void reset_model();
 
 
 private:
