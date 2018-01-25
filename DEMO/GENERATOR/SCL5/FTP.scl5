@@ -1,0 +1,11 @@
+FTP DEFINITIONS ::= BEGIN
+
+EXPORTS PDU;
+
+PDU ::= (Packet)
+
+Packet ::= SEQUENCE {
+
+}
+
+END
