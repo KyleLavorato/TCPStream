@@ -15,10 +15,12 @@ using namespace std;
 using namespace std::placeholders;
 using Tins::TCPIP::Stream;
 
-void Identifier::configure(const string& filepath) {
+void Identifier::configure(const string& filepath, bool printPackets) {
 
     string line;
     ifstream configFile;
+
+    shouldPrintPackets = printPackets;
 
     configFile.open(filepath);
 
@@ -55,8 +57,16 @@ void Identifier::on_client_data(Stream& stream) {
     // Print result
     cout << "Application layer protocol identified: " << appLayerProtocol << endl;
 
+    // Print the packets if told to
+    if (shouldPrintPackets) {
+        for (unsigned int i = 0; i < payload.size(); i++) {
+            cout << payload[i];
+        }
+        cout << endl;
+    }
+
     // Send it to the parser if it's one of the recognized protocols. Right now
-    // this is hardcoded, but it will be made dynamic.
+    // this is hardcoded, but it will be made dynamic. TODO
     if (appLayerProtocol == "SAMBA") {
         parseData(payload.data(), payload.size(), SMB2_TYPE);
     } else if (appLayerProtocol == "HTTP") {
@@ -74,6 +84,14 @@ void Identifier::on_server_data(Stream& stream) {
 
     // Print result
     cout << "Application layer protocol identified: " << appLayerProtocol << endl;
+
+    // Print the packets if told to
+    if (shouldPrintPackets) {
+        for (unsigned int i = 0; i < payload.size(); i++) {
+            cout << payload[i];
+        }
+        cout << endl;
+    }
 
     // Send it to the parser if it's one of the recognized protocols. Right now
     // this is hardcoded, but it will be made dynamic.
