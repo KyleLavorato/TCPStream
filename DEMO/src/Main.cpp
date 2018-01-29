@@ -12,74 +12,83 @@ using namespace std::placeholders;
 using Tins::TCPIP::Stream;
 using Tins::TCPIP::StreamFollower;
 
-// TODO: Make options actually optional
-
-char * argString;
-
 void usage() {
-	cerr << "Usage: shitty_wireshark [OPTIONS]... MODE APPROACH CONFIG_FILE PACKET_SOURCE" << endl;
+	cerr << "Usage: shitty_wireshark [OPTIONS ...] MODE APPROACH CONFIG_FILE PACKET_SOURCE" << endl;
 	cerr << endl;
 	cerr << "MODE is either 'live' or 'file' without the single quotes. In 'live' mode," << endl;
-	cerr << "PACKET_SOURCE must be a valid network interface. Run `ifconfig` to see what" << endl;
-	cerr << "interfaces are available on your machine. When in 'file' mode, the" << endl;
-	cerr << "PACKET_SOURCE must be a PCAP file that will be read from." << endl;
+	cerr << "\tPACKET_SOURCE must be a valid network interface. Run `ifconfig` to see" << endl;
+	cerr << "\twhat interfaces are available on your machine. When in 'file' mode, the" << endl;
+	cerr << "\tPACKET_SOURCE must be a PCAP file that will be read from." << endl;
 	cerr << endl;
-	cerr << "APPROACH is either 'string-matching' or 'spid' without the single quotes. See" << endl;
-	cerr << "respective sections below for detailed descriptions of which approach to use" << endl;
-	cerr << "and when." << endl;
+	cerr << "APPROACH is either 'string-matching' or 'spid' without the single quotes." << endl;
+	cerr << "\tSee respective sections below for detailed descriptions of which" << endl;
+	cerr << "\tapproach to use and when." << endl;
 	cerr << endl;
 	cerr << "CONFIG_FILE is the configuration file needed by the APPROACH you specified." << endl;
 	cerr << endl;
-	cerr << "PACKET_SOURCE is either a network interface or a PCAP file, depending on what" << endl;
-	cerr << "MODE is set to." << endl;
+	cerr << "PACKET_SOURCE is either a network interface or a PCAP file, depending on" << endl;
+	cerr << "\twhat MODE is set to." << endl;
 	cerr << endl;
 	cerr << "Miscellaneous:" << endl;
-	cerr << "  -h, --help			display this help text and exit" << endl;
-	cerr << endl;
-	cerr << "Configuration file formats:" << endl;
-	cerr << endl;
-	cerr << "Each approach has a specific set of formatting rules for the config file. They" << endl;
-	cerr << "are specified in this section." << endl;
-	cerr << endl;
-	cerr << "String Matching:" << endl;
-	cerr << endl;
-	cerr << "Each line defines a PROTOCOL, which is an application layer protocol you'd like" << endl;
-	cerr << "to be able to identify, and a set of TOKENs, which are strings that are used" << endl;
-	cerr << "to identify if a packet is of protocol PROTOCOL. Each protocol you'd like to" << endl;
-	cerr << "identify gets one line in the config file. Each line should be formatted like" << endl;
-	cerr << "so:" << endl;
-	cerr << endl;
-	cerr << "  PROTOCOL:TOKEN_1,TOKEN_2,TOKEN_3,...,TOKEN_n" << endl;
-	cerr << endl;
-	cerr << "Tokens cannot contain commas (a workaround for this could be a future addition" << endl;
-	cerr << "to this software). Here is an example of identifying the HTTP protocol:" << endl;
-	cerr << endl;
-	cerr << "  HTTP:HTTP/1.1" << endl;
-	cerr << endl;
-	cerr << "Note that if ANY of the tokens are matched, then the packet is immediately" << endl;
-	cerr << "identified as the protocol that token belongs to." << endl;
+	cerr << "  -h, --help           display this help text and exit" << endl;
+	cerr << "      --print-packets  print the contents of packets" << endl;
+	// cerr << endl;
+	// cerr << "Configuration file formats:" << endl;
+	// cerr << endl;
+	// cerr << "Each approach has a specific set of formatting rules for the config file. They" << endl;
+	// cerr << "are specified in this section." << endl;
+	// cerr << endl;
+	// cerr << "String Matching:" << endl;
+	// cerr << endl;
+	// cerr << "Each line defines a PROTOCOL, which is an application layer protocol you'd like" << endl;
+	// cerr << "to be able to identify, and a set of TOKENs, which are strings that are used" << endl;
+	// cerr << "to identify if a packet is of protocol PROTOCOL. Each protocol you'd like to" << endl;
+	// cerr << "identify gets one line in the config file. Each line should be formatted like" << endl;
+	// cerr << "so:" << endl;
+	// cerr << endl;
+	// cerr << "  PROTOCOL:TOKEN_1,TOKEN_2,TOKEN_3,...,TOKEN_n" << endl;
+	// cerr << endl;
+	// cerr << "Tokens cannot contain commas (a workaround for this could be a future addition" << endl;
+	// cerr << "to this software). Here is an example of identifying the HTTP protocol:" << endl;
+	// cerr << endl;
+	// cerr << "  HTTP:HTTP/1.1" << endl;
+	// cerr << endl;
+	// cerr << "Note that if ANY of the tokens are matched, then the packet is immediately" << endl;
+	// cerr << "identified as the protocol that token belongs to." << endl;
 }
 
+char* argString;
+
 int main(int argc, char *argv[]) {
-	
-	// Check arguments for proper usage
-	if (argc != 5) {
-		usage();
-		return -1;
+
+	argString = argv[0];
+
+	bool printPackets = false;
+
+	int arg = 1;
+	string currentArg = argv[arg];
+
+	while (currentArg.size() > 0 && currentArg[0] == '-') {
+
+		if (currentArg == "--print-packets") {
+			printPackets = true;
+		} else if (currentArg == "-h" || currentArg == "--help") {
+			usage();
+			return -1;
+		} else {
+			cerr << "Error: Unrecognized argument: " << currentArg << endl;
+			cerr << endl;
+			usage();
+			return -1;
+		}
+
+		currentArg = argv[++arg];
 	}
 
-	argString = argv[1];
-	string firstArg = argv[1];
-
-	if (firstArg.size() > 0 && firstArg[0] == '-') {
-		usage();
-		return -1;
-	}
-
-	const string& modeArg = firstArg;
-	string approachArg = argv[2];
-	string configFileArg = argv[3];
-	string packetSourceArg = argv[4];
+	const string& modeArg = argv[arg++];
+	string approachArg = argv[arg++];
+	string configFileArg = argv[arg++];
+	string packetSourceArg = argv[arg++];
 
 	// Create our follower
 	Tins::TCPIP::StreamFollower follower;
@@ -92,7 +101,7 @@ int main(int argc, char *argv[]) {
 		StringMatchingIdentifier* identifier = new StringMatchingIdentifier;
 
 		// Configure the identifier using the config file
-		identifier->configure(configFileArg);
+		identifier->configure(configFileArg, printPackets);
 
 		// Set up the new stream callback
 		follower.new_stream_callback(std::bind(&StringMatchingIdentifier::on_new_stream, identifier, _1));
@@ -103,7 +112,7 @@ int main(int argc, char *argv[]) {
 		SpidIdentifier* identifier = new SpidIdentifier;
 
 		// Configure the identifier using the config file
-		identifier->configure(configFileArg);
+		identifier->configure(configFileArg, printPackets);
 
 		// Set up the new stream callback
 		follower.new_stream_callback(std::bind(&SpidIdentifier::on_new_stream, identifier, _1));
