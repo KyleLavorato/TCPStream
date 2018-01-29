@@ -23,7 +23,7 @@ public:
      * Reads the given config file and uses internal configuration strategy
      * specified in the handle_config_line method.
      */
-    void configure(const string& filepath);
+    void configure(const string& filepath, bool printPackets);
 
     /** When a new stream is seen */
     void on_new_stream(Stream& stream);
@@ -36,6 +36,14 @@ public:
 
     /** Identify the given packet. */
     virtual string identify_protocol(vector<uint8_t> payload) = 0;
+
+
+protected:
+
+    /**
+     * Flag to say whether you should print packets or not
+     */
+    bool shouldPrintPackets;
 
 
 private:

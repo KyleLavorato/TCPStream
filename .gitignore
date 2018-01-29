@@ -1,3 +1,4 @@
 *.o
 shitty_wireshark
 SpidModels
+node_modules
