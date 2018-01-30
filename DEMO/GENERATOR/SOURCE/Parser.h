@@ -9,3 +9,4 @@
 #define SMB2_TYPE (2)
 #define FTP_TYPE (3)
 int parseData (const unsigned char * data, const unsigned long dataLength, int type);
+void printStats ();

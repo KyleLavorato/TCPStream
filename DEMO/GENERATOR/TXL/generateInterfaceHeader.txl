@@ -8,7 +8,7 @@ define program
 end define
 
 define config
-	[protocol] ': [list packet_type] '> [endian] '< [skip_bits] ';
+	[protocol] ': [list packet_type] '> [endian] '< [skip_bits] [opt debug_flag] ';
 	| [repeat function_definition_or_declaration]
 end define
 
@@ -27,6 +27,10 @@ end define
 
 define skip_bits
 	[number]
+end define
+
+define debug_flag
+	'-DEBUG
 end define
 
 function main
@@ -55,7 +59,7 @@ function generateTypes Config [config]
 		P [program]
 
 	deconstruct [config] Config
-		Proto [protocol] ': PT [list packet_type] '> E [endian] '< SB [skip_bits] ';
+		Proto [protocol] ': PT [list packet_type] '> E [endian] '< SB [skip_bits] D [opt debug_flag] ';
 	deconstruct [protocol] Proto
 		Type [id]
 	import packetTypes [repeat id]
@@ -88,9 +92,12 @@ function addAuxiliaryData
 	construct Stmts [repeat function_definition_or_declaration]
 		int parseData(const unsigned char *data, const unsigned 'long dataLength, int type);
 
+	construct stats [repeat function_definition_or_declaration]
+		void printStats();
+
 	by
 		Includes
-		Stmts
+		Stmts [. stats]
 end function
 
 function generateIncludes packetType [id]

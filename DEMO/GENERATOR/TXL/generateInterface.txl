@@ -8,7 +8,7 @@ define program
 end define
 
 define config
-	[protocol] ': [list packet_type] '> [endian] '< [skip_bits] ';
+	[protocol] ': [list packet_type] '> [endian] '< [skip_bits] [opt debug_flag] ';
 	| [repeat function_definition_or_declaration]
 end define
 
@@ -29,6 +29,10 @@ define skip_bits
 	[number]
 end define
 
+define debug_flag
+	'-DEBUG
+end define
+
 function main
 	replace [program]
 		P [program]
@@ -46,11 +50,17 @@ function main
 	export packetTypes
 		packetTypes
 
+	construct debugTypes [repeat id]
+		_
+	export debugTypes
+		debugTypes
+
 	deconstruct P
 		Configs [repeat config]
 
 	by
-		P [generateTypes each Configs]
+		P [generateDebugTypes each Configs]
+			[generateTypes each Configs]
 			[addAuxiliaryData]
 end function
 
@@ -59,7 +69,7 @@ function generateTypes Config [config]
 		P [program]
 
 	deconstruct [config] Config
-		Proto [protocol] ': PT [list packet_type] '> E [endian] '< SB [skip_bits] ';
+		Proto [protocol] ': PT [list packet_type] '> E [endian] '< SB [skip_bits] D [opt debug_flag]';
 	deconstruct [protocol] Proto
 		Type [id]
 	import packetTypes [repeat id]
@@ -76,12 +86,28 @@ function generateTypes Config [config]
 		P
 end function
 
+function generateDebugTypes Config [config]
+	replace [program]
+		P [program]
+
+	deconstruct [config] Config
+		Proto [protocol] ': PT [list packet_type] '> E [endian] '< SB [skip_bits] D [debug_flag]';
+	deconstruct [protocol] Proto
+		Type [id]
+	import debugTypes [repeat id]
+	export debugTypes
+		debugTypes [. Type]
+
+	by
+		P
+end function
+
 function generateCase Config [config]
 	replace [repeat declaration_or_statement]
 		Stmts [repeat declaration_or_statement]
 	
 	deconstruct [config] Config 
-		Proto [protocol] ': PT [list packet_type] '> E [endian] '< SB [skip_bits] ';
+		Proto [protocol] ': PT [list packet_type] '> E [endian] '< SB [skip_bits] D [opt debug_flag] ';
 	deconstruct [protocol] Proto
 		packetType [id]
 
@@ -92,19 +118,12 @@ function generateCase Config [config]
 	construct typeName [id]
 		packetType [+ "_TYPE"]
 
-	construct parseName [id]
-		_ [+ "parse"] [+ packetType]
-	construct freeName [id]
-		_ [+ "freePDU_"] [+ packetType]
-
 	construct endianType [id]
 		_ [generateLittleEndian E] [generateBigEndian E]
 	construct skipStmt [repeat declaration_or_statement]
 		_ [generateSkipStatement SB]
 	construct parseStmts [repeat declaration_or_statement]
-		parsedPDU = parseName('& pduNameLower, thePDU, progname, endianness);
-		freeName('& pduNameLower);
-		break;
+		_ [generateStd packetType pduNameLower] [generateDebug packetType pduNameLower]
 	construct restStmts [repeat declaration_or_statement]
 		skipStmt [. parseStmts]
 
@@ -155,11 +174,64 @@ function generateSkipStatement SB [skip_bits]
 		Stmts [. skipStmt]
 end function
 
+function generateStd	packetType [id] pduNameLower [id]
+	import debugTypes [repeat id]
+	deconstruct not * [id] debugTypes
+		packetType
+
+	replace [repeat declaration_or_statement]
+		Stmts [repeat declaration_or_statement]
+
+	construct parseName [id]
+		_ [+ "parse"] [+ packetType]
+	construct freeName [id]
+		_ [+ "freePDU_"] [+ packetType]
+
+	construct parseStmts [repeat declaration_or_statement]
+		parsedPDU = parseName('& pduNameLower, thePDU, progname, endianness);
+		freeName('& pduNameLower);
+		break;
+
+	by
+		Stmts [. parseStmts]
+end function
+
+function generateDebug	packetType [id] pduNameLower [id]
+	import debugTypes [repeat id]
+	deconstruct * [id] debugTypes
+		packetType
+
+	replace [repeat declaration_or_statement]
+		Stmts [repeat declaration_or_statement]
+
+	construct parseName [id]
+		_ [+ "parse"] [+ packetType]
+	construct freeName [id]
+		_ [+ "freePDU_"] [+ packetType]
+	construct passName [id]
+		_ [+ "i"] [+ packetType]
+	construct failName [id]
+		_ [+ "i"] [+ packetType] [+ "f"]
+
+	construct parseStmts [repeat declaration_or_statement]
+		parsedPDU = parseName('& pduNameLower, thePDU, progname, endianness);
+		if (parsedPDU) 
+			passName ++;
+		else
+			failName ++;
+		freeName('& pduNameLower);
+		break;
+
+	by
+		Stmts [. parseStmts]
+end function
+
 function addAuxiliaryData
 	replace [program]
 		P [program]
 
 	import packetTypes [repeat id]
+	import debugTypes [repeat id]
 	construct FinalHeaderIncludes [repeat preprocessor]
 		_ [generateIncludes each packetTypes]
 	construct FinalHeaderDefines [repeat preprocessor]
@@ -177,6 +249,7 @@ function addAuxiliaryData
 	construct defaultCase [repeat declaration_or_statement]
 		default:
 		{
+			iFail++;
 			free(thePDU);
 			thePDU = NULL;
 			return 0;
@@ -188,6 +261,7 @@ function addAuxiliaryData
 	construct parseBody [repeat declaration_or_statement]
 		char *progname = argString;
 
+		iTotal++;
 		bool parsedPDU;
 		PDUP * thePDU;
 		thePDU = (PDUP*)malloc(sizeof(PDUP));
@@ -211,14 +285,36 @@ function addAuxiliaryData
 		thePDU = NULL;
 		return parsedPDU;
 
-	construct Stmts [repeat function_definition_or_declaration]
+	construct declareCounts [repeat function_definition_or_declaration]
+		'long iTotal = 0;
+		'long iFail = 0;
+
+	construct declareDebugs [repeat function_definition_or_declaration]
+		_ [generateProtocolCounters each debugTypes]
+
+	construct declares [repeat function_definition_or_declaration]
+		declareCounts [. declareDebugs]
+
+	construct parseFunc [repeat function_definition_or_declaration]
 		int parseData(const unsigned char *data, const unsigned 'long dataLength, int type) {
 			parseBody
 		}
 
+	construct printTotal [repeat declaration_or_statement]
+		printf( "Total Packets: %lu \n", iTotal);
+		printf( "Unparsable Packets: %lu \n", iFail);
+
+	construct printBody [repeat declaration_or_statement]
+		_ [generateDebugPrints each debugTypes] [. printTotal]
+
+	construct stats [repeat function_definition_or_declaration]
+		void printStats() {
+			printBody
+		}
+
 	by
 		Includes
-		Stmts
+		declares [. parseFunc] [. stats]
 end function
 
 function generateIncludes packetType [id]
@@ -252,4 +348,43 @@ function generateDefines packetType [id]
 
 	by
 		P [. FinalHeaderDefine]
+end function
+
+function generateProtocolCounters packetType [id]
+	replace [repeat function_definition_or_declaration]
+		Stmts [repeat function_definition_or_declaration]
+	
+	construct passName [id]
+		_ [+ "i"] [+ packetType]
+	construct failName [id]
+		_ [+ "i"] [+ packetType] [+ "f"]
+	
+	construct declares [repeat function_definition_or_declaration]
+		'long passName = 0;
+		'long failName = 0;
+
+	by
+		Stmts [. declares]
+end function
+
+function generateDebugPrints packetType [id]
+	replace [repeat declaration_or_statement]
+		Stmts [repeat declaration_or_statement]
+
+	construct passName [id]
+		_ [+ "i"] [+ packetType]
+	construct failName [id]
+		_ [+ "i"] [+ packetType] [+ "f"]
+
+	construct linePass [stringlit]
+		_ [+ ""] [+ packetType] [+ " Parsed: %lu \n"]
+	construct lineFail [stringlit]
+		_ [+ ""] [+ packetType] [+ " Failed: %lu \n"]
+
+	construct print [repeat declaration_or_statement]
+		printf( linePass, passName);
+		printf( lineFail, failName);
+
+	by
+		Stmts [. print]
 end function
