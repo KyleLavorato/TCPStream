@@ -249,6 +249,7 @@ function addAuxiliaryData
 	construct defaultCase [repeat declaration_or_statement]
 		default:
 		{
+			iFail++;
 			free(thePDU);
 			thePDU = NULL;
 			return 0;
@@ -260,6 +261,7 @@ function addAuxiliaryData
 	construct parseBody [repeat declaration_or_statement]
 		char *progname = argString;
 
+		iTotal++;
 		bool parsedPDU;
 		PDUP * thePDU;
 		thePDU = (PDUP*)malloc(sizeof(PDUP));
@@ -283,16 +285,27 @@ function addAuxiliaryData
 		thePDU = NULL;
 		return parsedPDU;
 
-	construct declares [repeat function_definition_or_declaration]
+	construct declareCounts [repeat function_definition_or_declaration]
+		'long iTotal = 0;
+		'long iFail = 0;
+
+	construct declareDebugs [repeat function_definition_or_declaration]
 		_ [generateProtocolCounters each debugTypes]
+
+	construct declares [repeat function_definition_or_declaration]
+		declareCounts [. declareDebugs]
 
 	construct parseFunc [repeat function_definition_or_declaration]
 		int parseData(const unsigned char *data, const unsigned 'long dataLength, int type) {
 			parseBody
 		}
 
+	construct printTotal [repeat declaration_or_statement]
+		printf( "Total Packets: %lu \n", iTotal);
+		printf( "Unparsable Packets: %lu \n", iFail);
+
 	construct printBody [repeat declaration_or_statement]
-		_ [generateDebugPrints each debugTypes]
+		_ [generateDebugPrints each debugTypes] [. printTotal]
 
 	construct stats [repeat function_definition_or_declaration]
 		void printStats() {
@@ -347,8 +360,8 @@ function generateProtocolCounters packetType [id]
 		_ [+ "i"] [+ packetType] [+ "f"]
 	
 	construct declares [repeat function_definition_or_declaration]
-		'long passName;
-		'long failName;
+		'long passName = 0;
+		'long failName = 0;
 
 	by
 		Stmts [. declares]

@@ -8,15 +8,18 @@
 #define HTTP_TYPE (1)
 #define SMB2_TYPE (2)
 #define FTP_TYPE (3)
-long iHTTP;
-long iHTTPf;
-long iSMB2;
-long iSMB2f;
-long iFTP;
-long iFTPf;
+long iTotal = 0;
+long iFail = 0;
+long iHTTP = 0;
+long iHTTPf = 0;
+long iSMB2 = 0;
+long iSMB2f = 0;
+long iFTP = 0;
+long iFTPf = 0;
 
 int parseData (const unsigned char *data, const unsigned long dataLength, int type) {
     char *progname = argString;
+    iTotal++;
     bool parsedPDU;
     PDUP *thePDU;
     thePDU = (PDUP *) malloc (sizeof (PDUP));
@@ -69,6 +72,7 @@ int parseData (const unsigned char *data, const unsigned long dataLength, int ty
         }
     default :
         {
+            iFail++;
             free (thePDU);
             thePDU = NULL;
             return 0;
@@ -86,5 +90,7 @@ void printStats () {
     printf ("SMB2 Failed: %lu \n", iSMB2f);
     printf ("FTP Parsed: %lu \n", iFTP);
     printf ("FTP Failed: %lu \n", iFTPf);
+    printf ("Total Packets: %lu \n", iTotal);
+    printf ("Unparsable Packets: %lu \n", iFail);
 }
 
