@@ -2,6 +2,7 @@
 
 DIR=""
 CALLBACK=""
+PARAM=""
 
 if [[ "$1" == "" || "$1" == "-h" ]]; then
 	printf "Usage:\t./UID.sh [FILENAME]\n"
@@ -29,6 +30,11 @@ do
 		CALLBACK="-debug"
 		continue
    	fi
+   	if [ "$i" == "-q" ]
+	then
+		PARAM="-q"
+		continue
+   	fi
 	if [[ "$DIR" == ""  && "$i" != "-nocallback" && "$i" != "-debug"  && "$i" != *".scl5" ]];
     then
 	    DIR=$i
@@ -36,24 +42,24 @@ do
 done
 
 # Unique naming for all declarations
-txl SCL5/$1 TXL/UID_declarations.txl > INTERMEDIATE/"$filename"_declarations.scl5
+txl SCL5/$1 TXL/UID_declarations.txl $PARAM > INTERMEDIATE/"$filename"_declarations.scl5
 
 # Unique naming for all References
-txl INTERMEDIATE/"$filename"_declarations.scl5 TXL/UID_references.txl -idchars '$' > INTERMEDIATE/"$filename"_UID.scl5 # -idchars '$'
+txl INTERMEDIATE/"$filename"_declarations.scl5 TXL/UID_references.txl $PARAM -idchars '$' > INTERMEDIATE/"$filename"_UID.scl5 # -idchars '$'
 
 # Callback annotation
-txl INTERMEDIATE/"$filename"_UID.scl5 TXL/callback_annotation.txl -idchars '$' > INTERMEDIATE/"$filename"_UID_callbackAnnotated.scl5
+txl INTERMEDIATE/"$filename"_UID.scl5 TXL/callback_annotation.txl $PARAM -idchars '$' > INTERMEDIATE/"$filename"_UID_callbackAnnotated.scl5
 
 # Generate annotated scl5 file for source optimizations
-txl INTERMEDIATE/"$filename"_UID_callbackAnnotated.scl5 TXL/generateOptimizations.txl -idchars '$' > INTERMEDIATE/"$filename"_UID_annotated.scl5
+txl INTERMEDIATE/"$filename"_UID_callbackAnnotated.scl5 TXL/generateOptimizations.txl $PARAM -idchars '$' > INTERMEDIATE/"$filename"_UID_annotated.scl5
 
 # Generate C header file for scl5 file
-txl INTERMEDIATE/"$filename"_UID_annotated.scl5 TXL/generateHeader.txl -idchars '$' > INTERMEDIATE/"$filename"_Generated.h.unsorted
+txl INTERMEDIATE/"$filename"_UID_annotated.scl5 TXL/generateHeader.txl $PARAM -idchars '$' > INTERMEDIATE/"$filename"_Generated.h.unsorted
 
 # Generate C header sorted file 
-txl INTERMEDIATE/"$filename"_Generated.h.unsorted TXL/sortHeader.Txl -idchars '$' > SOURCE/"$filename"_Generated.h
+txl INTERMEDIATE/"$filename"_Generated.h.unsorted TXL/sortHeader.Txl $PARAM -idchars '$' > SOURCE/"$filename"_Generated.h
 
-txl -s 140 INTERMEDIATE/"$filename"_UID_annotated.scl5 TXL/generateSource.txl -idchars '$' - $CALLBACK > SOURCE/"$filename"_Generated.cpp
+txl -s 140 INTERMEDIATE/"$filename"_UID_annotated.scl5 TXL/generateSource.txl $PARAM -idchars '$' - $CALLBACK > SOURCE/"$filename"_Generated.cpp
 
 
 if [[ "$DIR" != "" ]]; then

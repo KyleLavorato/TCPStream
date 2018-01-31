@@ -56,8 +56,8 @@ rule noUnderscores
 		0	% If the location is 0 a "_" was not found; Only contine if not 0
 	construct Err [id]
 	_ [+ "Warning, \""] [+ US] [+ "\" declaration \""] [+ ID] [+ "\" contains underscore '_' "]
-	construct Message [id]
-		_	[message Err]	% Send error message to the console output
+	%construct Message [id]
+	%	_	[message Err]	% Send error message to the console output
 	construct LenS [number]
 		_ [# ID]	% Get the length of ID
 	construct sub1 [number]

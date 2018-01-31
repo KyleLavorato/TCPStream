@@ -33,5 +33,8 @@ cd ../../
 echo -e "\nrm -rf libtins\n"
 rm -rf libtins
 
-echo -e "\nlibtins installed successfully"
+echo -e "\nlibtins installed successfully\n"
 
+echo "\nInstalling tshark for test suite\n"
+sudo apt-get install tshark
+echo "\ntshark installed successfully"
