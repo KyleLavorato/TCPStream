@@ -31,6 +31,21 @@ An example of a config line for HTTP is below:
 HTTP:HTTP/1.1,GET>B<0;
 ```
 
+## Test Suite
+
+The software package comes with a built in test suite to assess performance located in `../TEST`.
+The test suite will evaluate TCPStream's ability to identify streams for any packet captures located in `../TEST/PCAP`. Run the test suite in the TEST directory with the command:
+```shell
+./ProcessStream.sh
+```
+The test suite will complete the following actions:
+* Preprocess each input pcap in the PCAP directory to segment it into numbered streams, with the protocol identified using tshark (Wireshark command line)
+* The preprocessed input will be output to `TEST/EXPECTED_RESULT` for manual inspection if desired
+* Complete a full clean make of TCPStream, including generating the parsers and interface
+* Process the same input pcaps through TCPStream using both *String Matching* and *SPID* seperately.
+* The results of the runs will be output to `TEST/ACTUAL_RESULT/<Algorithm>` respectively.
+* Perform analysis of the results and output the statistics to console.
+
 ## Notes
 
 * You should not enter the GENERATOR folder for any reason unless you know what you are doing, it is entirely self contained
