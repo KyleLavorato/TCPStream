@@ -1,12 +1,13 @@
 #include "Identifier.h"
 
-void Identifier::configure(const string& filepath, bool printPackets, bool processPacketsIndividually) {
+void Identifier::configure(const string& filepath, bool printPackets, bool processPacketsIndividually, string method) {
 
     string line;
     ifstream configFile;
 
     shouldPrintPackets = printPackets;
     shouldProcessPacketsIndividually = processPacketsIndividually;
+    approach = method;
     streamNum = 1; // Start counting at 1, not 0
 
     configFile.open(filepath);
@@ -31,7 +32,7 @@ void Identifier::on_new_stream(Stream& stream) {
     // Don't get rid of client or server payloads, keep them so they can be
     // processed at the end of the stream
     stream.auto_cleanup_payloads(false);
-
+    if (approach == "spid") reset_model();
     // Set the callbacks
     stream.client_data_callback(std::bind(&Identifier::on_client_data, this, _1));
     stream.server_data_callback(std::bind(&Identifier::on_server_data, this, _1));
@@ -40,12 +41,18 @@ void Identifier::on_new_stream(Stream& stream) {
 
 void Identifier::on_client_data(Stream& stream) {
     const vector<uint8_t> payload = stream.client_payload();
+    if (approach == "spid"){
+        if (payload.size() > 0) handle_data(payload, 1);
+    }
     if (shouldProcessPacketsIndividually) processPacket(payload);
     sendPacketToParser(payload, identify_protocol(payload));
 }
 
 void Identifier::on_server_data(Stream& stream) {
     const vector<uint8_t> payload = stream.server_payload();
+    if (approach == "spid"){
+        if (payload.size() > 0) handle_data(payload, 0);
+    }
     if (shouldProcessPacketsIndividually) processPacket(payload);
     sendPacketToParser(payload, identify_protocol(payload));
 }

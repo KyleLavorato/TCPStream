@@ -13,6 +13,12 @@ public:
 
     /** Identify the given packet. */
     string identify_protocol(vector<uint8_t> payload);
+    void reset_model() {
+    	//DOES NOTHING
+    }
+    void handle_data(vector<uint8_t> payload, int dir) {
+    	//DOES NOTHING
+    }
 
 
 private:

@@ -57,15 +57,21 @@ void AttributeFingerprintHandler::AddObservation (const byte packetData[], time_
 
 double AttributeFingerprintHandler::GetAverageKullbackLeiblerDivergenceFrom (double* attributeArray){
 	double divergence;
+	double dividend;
+	double quotient;
+	double total = 0;
+	for (int i = 0; i < attributeFingerprint.size; i++){
+		total += attributeFingerprint.probabilityDistributionVector[i][0];
+	}
 	divergence = 0;
 	for (int i = 0; i < attributeFingerprint.size; i++){
-		if (attributeArray[i] != 0 and attributeFingerprint.probabilityDistributionVector[i][1] != 0){
-			divergence += (attributeArray[i] * log2(attributeArray[i] / attributeFingerprint.probabilityDistributionVector[i][1]));
+		//if (attributeArray[i] != 0 and attributeFingerprint.probabilityDistributionVector[i][1] != 0){
+		dividend = attributeFingerprint.probabilityDistributionVector[i][1] + (1/total);
+		quotient = attributeArray[i] + 1/(double(attributeFingerprint.size));
+		divergence += (attributeArray[i] * abs(log(quotient / dividend)));
+		//cout << "SIZE: " << attributeFingerprint.size << " " << i << " " << attributeName << " " << divergence << endl;
 			//divergence += -(attributeArray[i] * log2(attributeFingerprint.probabilityDistributionVector[i][1] / attributeArray[i]));
-		}
-		if (attributeFingerprint.probabilityDistributionVector[i][1] == 0 and attributeArray[i] != 0){
-			divergence += 0;
-		}
+		//}
 	}
 	return divergence;
 }

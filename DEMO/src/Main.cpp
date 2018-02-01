@@ -91,7 +91,7 @@ CONFIGURATION
             .
 
             For example:
-            
+
             HTTP:PCAPS/HTTP.pcap;SpidModels/HTTP.txt
 
 EXAMPLES
@@ -175,7 +175,7 @@ int main(int argc, char *argv[]) {
 		StringMatchingIdentifier* identifier = new StringMatchingIdentifier;
 
 		// Configure the identifier using the config file
-		identifier->configure(configFileArg, printPackets, processPacketsIndividually);
+		identifier->configure(configFileArg, printPackets, processPacketsIndividually, approachArg);
 
 		// Set up the new stream callback
 		follower.new_stream_callback(std::bind(&StringMatchingIdentifier::on_new_stream, identifier, _1));
@@ -186,7 +186,7 @@ int main(int argc, char *argv[]) {
 		SpidIdentifier* identifier = new SpidIdentifier;
 
 		// Configure the identifier using the config file
-		identifier->configure(configFileArg, printPackets, processPacketsIndividually);
+		identifier->configure(configFileArg, printPackets, processPacketsIndividually, approachArg);
 
 		// Set up the new stream callback
 		follower.new_stream_callback(std::bind(&SpidIdentifier::on_new_stream, identifier, _1));

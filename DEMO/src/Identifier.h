@@ -26,7 +26,7 @@ public:
      * Reads the given config file and uses internal configuration strategy
      * specified in the handle_config_line method.
      */
-    void configure(const string& filepath, bool printPackets, bool processPacketsIndividually);
+    void configure(const string& filepath, bool printPackets, bool processPacketsIndividually, string method);
 
     /** When a new stream is seen */
     void on_new_stream(Stream& stream);
@@ -53,6 +53,8 @@ public:
 
     /** Identify the given packet. */
     virtual string identify_protocol(vector<uint8_t> payload) = 0;
+    virtual void reset_model() = 0;
+    virtual void handle_data(vector<uint8_t> payload, int dir) = 0;
 
 
 protected:
@@ -72,6 +74,11 @@ protected:
      * Keeps track of how many streams have been processed
      */
     unsigned int streamNum;
+
+    /**
+     * The approach that is being taken.  SPID requires some extra steps
+     */
+    string approach;
 
 
 private:
