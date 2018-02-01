@@ -39,6 +39,10 @@ echo -e "\nInstalling tshark for test suite\n"
 sudo apt-get install tshark
 echo -e "\ntshark installed successfully\n"
 
+echo -e "\nInstalling boost library\n"
+sudo apt-get install libboost-all-dev
+echo -e "\boost installed successfully\n"
+
 echo -e "\nInstalling TXL\n"
 sudo ./SUPPORT/txl10.6e.linux64/InstallTxl
 echo -e "\nTXL installed successfully"
