@@ -1,0 +1,10 @@
+Mismatch in our-ftp
+
+7c7
+< 6, HTTP
+---
+> 6, FTP
+14c14
+< 13, SMB
+---
+> 13, FTP
