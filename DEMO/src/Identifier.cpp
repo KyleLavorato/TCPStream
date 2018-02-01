@@ -63,9 +63,14 @@ void Identifier::sendPacketToParser(vector<uint8_t> packet, string protocol) {
 }
 
 void Identifier::on_stream_closed(Stream& stream) {
-    if (shouldProcessPacketsIndividually) {
-        processPacket(stream.client_payload());
-        processPacket(stream.server_payload());
+    if (!shouldProcessPacketsIndividually) {
+        vector<uint8_t> fullStream;
+        vector<uint8_t> clientPayload = stream.client_payload();
+        vector<uint8_t> serverPayload = stream.server_payload();
+        fullStream.reserve(clientPayload.size() + serverPayload.size());
+        fullStream.insert(fullStream.end(), clientPayload.begin(), clientPayload.end());
+        fullStream.insert(fullStream.end(), serverPayload.begin(), serverPayload.end());
+        processPacket(fullStream);
     }
     streamNum++;
 }
