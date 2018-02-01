@@ -12,51 +12,103 @@ using namespace std::placeholders;
 using Tins::TCPIP::Stream;
 using Tins::TCPIP::StreamFollower;
 
-void usage() {
-	cerr << "Usage: shitty_wireshark [OPTIONS ...] MODE APPROACH CONFIG_FILE PACKET_SOURCE" << endl;
-	cerr << endl;
-	cerr << "MODE is either 'live' or 'file' without the single quotes. In 'live' mode," << endl;
-	cerr << "\tPACKET_SOURCE must be a valid network interface. Run `ifconfig` to see" << endl;
-	cerr << "\twhat interfaces are available on your machine. When in 'file' mode, the" << endl;
-	cerr << "\tPACKET_SOURCE must be a PCAP file that will be read from." << endl;
-	cerr << endl;
-	cerr << "APPROACH is either 'string-matching' or 'spid' without the single quotes." << endl;
-	cerr << "\tSee respective sections below for detailed descriptions of which" << endl;
-	cerr << "\tapproach to use and when." << endl;
-	cerr << endl;
-	cerr << "CONFIG_FILE is the configuration file needed by the APPROACH you specified." << endl;
-	cerr << endl;
-	cerr << "PACKET_SOURCE is either a network interface or a PCAP file, depending on" << endl;
-	cerr << "\twhat MODE is set to." << endl;
-	cerr << endl;
-	cerr << "Miscellaneous:" << endl;
-	cerr << "  -h, --help           display this help text and exit" << endl;
-	cerr << "  -i, --individual     identify individual packets instead of entire streams" << endl;
-	cerr << "      --print-packets  print the contents of packets" << endl;
-	// cerr << endl;
-	// cerr << "Configuration file formats:" << endl;
-	// cerr << endl;
-	// cerr << "Each approach has a specific set of formatting rules for the config file. They" << endl;
-	// cerr << "are specified in this section." << endl;
-	// cerr << endl;
-	// cerr << "String Matching:" << endl;
-	// cerr << endl;
-	// cerr << "Each line defines a PROTOCOL, which is an application layer protocol you'd like" << endl;
-	// cerr << "to be able to identify, and a set of TOKENs, which are strings that are used" << endl;
-	// cerr << "to identify if a packet is of protocol PROTOCOL. Each protocol you'd like to" << endl;
-	// cerr << "identify gets one line in the config file. Each line should be formatted like" << endl;
-	// cerr << "so:" << endl;
-	// cerr << endl;
-	// cerr << "  PROTOCOL:TOKEN_1,TOKEN_2,TOKEN_3,...,TOKEN_n" << endl;
-	// cerr << endl;
-	// cerr << "Tokens cannot contain commas (a workaround for this could be a future addition" << endl;
-	// cerr << "to this software). Here is an example of identifying the HTTP protocol:" << endl;
-	// cerr << endl;
-	// cerr << "  HTTP:HTTP/1.1" << endl;
-	// cerr << endl;
-	// cerr << "Note that if ANY of the tokens are matched, then the packet is immediately" << endl;
-	// cerr << "identified as the protocol that token belongs to." << endl;
-}
+const char* usageText = R"(NAME
+        shitty_wireshark - a module to identify application layer protocols
+            used in TCP streams and parse them
+
+SYNOPSIS
+        shitty_wireshark [OPTION...] MODE APPROACH CONFIG SOURCE
+        shitty_wireshark [-h|--help]
+        shitty_wireshark [-i|--individual] MODE APPROACH CONFIG SOURCE
+        shitty_wireshark --print-packets MODE APPROACH CONFIG SOURCE
+
+DESCRIPTION
+        MODE
+            live - Capture TCP streams on a network device. Runs until killed.
+            file - Read TCP stream from a PCAP file. Exits when all streams
+                have been read.
+
+        APPROACH
+            string-matching - Use string-matching to identify which application
+                layer protocol a packet or stream is
+            spid - Use the SPID algorithm to identify which application layer
+                protocol a packet or stream is.
+
+        CONFIG
+            Must be a path to a user-made config file that is used by the
+            chosen approach. There are no defaults. Each approach has unique
+            formatting requirements for their config files. These requirements
+            are outlined in a section below.
+
+        SOURCE
+            If MODE is live, then SOURCE must be the name of a network device
+                on the machine. These names can be found by running the command
+                `ifconfig` in a terminal.
+            If MODE is file, then SOURCE must be a path to a PCAP file.
+
+CONFIGURATION
+        Each approach reads from a config file. The purpose of the config file
+        is to allow the user to specify which application layer protocols
+        should be identified, as well as how to identify them. This means
+        different things for each approach.
+
+        String Matching
+            The string matching approach looks for a string in the contents of
+            a stream or packet. Each string is associated with an application
+            layer protocol. When a match is found in a packet or stream, it is
+            identified as the protocol that is associated with that string.
+            Therefore the user must specify two things in the config file for
+            the string matching approach: a list of protocols that can be
+            identified, and a list of strings associated with each protocol to
+            look for. The user can specify such things in the following format:
+
+            PROTOCOL:STRING,STRING,STRING,...,STRING
+            PROTOCOL:STRING,STRING,STRING,...,STRING
+            .
+            .
+            .
+
+            For example, a config file that tries to identify HTTP streams by
+            looking for the string "HTTP/1.1" in them would look like this:
+
+            HTTP:HTTP/1.1
+
+        SPID
+            TODO
+
+EXAMPLES
+        shitty_wireshark live string-matching myConfig.txt eth0
+            Capture all TCP streams on the network device eth0 and identify them
+            using the string-matching approach
+
+        shitty_wireshark file spid myConfig.txt myPcapFile.pcap
+            Find all TCP streams in myPcapFile.pcap and identify them using SPID
+
+        shitty_wireshark -i file spid myConfig.txt myPcapFile.pcap
+            Same as above, but identify each packet in each stream individually
+            instead of just processing the stream in its entirety
+
+        shitty_wireshark --print-packets file spid myConfig.txt myPcapFile.pcap
+            Same as second example, but print the contents of every packet after
+            identifying it
+
+        shitty_wireshark -h
+            Print this help text
+
+OPTIONS
+   General options
+       -h, --help
+              Print this help text
+
+   Control Options
+       -i, --individual
+              Process packets individually instead of processing streams as a
+              whole
+
+   Debugging options
+           --print-packets
+           	  Print the contents of each packet after processing it
+)";
 
 char* argString;
 
@@ -77,12 +129,12 @@ int main(int argc, char *argv[]) {
 		} else if (currentArg == "-i" || currentArg == "--individual") {
 			processPacketsIndividually = true;
 		} else if (currentArg == "-h" || currentArg == "--help") {
-			usage();
+			cout << usageText;
 			return -1;
 		} else {
 			cerr << "Error: Unrecognized argument: " << currentArg << endl;
 			cerr << endl;
-			usage();
+			cout << usageText;
 			return -1;
 		}
 
@@ -122,7 +174,7 @@ int main(int argc, char *argv[]) {
 		follower.new_stream_callback(std::bind(&SpidIdentifier::on_new_stream, identifier, _1));
 
 	} else {
-		usage();
+		cout << usageText;
 		return -1;
 	}
 
@@ -143,7 +195,7 @@ int main(int argc, char *argv[]) {
 			return true;
 		});
 	} else {
-		usage();
+		cout << usageText;
 		return -1;
 	}
 }
