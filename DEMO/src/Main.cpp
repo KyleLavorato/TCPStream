@@ -74,7 +74,25 @@ CONFIGURATION
             HTTP:HTTP/1.1
 
         SPID
-            TODO
+            Statistical Protocol IDentification (SPID) creates a model of each
+            protocol using existing PCAPS that have already been filtered for
+            specific protocol.  This method will then create a new model for each
+            stream as it receives packet data.  The current model is then compared
+            to each protocol model using a modified version of the Kullback-Leibler
+            divergence.  The algorithm picks the protocol with the lowest divergence,
+            provided it passes a predetermined threshold, and passes the packets to 
+            the parser.  In the config file the user must specify the Protocol,
+            a PCAP containing data from that protocol, and a destination file for 
+            the model.
+
+            PROTOCOL:PCAP LOCATION;MODEL DESTINATION
+            .
+            .
+            .
+
+            For example:
+            
+            HTTP:PCAPS/HTTP.pcap;SpidModels/HTTP.txt
 
 EXAMPLES
         shitty_wireshark live string-matching myConfig.txt eth0
