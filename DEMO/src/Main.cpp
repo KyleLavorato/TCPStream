@@ -31,6 +31,7 @@ void usage() {
 	cerr << endl;
 	cerr << "Miscellaneous:" << endl;
 	cerr << "  -h, --help           display this help text and exit" << endl;
+	cerr << "  -i, --individual     identify individual packets instead of entire streams" << endl;
 	cerr << "      --print-packets  print the contents of packets" << endl;
 	// cerr << endl;
 	// cerr << "Configuration file formats:" << endl;
@@ -64,6 +65,7 @@ int main(int argc, char *argv[]) {
 	argString = argv[0];
 
 	bool printPackets = false;
+	bool processPacketsIndividually = false;
 
 	int arg = 1;
 	string currentArg = argv[arg];
@@ -72,6 +74,8 @@ int main(int argc, char *argv[]) {
 
 		if (currentArg == "--print-packets") {
 			printPackets = true;
+		} else if (currentArg == "-i" || currentArg == "--individual") {
+			processPacketsIndividually = true;
 		} else if (currentArg == "-h" || currentArg == "--help") {
 			usage();
 			return -1;
@@ -101,7 +105,7 @@ int main(int argc, char *argv[]) {
 		StringMatchingIdentifier* identifier = new StringMatchingIdentifier;
 
 		// Configure the identifier using the config file
-		identifier->configure(configFileArg, printPackets);
+		identifier->configure(configFileArg, printPackets, processPacketsIndividually);
 
 		// Set up the new stream callback
 		follower.new_stream_callback(std::bind(&StringMatchingIdentifier::on_new_stream, identifier, _1));
@@ -112,7 +116,7 @@ int main(int argc, char *argv[]) {
 		SpidIdentifier* identifier = new SpidIdentifier;
 
 		// Configure the identifier using the config file
-		identifier->configure(configFileArg, printPackets);
+		identifier->configure(configFileArg, printPackets, processPacketsIndividually);
 
 		// Set up the new stream callback
 		follower.new_stream_callback(std::bind(&SpidIdentifier::on_new_stream, identifier, _1));
