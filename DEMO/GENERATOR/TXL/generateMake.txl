@@ -55,12 +55,12 @@ define OBJS
 end define
 
 define target
-	[EX] [id] ': [SP] [opt id] [NL]
+	[id] ': [SP] [opt id] [NL]
 		[opt command] [NL] [NL]
 end define
 
 define command
-	[IN] [repeat id]
+	[repeat id]
 end define
 
 function main
@@ -123,18 +123,31 @@ function makeMake
 	construct All [repeat target]
 		'all ': TCPStream
 
-	construct rmCmd [command]
+	construct tabC [id]
+		_ [+ "	"]
+	construct tabS [repeat id]
+		tabC
+
+	construct rmLine [repeat id]
 		rm -f **/*.o ./TCPStream
+	construct rmCmd [repeat id]
+		tabS [. rmLine]
 	construct Clean [target]
 		'clean ':
 			rmCmd
 
+	construct ProgramLine [repeat id]
+		$(CXX) $(CFLAGS) -o $@ $(OBJS) $(LDLIBS)
+	construct ProgramCmd [repeat id]
+		tabS [. ProgramLine]
 	construct ProgramTarget [target]
 		TCPStream: $(OBJS)
-			$(CXX) $(CFLAGS) -o $@ $(OBJS) $(LDLIBS)
+			ProgramCmd
 
-	construct cppCmd [command]
+	construct cppLine [repeat id]
 		$(CXX) $(CFLAGS) -o $*.o -c $*.cpp
+	construct cppCmd [repeat id]
+		tabS [. cppLine]
 	construct cppTargets [target]
 		.cpp.o:
 			cppCmd
