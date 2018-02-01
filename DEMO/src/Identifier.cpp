@@ -1,26 +1,13 @@
 #include "Identifier.h"
 
-#include <iostream>
-#include <fstream>
-#include <string>
-#include <vector>
-#include <map>
-#include <exception>
-#include <stdexcept>
-#include <tins/tcp_ip/stream_follower.h>
-#include <tins/tins.h>
-
-using namespace Tins;
-using namespace std;
-using namespace std::placeholders;
-using Tins::TCPIP::Stream;
-
-void Identifier::configure(const string& filepath, bool printPackets) {
+void Identifier::configure(const string& filepath, bool printPackets, bool processPacketsIndividually) {
 
     string line;
     ifstream configFile;
 
     shouldPrintPackets = printPackets;
+    shouldProcessPacketsIndividually = processPacketsIndividually;
+    streamNum = 1; // Start counting at 1, not 0
 
     configFile.open(filepath);
 
@@ -41,63 +28,59 @@ void Identifier::configure(const string& filepath, bool printPackets) {
 
 void Identifier::on_new_stream(Stream& stream) {
 
-    // Set the server and client data callbacks
+    // Don't get rid of client or server payloads, keep them so they can be
+    // processed at the end of the stream
+    stream.auto_cleanup_payloads(false);
+
+    // Set the callbacks
     stream.client_data_callback(std::bind(&Identifier::on_client_data, this, _1));
     stream.server_data_callback(std::bind(&Identifier::on_server_data, this, _1));
+    stream.stream_closed_callback(std::bind(&Identifier::on_stream_closed, this, _1));
 }
 
 void Identifier::on_client_data(Stream& stream) {
-
-    // Get the payload
     const vector<uint8_t> payload = stream.client_payload();
-
-    // Identify the protocol using the custom approach
-    string appLayerProtocol = identify_protocol(payload);
-
-    // Print result
-    cout << "Application layer protocol identified: " << appLayerProtocol << endl;
-
-    // Print the packets if told to
-    if (shouldPrintPackets) {
-        for (unsigned int i = 0; i < payload.size(); i++) {
-            cout << payload[i];
-        }
-        cout << endl;
-    }
-
-    // Send it to the parser if it's one of the recognized protocols. Right now
-    // this is hardcoded, but it will be made dynamic. TODO
-    if (appLayerProtocol == "SAMBA") {
-        parseData(payload.data(), payload.size(), SMB2_TYPE);
-    } else if (appLayerProtocol == "HTTP") {
-        parseData(payload.data(), payload.size(), HTTP_TYPE);
-    }
+    if (shouldProcessPacketsIndividually) processPacket(payload);
+    sendPacketToParser(payload, identify_protocol(payload));
 }
 
 void Identifier::on_server_data(Stream& stream) {
-
-    // Get the payload
     const vector<uint8_t> payload = stream.server_payload();
+    if (shouldProcessPacketsIndividually) processPacket(payload);
+    sendPacketToParser(payload, identify_protocol(payload));
+}
 
-    // Identify the protocol using the custom approach
-    string appLayerProtocol = identify_protocol(payload);
+// TODO: Make this dynamic
+//
+// Send the packet to the parser if it's one of the recognized protocols.
+// Right now this is hardcoded, but it should be made dynamic.
+void Identifier::sendPacketToParser(vector<uint8_t> packet, string protocol) {
+    if (protocol == "SAMBA") {
+        parseData(packet.data(), packet.size(), SMB2_TYPE);
+    } else if (protocol == "HTTP") {
+        parseData(packet.data(), packet.size(), HTTP_TYPE);
+    }
+}
 
-    // Print result
-    cout << "Application layer protocol identified: " << appLayerProtocol << endl;
+void Identifier::on_stream_closed(Stream& stream) {
+    if (shouldProcessPacketsIndividually) {
+        processPacket(stream.client_payload());
+        processPacket(stream.server_payload());
+    }
+    streamNum++;
+}
 
-    // Print the packets if told to
+void Identifier::processPacket(vector<uint8_t> packet) {
+
+    // Identify the protocol for each stream using the custom approach
+    string appLayerProtocol = identify_protocol(packet);
+    cout << "[" << streamNum << "] protocol: " << appLayerProtocol << endl;
+
+    // Print the packets if told to (this comes from a command line flag)
     if (shouldPrintPackets) {
-        for (unsigned int i = 0; i < payload.size(); i++) {
-            cout << payload[i];
+        for (unsigned int i = 0; i < packet.size(); i++) {
+            cout << packet[i];
         }
         cout << endl;
-    }
-
-    // Send it to the parser if it's one of the recognized protocols. Right now
-    // this is hardcoded, but it will be made dynamic.
-    if (appLayerProtocol == "SAMBA") {
-        parseData(payload.data(), payload.size(), SMB2_TYPE);
-    } else if (appLayerProtocol == "HTTP") {
-        parseData(payload.data(), payload.size(), HTTP_TYPE);
     }
 }
