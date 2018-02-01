@@ -68,6 +68,11 @@ protected:
      */
     bool shouldProcessPacketsIndividually;
 
+    /**
+     * Keeps track of how many streams have been processed
+     */
+    unsigned int streamNum;
+
 
 private:
     

@@ -7,6 +7,7 @@ void Identifier::configure(const string& filepath, bool printPackets, bool proce
 
     shouldPrintPackets = printPackets;
     shouldProcessPacketsIndividually = processPacketsIndividually;
+    streamNum = 1; // Start counting at 1, not 0
 
     configFile.open(filepath);
 
@@ -34,10 +35,7 @@ void Identifier::on_new_stream(Stream& stream) {
     // Set the callbacks
     stream.client_data_callback(std::bind(&Identifier::on_client_data, this, _1));
     stream.server_data_callback(std::bind(&Identifier::on_server_data, this, _1));
-
-    if (shouldProcessPacketsIndividually) {
-        stream.stream_closed_callback(std::bind(&Identifier::on_stream_closed, this, _1));
-    }
+    stream.stream_closed_callback(std::bind(&Identifier::on_stream_closed, this, _1));
 }
 
 void Identifier::on_client_data(Stream& stream) {
@@ -65,15 +63,18 @@ void Identifier::sendPacketToParser(vector<uint8_t> packet, string protocol) {
 }
 
 void Identifier::on_stream_closed(Stream& stream) {
-    processPacket(stream.client_payload());
-    processPacket(stream.server_payload());
+    if (shouldProcessPacketsIndividually) {
+        processPacket(stream.client_payload());
+        processPacket(stream.server_payload());
+    }
+    streamNum++;
 }
 
 void Identifier::processPacket(vector<uint8_t> packet) {
 
     // Identify the protocol for each stream using the custom approach
     string appLayerProtocol = identify_protocol(packet);
-    cout << "protocol: " << appLayerProtocol << endl;
+    cout << "[" << streamNum << "] protocol: " << appLayerProtocol << endl;
 
     // Print the packets if told to (this comes from a command line flag)
     if (shouldPrintPackets) {
