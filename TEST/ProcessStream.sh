@@ -42,6 +42,8 @@ for j in PCAP/*; do
 			printf "$COUNT, SMB\n" >> $tmpfile
 		elif grep -q "HTTP" $i; then
 			printf "$COUNT, HTTP\n" >> $tmpfile
+		elif grep -q "TCP" $i; then
+			:
 		else
 			printf "$COUNT, FAILED\n" >> $tmpfile
 		fi
@@ -114,10 +116,19 @@ echo -en "\033[F\r"
 
 # Find number of errors between actual and expected
 ERRORS=0
+tmpfile=$(mktemp /tmp/ProcessStream.XXXXXX)
 for j in ACTUAL_RESULT/*.txt; do
 	RESULT=$(diff $j EXPECTED_RESULT/`basename $j` | grep "^>" | wc -l)
+	if (( $RESULT > 0 )); then
+		echo -e "Mismatch in `basename $j .txt`\n" >>$tmpfile
+		diff $j EXPECTED_RESULT/`basename $j` >> $tmpfile
+	fi
 	ERRORS=$((ERRORS+RESULT))
 done
+touch Mismatch.txt
+rm Mismatch.txt
+cat $tmpfile > Mismatch.txt
+rm "$tmpfile"
 
 # Find total number of streams
 ATTEMPTS=0

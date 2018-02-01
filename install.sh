@@ -35,6 +35,10 @@ rm -rf libtins
 
 echo -e "\nlibtins installed successfully\n"
 
-echo "\nInstalling tshark for test suite\n"
+echo -e "\nInstalling tshark for test suite\n"
 sudo apt-get install tshark
-echo "\ntshark installed successfully"
+echo -e "\ntshark installed successfully\n"
+
+echo -e "\nInstalling TXL\n"
+sudo ./SUPPORT/txl10.6e.linux64/InstallTxl
+echo -e "\nTXL installed successfully"
