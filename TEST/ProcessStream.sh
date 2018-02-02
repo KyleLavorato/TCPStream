@@ -39,7 +39,7 @@ for j in PCAP/*; do
 		elif grep -q "FTP-DATA" $i; then
 			printf "[$COUNT] protocol: FTP\n" >> $tmpfile
 		elif grep -q "SMB" $i; then
-			printf "[$COUNT] protocol: SMB\n" >> $tmpfile
+			printf "[$COUNT] protocol: SAMBA\n" >> $tmpfile
 		elif grep -q "HTTP" $i; then
 			printf "[$COUNT] protocol: HTTP\n" >> $tmpfile
 		elif grep -q "TCP" $i; then
@@ -97,12 +97,16 @@ echo -en "\033[F\r"
 rm -r ACTUAL_RESULT
 mkdir ACTUAL_RESULT
 
+#../DEMO/TCPStream file string-matching ../DEMO/configs/string-matching-config.txt PCAP/our-ftp.pcap > ACTUAL_RESULT/AAA.txt
+
 for j in PCAP/*; do
 	filename=`basename $j .pcapng`
 	filename=`basename $filename .pcap`
 	filename=`basename $filename .cap`
-	../DEMO/TCPStream file string-matching ../DEMO/configs/string-matching-config.txt $j > ACTUAL_RESULT/$filename_STRING.txt
-	../DEMO/TCPStream file spid ../DEMO/configs/spid-config-testing.txt $j > ACTUAL_RESULT/$filename_SPID.txt
+	#echo ACTUAL_RESULT/$filename.txt
+	#touch ACTUAL_RESULT/$filename_STRING.txt
+	../DEMO/TCPStream file string-matching ../DEMO/configs/string-matching-config.txt $j > ACTUAL_RESULT/$filename-STRING.txt
+	#../DEMO/TCPStream file spid ../DEMO/configs/spid-config-testing.txt $j > ACTUAL_RESULT/$filename-SPID.txt
 done
 
 ########## End Processing ##########
@@ -121,18 +125,18 @@ ERRORM=0
 tmpfile=$(mktemp /tmp/ProcessStream.XXXXXX)
 for j in EXPECTED_RESULT/*.txt; do
 	## Test SPID
-	RESULT=$(diff $j ACTUAL_RESULT/`basename $j .txt`_SPID.txt | grep "^>" | wc -l)
+	RESULT=$(diff $j ACTUAL_RESULT/`basename $j .txt`-SPID.txt | grep "^>" | wc -l)
 	if (( $RESULT > 0 )); then
-		echo -e "Mismatch in `basename $j .txt`_SPID\n" >> $tmpfile
-		diff $j ACTUAL_RESULT/`basename $j .txt`_SPID.txt >> $tmpfile
+		echo -e "Mismatch in `basename $j .txt`-SPID\n" >> $tmpfile
+		diff $j ACTUAL_RESULT/`basename $j .txt`-SPID.txt >> $tmpfile
 	fi
 	ERRORS=$((ERRORS+RESULT))
 	
 	## Test String-Matching
-	RESULT=$(diff $j ACTUAL_RESULT/`basename $j .txt`_STRING.txt | grep "^>" | wc -l)
+	RESULT=$(diff $j ACTUAL_RESULT/`basename $j .txt`-STRING.txt | grep "^>" | wc -l)
 	if (( $RESULT > 0 )); then
-		echo -e "Mismatch in `basename $j .txt`_STRING\n" >> $tmpfile
-		diff $j ACTUAL_RESULT/`basename $j .txt`_STRING.txt >> $tmpfile
+		echo -e "Mismatch in `basename $j .txt`-STRING\n" >> $tmpfile
+		diff $j ACTUAL_RESULT/`basename $j .txt`-STRING.txt >> $tmpfile
 	fi
 	ERRORM=$((ERRORM+RESULT))
 done

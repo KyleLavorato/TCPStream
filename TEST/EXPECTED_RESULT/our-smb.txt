@@ -1,1 +1,1 @@
-[0] protocol: SMB
+[0] protocol: SAMBA
