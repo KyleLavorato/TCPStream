@@ -1,0 +1,31 @@
+Mismatch in our-ftp-STRING
+
+2,7c2,7
+< [2] protocol: FTP
+< [3] protocol: FTP
+< [4] protocol: FTP
+< [5] protocol: FTP
+< [6] protocol: FTP
+< [7] protocol: FTP
+---
+> [2] protocol: Unknown
+> [3] protocol: Unknown
+> [4] protocol: SAMBA
+> [5] protocol: Unknown
+> [6] protocol: Unknown
+> [7] protocol: Unknown
+9,15c9,14
+< [9] protocol: FTP
+< [10] protocol: FTP
+< [11] protocol: FTP
+< [12] protocol: FTP
+< [13] protocol: FTP
+< [14] protocol: FTP
+< [15] protocol: FTP
+---
+> [9] protocol: HTTP
+> [10] protocol: Unknown
+> [11] protocol: HTTP
+> [12] protocol: Unknown
+> [13] protocol: SAMBA
+> [14] protocol: Unknown

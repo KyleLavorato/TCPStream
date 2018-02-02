@@ -30,7 +30,7 @@ for j in PCAP/*; do
 	done
 
 	tmpfile=$(mktemp /tmp/ProcessStream.XXXXXX)
-	COUNT=0
+	COUNT=1
 
 	# Loop over all intermediates in folder
 	for i in `ls -v INTERMEDIATE/*.txt`; do
@@ -70,20 +70,20 @@ echo -en '\n[####                ] 20%'
 echo -en "\033[F\r"
 #sleep 2
 
-cd ../DEMO/GENERATOR
-./makemake.sh -q
-./translate.sh -q
-./interface.sh -q
-cd ../
+#cd ../DEMO/GENERATOR
+#./makemake.sh -q
+#./translate.sh -q
+#./interface.sh -q
+#cd ../
 
 echo -en "                               \r"
 echo -en "Compiling TCPStream\r"
 echo -en '\n[########            ] 40%'
 echo -en "\033[F\r"
 
-make clean > /dev/null
-make > /dev/null
-cd ../TEST
+#make clean > /dev/null
+#make > /dev/null
+#cd ../TEST
 
 ########## End Build ##########
 
@@ -145,10 +145,30 @@ rm Mismatch.txt
 cat $tmpfile > Mismatch.txt
 rm "$tmpfile"
 
+echo -en "                               \r"
+echo -en "Complete | Results Below\r"
+echo -en '\n[####################] 100%'
+echo -en '\n\n'
+
 # Find total number of streams
 ATTEMPTS=0
 for j in EXPECTED_RESULT/*.txt; do
 	LINES=$(cat $j | wc -l)
+	
+	# Test for String-Matching
+	LINESACT=$(cat ACTUAL_RESULT/`basename $j .txt`-STRING.txt | wc -l)
+	MISSING=$((LINES-LINESACT))
+	if (( $MISSING > 0 )); then
+		echo -en "WARNING: `basename $j .txt`-STRING.txt is missing $MISSING stream(s)\n"
+	fi
+
+	# Test for SPID
+	#LINESACT=$(cat ACTUAL_RESULT/`basename $j .txt`-SPID.txt | wc -l)
+	#MISSING=$((LINES-LINESACT))
+	#if (( $MISSING > 0 )); then
+	#	echo -en "WARNING: `basename $j .txt`-SPID.txt is missing $MISSING stream(s)\n"
+	#fi
+
 	ATTEMPTS=$((ATTEMPTS+LINES))
 done
 
@@ -160,11 +180,7 @@ PERCENTM=$(awk "BEGIN { pc=100*${ERRORM}/${ATTEMPTS}; i=int(pc); print (pc) }")
 SUCCESS=$((ATTEMPTS-ERRORS))
 SUCCESM=$((ATTEMPTS-ERRORM))
 
-echo -en "                               \r"
-echo -en "Complete | Results Below\r"
-echo -en '\n[####################] 100%'
-echo -en '\n\n'
-echo "SPID Results"
+echo -en "\nSPID Results"
 echo "Successful Matches: $SUCCESS"
 echo "Identifications Failed: $ERRORS"
 echo "Total Attempts: $ATTEMPTS"
