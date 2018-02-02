@@ -1,0 +1,14 @@
+[1] protocol: SAMBA
+[2] protocol: SAMBA
+[3] protocol: SAMBA
+[4] protocol: SAMBA
+[5] protocol: SAMBA
+[6] protocol: SAMBA
+[7] protocol: SAMBA
+[8] protocol: SAMBA
+[9] protocol: SAMBA
+[10] protocol: SAMBA
+[11] protocol: SAMBA
+[12] protocol: SAMBA
+[13] protocol: SAMBA
+[14] protocol: SAMBA

@@ -99,6 +99,7 @@ mkdir ACTUAL_RESULT
 
 #../DEMO/TCPStream file string-matching ../DEMO/configs/string-matching-config.txt PCAP/our-ftp.pcap > ACTUAL_RESULT/AAA.txt
 
+mkdir SpidModels
 for j in PCAP/*; do
 	filename=`basename $j .pcapng`
 	filename=`basename $filename .pcap`
@@ -106,8 +107,9 @@ for j in PCAP/*; do
 	#echo ACTUAL_RESULT/$filename.txt
 	#touch ACTUAL_RESULT/$filename_STRING.txt
 	../DEMO/TCPStream file string-matching ../DEMO/configs/string-matching-config.txt $j > ACTUAL_RESULT/$filename-STRING.txt
-	#../DEMO/TCPStream file spid ../DEMO/configs/spid-config-testing.txt $j > ACTUAL_RESULT/$filename-SPID.txt
+	../DEMO/TCPStream file spid ../DEMO/configs/spid-config-testing.txt $j > ACTUAL_RESULT/$filename-SPID.txt
 done
+rm -r SpidModels
 
 ########## End Processing ##########
 
@@ -163,11 +165,11 @@ for j in EXPECTED_RESULT/*.txt; do
 	fi
 
 	# Test for SPID
-	#LINESACT=$(cat ACTUAL_RESULT/`basename $j .txt`-SPID.txt | wc -l)
-	#MISSING=$((LINES-LINESACT))
-	#if (( $MISSING > 0 )); then
-	#	echo -en "WARNING: `basename $j .txt`-SPID.txt is missing $MISSING stream(s)\n"
-	#fi
+	LINESACT=$(cat ACTUAL_RESULT/`basename $j .txt`-SPID.txt | wc -l)
+	MISSING=$((LINES-LINESACT))
+	if (( $MISSING > 0 )); then
+		echo -en "WARNING: `basename $j .txt`-SPID.txt is missing $MISSING stream(s)\n"
+	fi
 
 	ATTEMPTS=$((ATTEMPTS+LINES))
 done
@@ -180,7 +182,7 @@ PERCENTM=$(awk "BEGIN { pc=100*${ERRORM}/${ATTEMPTS}; i=int(pc); print (pc) }")
 SUCCESS=$((ATTEMPTS-ERRORS))
 SUCCESM=$((ATTEMPTS-ERRORM))
 
-echo -en "\nSPID Results"
+echo -en "\nSPID Results\n"
 echo "Successful Matches: $SUCCESS"
 echo "Identifications Failed: $ERRORS"
 echo "Total Attempts: $ATTEMPTS"

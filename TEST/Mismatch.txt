@@ -1,3 +1,36 @@
+Mismatch in our-ftp-SPID
+
+1,15c1,14
+< [1] protocol: FTP
+< [2] protocol: FTP
+< [3] protocol: FTP
+< [4] protocol: FTP
+< [5] protocol: FTP
+< [6] protocol: FTP
+< [7] protocol: FTP
+< [8] protocol: FTP
+< [9] protocol: FTP
+< [10] protocol: FTP
+< [11] protocol: FTP
+< [12] protocol: FTP
+< [13] protocol: FTP
+< [14] protocol: FTP
+< [15] protocol: FTP
+---
+> [1] protocol: SAMBA
+> [2] protocol: SAMBA
+> [3] protocol: SAMBA
+> [4] protocol: SAMBA
+> [5] protocol: SAMBA
+> [6] protocol: SAMBA
+> [7] protocol: SAMBA
+> [8] protocol: SAMBA
+> [9] protocol: SAMBA
+> [10] protocol: SAMBA
+> [11] protocol: SAMBA
+> [12] protocol: SAMBA
+> [13] protocol: SAMBA
+> [14] protocol: SAMBA
 Mismatch in our-ftp-STRING
 
 2,7c2,7
