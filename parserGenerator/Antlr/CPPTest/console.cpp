@@ -21,7 +21,7 @@ string exec(const char* cmd) {
 
 int main(int argc, char *argv[]) {
 	cout << "Console Test" << endl;
-	string consoleResult = exec("java -cp .:antlr-4.7-complete.jar ANTLRDemo TestFiles/class.cpp");
+	string consoleResult = exec("java -cp .:antlr-4.7-complete.jar ANTLRDemo TestFiles/class2.cpp");
 	int parseResult = stoi(consoleResult);
     if(parseResult) {
         cout << "Parse Success" << endl;
