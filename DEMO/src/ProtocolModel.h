@@ -12,7 +12,7 @@ public:
 	ProtocolModel();
 	//packetTimestamp is time of recieving packet
 	//packetDirection is 1 for client data, and 0 for server data
-	void AddObservation (const byte packetData[], time_t packetTimestamp, int packetDirection, const unsigned long packetLength);
+	void AddObservation (const byte packetData[], time_t packetTimestamp, int packetDirection, const unsigned long packetLength, int portNum);
 	double GetAverageKullbackLeiblerDivergenceFrom (double attributeModel[][512]);
 	void MergeWith(ProtocolModel otherModel);
 	void MergeWith(double attributeModel[][512]);
@@ -27,4 +27,5 @@ public:
 	AttributeFingerprintHandler dirNumSize;
 	AttributeFingerprintHandler dirFreq;
 	AttributeFingerprintHandler dirSize;
+	AttributeFingerprintHandler portNumber;
 };

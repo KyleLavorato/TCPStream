@@ -1,21 +1,131 @@
-Mismatch in our-ftp-SPID
+Mismatch in ftp_data1-SPID
 
-1,15c1,14
-< [1] protocol: FTP
-< [2] protocol: FTP
-< [3] protocol: FTP
-< [4] protocol: FTP
-< [5] protocol: FTP
-< [6] protocol: FTP
-< [7] protocol: FTP
-< [8] protocol: FTP
-< [9] protocol: FTP
-< [10] protocol: FTP
-< [11] protocol: FTP
-< [12] protocol: FTP
-< [13] protocol: FTP
-< [14] protocol: FTP
-< [15] protocol: FTP
+1c1,4
+< [1] protocol: FAILED
+---
+> [1] protocol: HTTP
+> [2] protocol: Unknown
+> [3] protocol: Unknown
+> [4] protocol: FTP
+Mismatch in ftp_data1-STRING
+
+1c1,4
+< [1] protocol: FAILED
+---
+> [1] protocol: Unknown
+> [2] protocol: Unknown
+> [3] protocol: Unknown
+> [4] protocol: Unknown
+Mismatch in FTP-SPID
+
+1c1,6
+< [1] protocol: FAILED
+---
+> [1] protocol: HTTP
+> [2] protocol: HTTP
+> [3] protocol: HTTP
+> [4] protocol: HTTP
+> [5] protocol: FTP
+> [6] protocol: HTTP
+Mismatch in FTP-STRING
+
+1c1,6
+< [1] protocol: FAILED
+---
+> [1] protocol: Unknown
+> [2] protocol: Unknown
+> [3] protocol: Unknown
+> [4] protocol: Unknown
+> [5] protocol: Unknown
+> [6] protocol: Unknown
+Mismatch in http-chunked-gzip-SPID
+
+1c1
+< [1] protocol: FAILED
+---
+> [1] protocol: HTTP
+Mismatch in http-chunked-gzip-STRING
+
+1c1
+< [1] protocol: FAILED
+---
+> [1] protocol: HTTP
+Mismatch in http_gzip-SPID
+
+1c1
+< [1] protocol: FAILED
+---
+> [1] protocol: HTTP
+Mismatch in http_gzip-STRING
+
+1c1
+< [1] protocol: FAILED
+---
+> [1] protocol: HTTP
+Mismatch in http_witp_jpegs-SPID
+
+1c1,19
+< [1] protocol: FAILED
+---
+> [1] protocol: Unknown
+> [2] protocol: HTTP
+> [3] protocol: Unknown
+> [4] protocol: HTTP
+> [5] protocol: HTTP
+> [6] protocol: HTTP
+> [7] protocol: Unknown
+> [8] protocol: Unknown
+> [9] protocol: Unknown
+> [10] protocol: FTP
+> [11] protocol: FTP
+> [12] protocol: FTP
+> [13] protocol: FTP
+> [14] protocol: FTP
+> [15] protocol: HTTP
+> [16] protocol: HTTP
+> [17] protocol: HTTP
+> [18] protocol: HTTP
+> [19] protocol: HTTP
+Mismatch in http_witp_jpegs-STRING
+
+1c1,19
+< [1] protocol: FAILED
+---
+> [1] protocol: HTTP
+> [2] protocol: HTTP
+> [3] protocol: HTTP
+> [4] protocol: HTTP
+> [5] protocol: HTTP
+> [6] protocol: HTTP
+> [7] protocol: HTTP
+> [8] protocol: HTTP
+> [9] protocol: HTTP
+> [10] protocol: HTTP
+> [11] protocol: HTTP
+> [12] protocol: HTTP
+> [13] protocol: HTTP
+> [14] protocol: HTTP
+> [15] protocol: HTTP
+> [16] protocol: HTTP
+> [17] protocol: HTTP
+> [18] protocol: HTTP
+> [19] protocol: HTTP
+Mismatch in onesmb-SPID
+
+1c1
+< [1] protocol: FAILED
+---
+> [1] protocol: SAMBA
+Mismatch in onesmb-STRING
+
+1c1
+< [1] protocol: FAILED
+---
+> [1] protocol: SAMBA
+Mismatch in smb-on-windows-10-SPID
+
+1c1,7
+< [1] protocol: FAILED
 ---
 > [1] protocol: SAMBA
 > [2] protocol: SAMBA
@@ -24,41 +134,15 @@ Mismatch in our-ftp-SPID
 > [5] protocol: SAMBA
 > [6] protocol: SAMBA
 > [7] protocol: SAMBA
-> [8] protocol: SAMBA
-> [9] protocol: SAMBA
-> [10] protocol: SAMBA
-> [11] protocol: SAMBA
-> [12] protocol: SAMBA
-> [13] protocol: SAMBA
-> [14] protocol: SAMBA
-Mismatch in our-ftp-STRING
+Mismatch in smb-on-windows-10-STRING
 
-2,7c2,7
-< [2] protocol: FTP
-< [3] protocol: FTP
-< [4] protocol: FTP
-< [5] protocol: FTP
-< [6] protocol: FTP
-< [7] protocol: FTP
+1c1,7
+< [1] protocol: FAILED
 ---
-> [2] protocol: Unknown
-> [3] protocol: Unknown
+> [1] protocol: SAMBA
+> [2] protocol: SAMBA
+> [3] protocol: SAMBA
 > [4] protocol: SAMBA
-> [5] protocol: Unknown
-> [6] protocol: Unknown
-> [7] protocol: Unknown
-9,15c9,14
-< [9] protocol: FTP
-< [10] protocol: FTP
-< [11] protocol: FTP
-< [12] protocol: FTP
-< [13] protocol: FTP
-< [14] protocol: FTP
-< [15] protocol: FTP
----
-> [9] protocol: HTTP
-> [10] protocol: Unknown
-> [11] protocol: HTTP
-> [12] protocol: Unknown
-> [13] protocol: SAMBA
-> [14] protocol: Unknown
+> [5] protocol: SAMBA
+> [6] protocol: SAMBA
+> [7] protocol: SAMBA

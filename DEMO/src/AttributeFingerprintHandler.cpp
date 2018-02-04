@@ -33,15 +33,18 @@ AttributeFingerprintHandler::AttributeFingerprintHandler(string name){
 	else if (attributeName == "dirsize"){
 		counter = 300;
 	}
+	else if (attributeName == "portnumber"){
+		counter = 512;
+	}
 	attributeFingerprint = Fingerprint(counter);
 }
 
-void AttributeFingerprintHandler::AddObservation (const byte packetData[], time_t packetTimestamp, int packetDirection, int packetOrderNumberInSession, const unsigned long packetLength){
+void AttributeFingerprintHandler::AddObservation (const byte packetData[], time_t packetTimestamp, int packetDirection, int packetOrderNumberInSession, const unsigned long packetLength, int portNum){
   vector<int> measurements;
   int total = 0;
   int measurementsLength;
   //Gets the indicies of values to be incremented
-  measurements = GetMeasurements(packetData,  packetTimestamp, packetDirection, packetOrderNumberInSession, packetLength);
+  measurements = GetMeasurements(packetData,  packetTimestamp, packetDirection, packetOrderNumberInSession, packetLength, portNum);
   measurementsLength = measurements.size();
   //Increments all approiate counter vector indicies
   for (int i = 0; i < measurementsLength; i++){
@@ -64,9 +67,10 @@ double AttributeFingerprintHandler::GetAverageKullbackLeiblerDivergenceFrom (dou
 		total += attributeFingerprint.probabilityDistributionVector[i][0];
 	}
 	divergence = 0;
+	//cout << total << " " << attributeFingerprint.size <<  endl;
 	for (int i = 0; i < attributeFingerprint.size; i++){
 		//if (attributeArray[i] != 0 and attributeFingerprint.probabilityDistributionVector[i][1] != 0){
-		dividend = attributeFingerprint.probabilityDistributionVector[i][1] + (1/total);
+		dividend = attributeFingerprint.probabilityDistributionVector[i][1] + (1/double(attributeFingerprint.size));
 		quotient = attributeArray[i] + 1/(double(attributeFingerprint.size));
 		divergence += (attributeArray[i] * abs(log(quotient / dividend)));
 		//cout << "SIZE: " << attributeFingerprint.size << " " << i << " " << attributeName << " " << divergence << endl;
@@ -88,7 +92,7 @@ void AttributeFingerprintHandler::reset(){
 	attributeFingerprint.reset();
 }
 
-vector<int> AttributeFingerprintHandler::GetMeasurements (const byte* packetData, time_t packetTimestamp, int packetDirection, int packetOrderNumberInSession, const unsigned long packetLength){
+vector<int> AttributeFingerprintHandler::GetMeasurements (const byte* packetData, time_t packetTimestamp, int packetDirection, int packetOrderNumberInSession, const unsigned long packetLength, int portNum){
 	if (attributeName == "size"){
 		//calculates size of packet
 		int length = packetLength / 5;
@@ -155,6 +159,16 @@ vector<int> AttributeFingerprintHandler::GetMeasurements (const byte* packetData
 		for (int i = 0; i < length; i++){
 			indiciesToBeIncremented[i] = int(packetData[i] + add);
 		}
+		return indiciesToBeIncremented;
+	}
+	else if (attributeName == "portnumber"){
+		//calculates size of packet
+		int pNum = portNum;
+		if (pNum >= 512){
+			pNum = 511;
+		}
+		vector<int> indiciesToBeIncremented(1);
+		indiciesToBeIncremented[0] = pNum;
 		return indiciesToBeIncremented;
 	}
 	else { // if (attributeName == "dirsize")

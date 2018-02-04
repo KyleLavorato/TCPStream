@@ -41,8 +41,9 @@ void Identifier::on_new_stream(Stream& stream) {
 
 void Identifier::on_client_data(Stream& stream) {
     const vector<uint8_t> payload = stream.client_payload();
+    int port = stream.server_port();
     if (approach == "spid"){
-        if (payload.size() > 0) handle_data(payload, 1);
+        if (payload.size() > 0) handle_data(payload, 1, port);
     }
     if (shouldProcessPacketsIndividually) processPacket(payload);
     sendPacketToParser(payload, identify_protocol(payload));
@@ -50,8 +51,9 @@ void Identifier::on_client_data(Stream& stream) {
 
 void Identifier::on_server_data(Stream& stream) {
     const vector<uint8_t> payload = stream.server_payload();
+    int port = stream.server_port();
     if (approach == "spid"){
-        if (payload.size() > 0) handle_data(payload, 0);
+        if (payload.size() > 0) handle_data(payload, 0, port);
     }
     if (shouldProcessPacketsIndividually) processPacket(payload);
     sendPacketToParser(payload, identify_protocol(payload));

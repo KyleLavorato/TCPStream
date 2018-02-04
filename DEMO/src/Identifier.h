@@ -54,7 +54,7 @@ public:
     /** Identify the given packet. */
     virtual string identify_protocol(vector<uint8_t> payload) = 0;
     virtual void reset_model() = 0;
-    virtual void handle_data(vector<uint8_t> payload, int dir) = 0;
+    virtual void handle_data(vector<uint8_t> payload, int dir, int port) = 0;
 
 
 protected:

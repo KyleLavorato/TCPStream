@@ -14,22 +14,24 @@ ProtocolModel::ProtocolModel(){
 	dirNumSize = AttributeFingerprintHandler("dirnumsize");
 	dirFreq = AttributeFingerprintHandler("dirfreq");
 	dirSize = AttributeFingerprintHandler("dirsize");
+	portNumber = AttributeFingerprintHandler("portnumber");
 }
 
-void ProtocolModel::AddObservation (const byte packetData[], time_t packetTimestamp, int packetDirection, const unsigned long packetLength){
+void ProtocolModel::AddObservation (const byte packetData[], time_t packetTimestamp, int packetDirection, const unsigned long packetLength, int portNum){
   observationCount++;
-  packetSize.AddObservation(packetData, packetTimestamp, packetDirection, observationCount, packetLength);
-  packetSource.AddObservation(packetData, packetTimestamp, packetDirection, observationCount, packetLength);
-  byteFrequency.AddObservation(packetData, packetTimestamp, packetDirection, observationCount, packetLength);
+  packetSize.AddObservation(packetData, packetTimestamp, packetDirection, observationCount, packetLength, portNum);
+  packetSource.AddObservation(packetData, packetTimestamp, packetDirection, observationCount, packetLength, portNum);
+  byteFrequency.AddObservation(packetData, packetTimestamp, packetDirection, observationCount, packetLength, portNum);
   //byteSequences.AddObservation(packetData, packetTimestamp, packetDirection, observationCount);
-  byteOffsets.AddObservation(packetData, packetTimestamp, packetDirection, observationCount, packetLength);
-  dirNumSize.AddObservation(packetData, packetTimestamp, packetDirection, observationCount, packetLength);
-  dirFreq.AddObservation(packetData, packetTimestamp, packetDirection, observationCount, packetLength);
-  dirSize.AddObservation(packetData, packetTimestamp, packetDirection, observationCount, packetLength);
+  byteOffsets.AddObservation(packetData, packetTimestamp, packetDirection, observationCount, packetLength, portNum);
+  dirNumSize.AddObservation(packetData, packetTimestamp, packetDirection, observationCount, packetLength, portNum);
+  dirFreq.AddObservation(packetData, packetTimestamp, packetDirection, observationCount, packetLength, portNum);
+  dirSize.AddObservation(packetData, packetTimestamp, packetDirection, observationCount, packetLength, portNum);
+  portNumber.AddObservation(packetData, packetTimestamp, packetDirection, observationCount, packetLength, portNum);
 }
 
 double ProtocolModel::GetAverageKullbackLeiblerDivergenceFrom (double attributeModel[][512]){
-  double sizeDiv, sourceDiv, frequencyDiv, offsetDiv, dirNumSizeDiv, dirFreqDiv, dirSizeDiv, sum;
+  double sizeDiv, sourceDiv, frequencyDiv, offsetDiv, dirNumSizeDiv, dirFreqDiv, dirSizeDiv, portNumberDiv, sum;
   sizeDiv = packetSize.GetAverageKullbackLeiblerDivergenceFrom(attributeModel[1]);
   sourceDiv = packetSource.GetAverageKullbackLeiblerDivergenceFrom(attributeModel[2]);
   frequencyDiv = byteFrequency.GetAverageKullbackLeiblerDivergenceFrom(attributeModel[0]);
@@ -37,11 +39,12 @@ double ProtocolModel::GetAverageKullbackLeiblerDivergenceFrom (double attributeM
   dirNumSizeDiv = dirNumSize.GetAverageKullbackLeiblerDivergenceFrom(attributeModel[4]);
   dirFreqDiv = dirFreq.GetAverageKullbackLeiblerDivergenceFrom(attributeModel[5]);
   dirSizeDiv = dirSize.GetAverageKullbackLeiblerDivergenceFrom(attributeModel[6]);
+  portNumberDiv = portNumber.GetAverageKullbackLeiblerDivergenceFrom(attributeModel[7]);
   // cout << "sizeDIV = " << sizeDiv << endl;
   // cout << "sourceDIV = " << sourceDiv << endl;
   // cout << "frequencyDIV = " << frequencyDiv << endl;
   // cout << "offsetDIV = " << offsetDiv << endl;
-  sum = sizeDiv + sourceDiv + frequencyDiv + offsetDiv + dirNumSizeDiv + dirFreqDiv + dirSizeDiv;
+  sum = sizeDiv + sourceDiv + frequencyDiv + offsetDiv + dirNumSizeDiv + dirFreqDiv + dirSizeDiv + portNumberDiv;
   sum /= 7;
   return sum;
 
@@ -55,6 +58,7 @@ void ProtocolModel::MergeWith (ProtocolModel otherModel){
 	dirNumSize.MergeWith(otherModel.dirNumSize);
 	dirFreq.MergeWith(otherModel.dirFreq);
 	dirSize.MergeWith(otherModel.dirSize);
+	portNumber.MergeWith(otherModel.portNumber);
 }
 
 void ProtocolModel::MergeWith (double attributeModel[][512]){
@@ -65,6 +69,7 @@ void ProtocolModel::MergeWith (double attributeModel[][512]){
 	dirNumSize.MergeWith(attributeModel[4]);
 	dirFreq.MergeWith(attributeModel[5]);
 	dirSize.MergeWith(attributeModel[6]);
+	portNumber.MergeWith(attributeModel[7]);
 }
 
 void ProtocolModel::reset(){
@@ -75,4 +80,5 @@ void ProtocolModel::reset(){
 	dirNumSize.reset();
 	dirFreq.reset();
 	dirSize.reset();
+	portNumber.reset();
 }

@@ -16,7 +16,7 @@ public:
     void reset_model() {
     	//DOES NOTHING
     }
-    void handle_data(vector<uint8_t> payload, int dir) {
+    void handle_data(vector<uint8_t> payload, int dir, int port) {
     	//DOES NOTHING
     }
 

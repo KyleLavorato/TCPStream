@@ -14,7 +14,7 @@ public:
     /** Identify the given packet. */
     string identify_protocol(vector<uint8_t> payload);
     void reset_model();
-    void handle_data(vector<uint8_t> payload, int dir);
+    void handle_data(vector<uint8_t> payload, int dir, int port);
 
 
 private:

@@ -45,17 +45,17 @@ void on_new_stream_training(Stream& stream) {
 
 void on_client_data_training(Stream& stream) {
     const vector<uint8_t> payload = stream.client_payload();
-    
+    int port = stream.server_port();
     // Train
     if (payload.size() > 0)
-        addData(payload.data(), 1, payload.size());
+        addData(payload.data(), 1, payload.size(), port);
 }
 
 void on_server_data_training(Stream& stream) {
     const vector<uint8_t> payload = stream.server_payload();
-
+    int port = stream.server_port();
     if (payload.size() > 0)
-        addData(payload.data(), 0, payload.size());
+        addData(payload.data(), 0, payload.size(), port);
 }
 
 string SpidIdentifier::identify_protocol(vector<uint8_t> payload) {
@@ -68,8 +68,8 @@ string SpidIdentifier::identify_protocol(vector<uint8_t> payload) {
     return compareProtocols(protocolMap);
 }
 
-void SpidIdentifier::handle_data(vector<uint8_t> payload, int dir) {
-    addData(payload.data(), dir, payload.size());
+void SpidIdentifier::handle_data(vector<uint8_t> payload, int dir, int port) {
+    addData(payload.data(), dir, payload.size(), port);
 }
 
 void SpidIdentifier::reset_model(){

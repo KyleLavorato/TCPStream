@@ -1,19 +1,20 @@
+
 #include "SpidInterface.h"
 #include <string>
 #include <sstream>
 #include <math.h>
 
-double model[7][512];
+double model[8][512];
 double inf = std::numeric_limits<double>::infinity();
 ProtocolModel currentModel;
 
 // TODO: Don't have the threshold hardcoded. Maybe put this in the config file?
-double threshold = 1.5;
+double threshold = 2.0;
 
 
-void addData(const byte packetData[], int packetDirection, const unsigned long packetLength){
+void addData(const byte packetData[], int packetDirection, const unsigned long packetLength, int portNum){
 	time_t currentTime = time(0);
-	currentModel.AddObservation(packetData, currentTime, packetDirection, packetLength);
+	currentModel.AddObservation(packetData, currentTime, packetDirection, packetLength, portNum);
 }
 
 void readCounterVector(string filename){
@@ -25,7 +26,7 @@ void readCounterVector(string filename){
         cerr << "Unable to open file." << endl;
         exit(1);
     }
-    for (int i = 0; i < 7; i++){
+    for (int i = 0; i < 8; i++){
         getline(inFile, x);
         getline(inFile, x);
         istringstream iss(x);
@@ -110,6 +111,15 @@ void writeToFile(string filename){
         myFile << currentModel.dirSize.attributeFingerprint.probabilityDistributionVector[i][1] << " ";
     }
     myFile << endl;
+    myFile << "PortNumber" << endl;
+    for (int i = 0; i < 512; i++){
+        myFile << currentModel.portNumber.attributeFingerprint.probabilityDistributionVector[i][0] << " ";
+    }
+    myFile << endl;
+    for (int i = 0; i < 512; i++){
+        myFile << currentModel.portNumber.attributeFingerprint.probabilityDistributionVector[i][1] << " ";
+    }
+    myFile << endl;
     myFile.close();
 }
 
@@ -122,7 +132,7 @@ void readProbabilityVector(string filename){
         cerr << "Unable to open file." << endl;
         exit(1);
     }
-    for (int i = 0; i < 7; i++){
+    for (int i = 0; i < 8; i++){
         getline(inFile, x);
         getline(inFile, x);
         getline(inFile, x);
