@@ -125,95 +125,106 @@ OPTIONS
 
    Debugging options
            --print-packets
-           	  Print the contents of each packet after processing it
+              Print the contents of each packet after processing it
 )";
 
 char* argString;
 
 int main(int argc, char *argv[]) {
 
-	argString = argv[0];
+    argString = argv[0];
 
-	bool printPackets = false;
-	bool processPacketsIndividually = false;
+    bool printPackets = false;
+    bool processPacketsIndividually = false;
 
-	int arg = 1;
-	string currentArg = argv[arg];
+    int arg = 1;
+    string currentArg = argv[arg];
 
-	while (currentArg.size() > 0 && currentArg[0] == '-') {
+    while (currentArg.size() > 0 && currentArg[0] == '-') {
 
-		if (currentArg == "--print-packets") {
-			printPackets = true;
-		} else if (currentArg == "-i" || currentArg == "--individual") {
-			processPacketsIndividually = true;
-		} else if (currentArg == "-h" || currentArg == "--help") {
-			cout << usageText;
-			return -1;
-		} else {
-			cerr << "Error: Unrecognized argument: " << currentArg << endl;
-			cerr << endl;
-			cout << usageText;
-			return -1;
-		}
+        if (currentArg == "--print-packets") {
+            printPackets = true;
+        } else if (currentArg == "-i" || currentArg == "--individual") {
+            processPacketsIndividually = true;
+        } else if (currentArg == "-h" || currentArg == "--help") {
+            cout << usageText;
+            return -1;
+        } else {
+            cerr << "Error: Unrecognized argument: " << currentArg << endl;
+            cerr << endl;
+            cout << usageText;
+            return -1;
+        }
 
-		currentArg = argv[++arg];
-	}
+        currentArg = argv[++arg];
+    }
 
-	const string& modeArg = argv[arg++];
-	string approachArg = argv[arg++];
-	string configFileArg = argv[arg++];
-	string packetSourceArg = argv[arg++];
+    const string& modeArg = argv[arg++];
+    string approachArg = argv[arg++];
+    string configFileArg = argv[arg++];
+    string packetSourceArg = argv[arg++];
 
-	// Create our follower
-	Tins::TCPIP::StreamFollower follower;
+    // Create our follower
+    Tins::TCPIP::StreamFollower follower;
+    follower.follow_partial_streams(true);
 
-	// Set up the new stream callback with the approach specified on the
-	// command line by the user using the APPROACH argument
-	if (approachArg == "string-matching") {
+    // Set up the new stream callback with the approach specified on the
+    // command line by the user using the APPROACH argument
+    if (approachArg == "string-matching") {
 
-		// Instantiate an identifier that uses our specific approach
-		StringMatchingIdentifier* identifier = new StringMatchingIdentifier;
+        // Instantiate an identifier that uses our specific approach
+        StringMatchingIdentifier* identifier = new StringMatchingIdentifier;
 
-		// Configure the identifier using the config file
-		identifier->configure(configFileArg, printPackets, processPacketsIndividually, approachArg);
+        // Configure the identifier using the config file
+        identifier->configure(configFileArg, printPackets, processPacketsIndividually, approachArg);
 
-		// Set up the new stream callback
-		follower.new_stream_callback(std::bind(&StringMatchingIdentifier::on_new_stream, identifier, _1));
+        // Set up the new stream callback
+        follower.new_stream_callback(std::bind(&StringMatchingIdentifier::on_new_stream, identifier, _1));
+        follower.stream_termination_callback(std::bind(&StringMatchingIdentifier::handle_terminated_stream, identifier, _1, _2));
 
-	} else if (approachArg == "spid") {
+    } else if (approachArg == "spid") {
 
-		// Instantiate an identifier that uses our specific approach
-		SpidIdentifier* identifier = new SpidIdentifier;
+        // Instantiate an identifier that uses our specific approach
+        SpidIdentifier* identifier = new SpidIdentifier;
 
-		// Configure the identifier using the config file
-		identifier->configure(configFileArg, printPackets, processPacketsIndividually, approachArg);
+        // Configure the identifier using the config file
+        identifier->configure(configFileArg, printPackets, processPacketsIndividually, approachArg);
 
-		// Set up the new stream callback
-		follower.new_stream_callback(std::bind(&SpidIdentifier::on_new_stream, identifier, _1));
+        // Set up the new stream callback
+        follower.new_stream_callback(std::bind(&SpidIdentifier::on_new_stream, identifier, _1));
+        follower.stream_termination_callback(std::bind(&SpidIdentifier::handle_terminated_stream, identifier, _1, _2));
 
-	} else {
-		cout << usageText;
-		return -1;
-	}
+    } else {
+        cout << usageText;
+        return -1;
+    }
 
-	if (modeArg == "live") {
-		Sniffer sniffer(packetSourceArg); // packetSourceArg will be a PCAP file
+    SnifferConfiguration config;
+    config.set_filter("tcp");
+    config.set_immediate_mode(true);
 
-		// Start sniffing, forwarding all packets to our follower
-		sniffer.sniff_loop([&](PDU& pdu) {
-			follower.process_packet(pdu);
-			return true;
-		});
-	} else if (modeArg == "file") {
-		FileSniffer sniffer(packetSourceArg); // packetSourceArg will be a network interface
+    if (modeArg == "live") {
 
-		// Start sniffing, forwarding all packets to our follower
-		sniffer.sniff_loop([&](PDU& pdu) {
-			follower.process_packet(pdu);
-			return true;
-		});
-	} else {
-		cout << usageText;
-		return -1;
-	}
+        // packetSourceArg will be a PCAP file
+        Sniffer sniffer(packetSourceArg, config);
+
+        // Start sniffing, forwarding all packets to our follower
+        sniffer.sniff_loop([&](PDU& pdu) {
+            follower.process_packet(pdu);
+            return true;
+        });
+    } else if (modeArg == "file") {
+
+        // packetSourceArg will be a network interface
+        FileSniffer sniffer(packetSourceArg);
+
+        // Start sniffing, forwarding all packets to our follower
+        sniffer.sniff_loop([&](PDU& pdu) {
+            follower.process_packet(pdu);
+            return true;
+        });
+    } else {
+        cout << usageText;
+        return -1;
+    }
 }

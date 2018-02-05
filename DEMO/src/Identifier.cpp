@@ -36,7 +36,7 @@ void Identifier::on_new_stream(Stream& stream) {
     // Set the callbacks
     stream.client_data_callback(std::bind(&Identifier::on_client_data, this, _1));
     stream.server_data_callback(std::bind(&Identifier::on_server_data, this, _1));
-    stream.stream_closed_callback(std::bind(&Identifier::on_stream_closed, this, _1));
+    stream.stream_closed_callback(std::bind(&Identifier::handle_full_stream, this, _1));
 }
 
 void Identifier::on_client_data(Stream& stream) {
@@ -71,7 +71,7 @@ void Identifier::sendPacketToParser(vector<uint8_t> packet, string protocol) {
     }
 }
 
-void Identifier::on_stream_closed(Stream& stream) {
+void Identifier::handle_full_stream(Stream& stream) {
     if (!shouldProcessPacketsIndividually) {
         vector<uint8_t> fullStream;
         vector<uint8_t> clientPayload = stream.client_payload();
@@ -82,6 +82,23 @@ void Identifier::on_stream_closed(Stream& stream) {
         processPacket(fullStream);
     }
     streamNum++;
+}
+
+void Identifier::handle_terminated_stream(Stream& stream, StreamFollower::TerminationReason reason) {
+    switch(reason) {
+        case StreamFollower::TerminationReason::TIMEOUT:
+            cout << "Stream terminated because of timeout" << endl;
+            break;
+        case StreamFollower::TerminationReason::BUFFERED_DATA:
+            cout << "Stream terminated because there was too much buffered data" << endl;
+            break;
+        case StreamFollower::TerminationReason::SACKED_SEGMENTS:
+            cout << "Stream terminated because of sacked segments" << endl;
+            break;
+        default:
+            cout << "Stream terminated for unknown reason" << endl;
+            break;
+    }
 }
 
 void Identifier::processPacket(vector<uint8_t> packet) {

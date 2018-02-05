@@ -16,6 +16,7 @@ using namespace Tins;
 using namespace std;
 using namespace std::placeholders;
 using Tins::TCPIP::Stream;
+using Tins::TCPIP::StreamFollower;
 
 class Identifier
 {
@@ -32,7 +33,10 @@ public:
     void on_new_stream(Stream& stream);
 
     /** When a stream finishes */
-    void on_stream_closed(Stream& stream);
+    void handle_full_stream(Stream& stream);
+
+    /** When a stream finishes */
+    void handle_terminated_stream(Stream& stream, StreamFollower::TerminationReason reason);
 
     /** When new client data arrives */
     void on_client_data(Stream& stream);
