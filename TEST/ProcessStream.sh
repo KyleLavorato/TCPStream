@@ -27,6 +27,7 @@ for j in PCAP/*; do
 	for ((i=0;i<=END;i++))
 	do
 	    tshark -r $j -Y "tcp.stream eq $i" > INTERMEDIATE/$i.txt
+	    #tshark -r $j -qz follow,tcp,ascii,$i > INTERMEDIATE/$i-follow.txt
 	done
 
 	tmpfile=$(mktemp /tmp/ProcessStream.XXXXXX)
@@ -42,13 +43,18 @@ for j in PCAP/*; do
 			printf "[$COUNT] protocol: SAMBA\n" >> $tmpfile
 		elif grep -q "HTTP" $i; then
 			printf "[$COUNT] protocol: HTTP\n" >> $tmpfile
+		elif grep -q "TLSv1.2" $i; then
+			if grep -q "Application Data" $i; then
+				printf "[$COUNT] protocol: HTTP\n" >> $tmpfile
+			fi
 		elif grep -q "TCP" $i; then
 			:
+			#printf "[$COUNT] BALLS\n" >> $tmpfile
 		else
 			printf "[$COUNT] protocol: FAILED\n" >> $tmpfile
 		fi
 		COUNT=$((COUNT+1))
-		rm $i
+		#rm $i
 	done
 
 	# Write temp to file named same as pcap
