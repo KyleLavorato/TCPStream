@@ -1,0 +1,7 @@
+[1] protocol: HTTP
+[2] protocol: HTTP
+[3] protocol: SAMBA
+[4] protocol: SAMBA
+[5] protocol: SAMBA
+[6] protocol: SAMBA
+[7] protocol: SAMBA

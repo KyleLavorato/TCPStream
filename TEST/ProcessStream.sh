@@ -74,22 +74,22 @@ echo -en "                               \r"
 echo -en "Generating TCPStream Parsers\r"
 echo -en '\n[####                ] 20%'
 echo -en "\033[F\r"
-#sleep 2
+sleep 2
 
-#cd ../DEMO/GENERATOR
-#./makemake.sh -q
-#./translate.sh -q
-#./interface.sh -q
-#cd ../
+cd ../DEMO/GENERATOR
+./makemake.sh -q
+./translate.sh -q
+./interface.sh -q
+cd ../
 
 echo -en "                               \r"
 echo -en "Compiling TCPStream\r"
 echo -en '\n[########            ] 40%'
 echo -en "\033[F\r"
 
-#make clean > /dev/null
-#make > /dev/null
-#cd ../TEST
+make clean > /dev/null
+make > /dev/null
+cd ../TEST
 
 ########## End Build ##########
 
@@ -102,8 +102,6 @@ echo -en "\033[F\r"
 
 rm -r ACTUAL_RESULT
 mkdir ACTUAL_RESULT
-
-#../DEMO/TCPStream file string-matching ../DEMO/configs/string-matching-config.txt PCAP/our-ftp.pcap > ACTUAL_RESULT/AAA.txt
 
 mkdir SpidModels
 for j in PCAP/*; do
@@ -121,11 +119,12 @@ rm -r SpidModels
 
 ########## Results Calculation ##########
 
-#sleep 2
+sleep 2
 echo -en "                               \r"
 echo -en "Analyzing Results\r"
 echo -en '\n[################    ] 80%'
 echo -en "\033[F\r"
+sleep 2
 
 # Find number of errors between actual and expected
 ERRORS=0
