@@ -13,14 +13,14 @@ using Tins::TCPIP::Stream;
 using Tins::TCPIP::StreamFollower;
 
 const char* usageText = R"(NAME
-        shitty_wireshark - a module to identify application layer protocols
+        TCPStream - a module to identify application layer protocols
             used in TCP streams and parse them
 
 SYNOPSIS
-        shitty_wireshark [OPTION...] MODE APPROACH CONFIG SOURCE
-        shitty_wireshark [-h|--help]
-        shitty_wireshark [-i|--individual] MODE APPROACH CONFIG SOURCE
-        shitty_wireshark --print-packets MODE APPROACH CONFIG SOURCE
+        TCPStream [OPTION...] MODE APPROACH CONFIG SOURCE
+        TCPStream [-h|--help]
+        TCPStream [-i|--individual] MODE APPROACH CONFIG SOURCE
+        TCPStream --print-packets MODE APPROACH CONFIG SOURCE
 
 DESCRIPTION
         MODE
@@ -95,22 +95,22 @@ CONFIGURATION
             HTTP:PCAPS/HTTP.pcap;SpidModels/HTTP.txt
 
 EXAMPLES
-        shitty_wireshark live string-matching myConfig.txt eth0
+        TCPStream live string-matching myConfig.txt eth0
             Capture all TCP streams on the network device eth0 and identify them
             using the string-matching approach
 
-        shitty_wireshark file spid myConfig.txt myPcapFile.pcap
+        TCPStream file spid myConfig.txt myPcapFile.pcap
             Find all TCP streams in myPcapFile.pcap and identify them using SPID
 
-        shitty_wireshark -i file spid myConfig.txt myPcapFile.pcap
+        TCPStream -i file spid myConfig.txt myPcapFile.pcap
             Same as above, but identify each packet in each stream individually
             instead of just processing the stream in its entirety
 
-        shitty_wireshark --print-packets file spid myConfig.txt myPcapFile.pcap
+        TCPStream --print-packets file spid myConfig.txt myPcapFile.pcap
             Same as second example, but print the contents of every packet after
             identifying it
 
-        shitty_wireshark -h
+        TCPStream -h
             Print this help text
 
 OPTIONS
