@@ -5,9 +5,11 @@
 #include "HTTP_Generated.h"
 #include "SMB2_Generated.h"
 #include "FTP_Generated.h"
+#include "HTTPS_Generated.h"
 #define HTTP_TYPE (1)
 #define SMB2_TYPE (2)
 #define FTP_TYPE (3)
+#define HTTPS_TYPE (4)
 long iTotal = 0;
 long iFail = 0;
 long iHTTP = 0;
@@ -16,6 +18,8 @@ long iSMB2 = 0;
 long iSMB2f = 0;
 long iFTP = 0;
 long iFTPf = 0;
+long iHTTPS = 0;
+long iHTTPSf = 0;
 
 int parseData (const unsigned char *data, const unsigned long dataLength, int type) {
     char *progname = argString;
@@ -70,6 +74,18 @@ int parseData (const unsigned char *data, const unsigned long dataLength, int ty
             freePDU_FTP (&pdu_ftp);
             break;
         }
+    case HTTPS_TYPE :
+        {
+            PDU_HTTPS pdu_https;
+            endianness = BIGENDIAN;
+            parsedPDU = parseHTTPS (&pdu_https, thePDU, progname, endianness);
+            if (parsedPDU)
+                iHTTPS++;
+            else
+                iHTTPSf++;
+            freePDU_HTTPS (&pdu_https);
+            break;
+        }
     default :
         {
             iFail++;
@@ -90,6 +106,8 @@ void printStats () {
     printf ("SMB2 Failed: %lu \n", iSMB2f);
     printf ("FTP Parsed: %lu \n", iFTP);
     printf ("FTP Failed: %lu \n", iFTPf);
+    printf ("HTTPS Parsed: %lu \n", iHTTPS);
+    printf ("HTTPS Failed: %lu \n", iHTTPSf);
     printf ("Total Packets: %lu \n", iTotal);
     printf ("Unparsable Packets: %lu \n", iFail);
 }

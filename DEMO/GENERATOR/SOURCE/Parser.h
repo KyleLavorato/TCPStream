@@ -5,8 +5,10 @@
 #include "HTTP_Generated.h"
 #include "SMB2_Generated.h"
 #include "FTP_Generated.h"
+#include "HTTPS_Generated.h"
 #define HTTP_TYPE (1)
 #define SMB2_TYPE (2)
 #define FTP_TYPE (3)
+#define HTTPS_TYPE (4)
 int parseData (const unsigned char * data, const unsigned long dataLength, int type);
 void printStats ();

@@ -39,10 +39,11 @@ The test suite is a set of two different evaluation scripts to test both the acc
 
 #### Accuracy Testing
 
-The script `ProcessStream.sh` will evaluate TCPStream's ability to correctly identify streams for any packet captures located in `../TEST/PCAP` for all modes. Run the test suite in the TEST directory with the command:
+The script `ProcessStream.sh` will evaluate TCPStream's ability to correctly identify streams for any packet captures located in `../TEST/PCAP/*` for all modes. Run the test suite in the TEST directory with the command:
 ```shell
-./ProcessStream.sh
+./ProcessStream.sh [-Protocol]
 ```
+* Protocol - The protocol you wish to test or -all to test overall accuracy
 The test suite will complete the following actions:
 * Preprocess each input pcap in the PCAP directory to segment it into numbered streams, with the protocol identified using tshark (Wireshark command line)
 * The preprocessed input will be output to `TEST/EXPECTED_RESULT` for manual inspection if desired.

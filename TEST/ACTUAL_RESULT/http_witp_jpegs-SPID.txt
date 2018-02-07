@@ -1,11 +1,11 @@
 [1] protocol: Unknown
-[2] protocol: Unknown
+[2] protocol: HTTP
 [3] protocol: Unknown
 [4] protocol: HTTP
 [5] protocol: HTTP
 [6] protocol: HTTP
-[7] protocol: Unknown
-[8] protocol: Unknown
+[7] protocol: HTTP
+[8] protocol: HTTP
 [9] protocol: HTTP
 [10] protocol: HTTP
 [11] protocol: HTTP
@@ -13,7 +13,7 @@
 [13] protocol: HTTP
 [14] protocol: HTTP
 [15] protocol: HTTP
-[16] protocol: Unknown
+[16] protocol: HTTP
 [17] protocol: HTTP
 [18] protocol: HTTP
 [19] protocol: HTTP

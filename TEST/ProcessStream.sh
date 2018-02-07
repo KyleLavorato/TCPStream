@@ -1,10 +1,26 @@
 #!/bin/bash
 
 if [[ "$1" == "-h" ]]; then
-	printf "Usage:\t./ProcessStream.sh\n"
+	printf "Usage:\t./ProcessStream.sh -[Protocol]\n"
+	printf "[Protocol] can be any of the directories in PCAP/ of -all\n"
 	printf "\tThe script will evaluate the matching accuracy of TCPStream\n"
 	printf "\tagainst all pcaps in TEST/PCAP/*.pcap\n"
 	printf "The script will perform a clean compile of TCPStream\n"
+	exit 1
+fi
+
+if [[ "$1" == "-http" ]]; then
+	LOC="PCAP/HTTP/*"
+elif [[ "$1" == "-https" ]]; then
+	LOC="PCAP/HTTPS/*"
+elif [[ "$1" == "-smb" ]]; then
+	LOC="PCAP/SMB/*"
+elif [[ "$1" == "-ftp" ]]; then
+	LOC="PCAP/FTP/*"
+elif [[ "$1" == "-all" ]]; then
+	LOC="PCAP/*/*"
+else
+	printf "\nPlease enter a valid protocol\n"
 	exit 1
 fi
 
@@ -21,7 +37,7 @@ rm -r EXPECTED_RESULT
 mkdir EXPECTED_RESULT
 COUNT=0
 
-for j in PCAP/*; do
+for j in $LOC; do
 	# Send follows to an intermediate folder
 	END=$(tshark -r $j -T fields -e tcp.stream | sort -n | tail -1)
 	for ((i=0;i<=END;i++))
@@ -45,7 +61,7 @@ for j in PCAP/*; do
 			printf "[$COUNT] protocol: HTTP\n" >> $tmpfile
 		elif grep -q "TLSv1.2" $i; then
 			if grep -q "Application Data" $i; then
-				printf "[$COUNT] protocol: HTTP\n" >> $tmpfile
+				printf "[$COUNT] protocol: HTTPS\n" >> $tmpfile
 			fi
 		elif grep -q "TCP" $i; then
 			:
@@ -104,7 +120,7 @@ rm -r ACTUAL_RESULT
 mkdir ACTUAL_RESULT
 
 mkdir SpidModels
-for j in PCAP/*; do
+for j in $LOC; do
 	filename=`basename $j .pcapng`
 	filename=`basename $filename .pcap`
 	filename=`basename $filename .cap`
@@ -175,7 +191,10 @@ for j in EXPECTED_RESULT/*.txt; do
 	if (( $MISSING > 0 )); then
 		echo -en "WARNING: `basename $j .txt`-SPID.txt is missing $MISSING stream(s)\n"
 	fi
+done
 
+for j in ACTUAL_RESULT/*.txt; do
+	LINES=$(cat $j | wc -l)
 	ATTEMPTS=$((ATTEMPTS+LINES))
 done
 

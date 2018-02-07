@@ -1,5 +1,5 @@
-[1] protocol: HTTP
-[2] protocol: HTTP
+[1] protocol: HTTPS
+[2] protocol: HTTPS
 [3] protocol: SAMBA
 [4] protocol: SAMBA
 [5] protocol: SAMBA

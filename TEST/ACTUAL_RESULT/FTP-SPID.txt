@@ -4,5 +4,5 @@
 [4] protocol: Unknown
 [5] protocol: FTP
 [6] protocol: Unknown
-[7] protocol: HTTP
+[7] protocol: HTTPS
 [8] protocol: FTP

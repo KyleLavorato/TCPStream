@@ -1,10 +1,10 @@
-[3] protocol: HTTP
+[3] protocol: HTTPS
 [4] protocol: FTP
-[5] protocol: HTTP
-[7] protocol: HTTP
-[8] protocol: HTTP
+[5] protocol: HTTPS
+[7] protocol: HTTPS
+[8] protocol: HTTPS
 [9] protocol: FTP
-[10] protocol: HTTP
+[10] protocol: HTTPS
 [11] protocol: FTP
 [12] protocol: FTP
 [13] protocol: FTP
