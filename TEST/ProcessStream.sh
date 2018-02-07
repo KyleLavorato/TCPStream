@@ -53,15 +53,20 @@ for j in $LOC; do
 	for i in `ls -v INTERMEDIATE/*.txt`; do
 		if grep -q "FTP" $i; then
 			printf "[$COUNT] protocol: FTP\n" >> $tmpfile
+			COUNT=$((COUNT+1))
 		elif grep -q "FTP-DATA" $i; then
 			printf "[$COUNT] protocol: FTP\n" >> $tmpfile
+			COUNT=$((COUNT+1))
 		elif grep -q "SMB" $i; then
 			printf "[$COUNT] protocol: SAMBA\n" >> $tmpfile
+			COUNT=$((COUNT+1))
 		elif grep -q "HTTP" $i; then
 			printf "[$COUNT] protocol: HTTP\n" >> $tmpfile
+			COUNT=$((COUNT+1))
 		elif grep -q "TLSv1.2" $i; then
 			if grep -q "Application Data" $i; then
 				printf "[$COUNT] protocol: HTTPS\n" >> $tmpfile
+				COUNT=$((COUNT+1))
 			fi
 		elif grep -q "TCP" $i; then
 			:
@@ -69,7 +74,6 @@ for j in $LOC; do
 		else
 			printf "[$COUNT] protocol: FAILED\n" >> $tmpfile
 		fi
-		COUNT=$((COUNT+1))
 		#rm $i
 	done
 
@@ -197,6 +201,7 @@ for j in ACTUAL_RESULT/*.txt; do
 	LINES=$(cat $j | wc -l)
 	ATTEMPTS=$((ATTEMPTS+LINES))
 done
+ATTEMPTS=$((ATTEMPTS/2)) # We double it by adding over string and spid
 
 # Find percent failed
 PERCENTS=$(awk "BEGIN { pc=100*${ERRORS}/${ATTEMPTS}; i=int(pc); print (pc) }")
