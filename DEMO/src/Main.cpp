@@ -19,8 +19,6 @@ const char* usageText = R"(NAME
 SYNOPSIS
         TCPStream [OPTION...] MODE APPROACH CONFIG SOURCE
         TCPStream [-h|--help]
-        TCPStream [-i|--individual] MODE APPROACH CONFIG SOURCE
-        TCPStream --print-packets MODE APPROACH CONFIG SOURCE
 
 DESCRIPTION
         MODE
@@ -124,8 +122,10 @@ OPTIONS
               whole
 
    Debugging options
-           --print-packets
+       -p, --print-packets
               Print the contents of each packet after processing it
+       -s, --stats
+              Print out parser statistics at the end of the program
 )";
 
 char* argString;
@@ -136,16 +136,18 @@ int main(int argc, char *argv[]) {
 
     bool printPackets = false;
     bool processPacketsIndividually = false;
+    bool shouldPrintStats = false;
 
     int arg = 1;
     string currentArg = argv[arg];
 
     while (currentArg.size() > 0 && currentArg[0] == '-') {
-
-        if (currentArg == "--print-packets") {
+        if (currentArg == "-p" || currentArg == "--print-packets") {
             printPackets = true;
         } else if (currentArg == "-i" || currentArg == "--individual") {
             processPacketsIndividually = true;
+        } else if (currentArg == "-s" || currentArg == "--stats") {
+            shouldPrintStats = true;
         } else if (currentArg == "-h" || currentArg == "--help") {
             cout << usageText;
             return -1;
@@ -155,7 +157,6 @@ int main(int argc, char *argv[]) {
             cout << usageText;
             return -1;
         }
-
         currentArg = argv[++arg];
     }
 
@@ -213,6 +214,10 @@ int main(int argc, char *argv[]) {
             follower.process_packet(pdu);
             return true;
         });
+
+        // Print parser stats
+        if (shouldPrintStats) printStats();
+
     } else if (modeArg == "file") {
 
         // packetSourceArg will be a network interface
@@ -223,6 +228,10 @@ int main(int argc, char *argv[]) {
             follower.process_packet(pdu);
             return true;
         });
+
+        // Print parser stats
+        if (shouldPrintStats) printStats();
+
     } else {
         cout << usageText;
         return -1;
