@@ -244,6 +244,7 @@ function addAuxiliaryData
 		'#define LITTLEENDIAN (0x1)
 		'#include "packet.h"
 		'#include "putilities.h"
+		'#include <string>
 		FinalHeaders
 
 	construct defaultCase [repeat declaration_or_statement]
@@ -312,9 +313,23 @@ function addAuxiliaryData
 			printBody
 		}
 
+	import count [number]
+	export count
+		'0
+	construct finalReturn [repeat declaration_or_statement]
+		return -1;
+	construct constantBody [repeat declaration_or_statement]
+		_ [generateConstantBody each packetTypes]
+	construct stringAnd [id]
+		_ [+ "std::string"] [+ "&"]
+	construct getConstant [repeat function_definition_or_declaration]
+		int getConstantForProtocol(const stringAnd 'protocol) {
+			constantBody [. finalReturn]
+		}
+
 	by
 		Includes
-		declares [. parseFunc] [. stats]
+		declares [. parseFunc] [. getConstant] [. stats]
 end function
 
 function generateIncludes packetType [id]
@@ -387,4 +402,26 @@ function generateDebugPrints packetType [id]
 
 	by
 		Stmts [. print]
+end function
+
+function generateConstantBody packetType [id]
+	replace [repeat declaration_or_statement]
+		Stmts [repeat declaration_or_statement]
+	
+	import count [number]
+
+	construct protoLIT [stringlit]
+		_ [+ ""] [+ packetType] [+ ""]
+	construct func [id]
+		_ [+ "protocol.compare"]
+
+	construct caseStmt [repeat declaration_or_statement]
+		if ( ! func ( protoLIT ) )
+			return count;
+
+	export count
+		count [+ 1]
+
+	by
+		Stmts [. caseStmt]
 end function

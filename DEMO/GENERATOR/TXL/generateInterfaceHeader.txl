@@ -87,6 +87,7 @@ function addAuxiliaryData
 		'#define LITTLEENDIAN (0x1)
 		'#include "packet.h"
 		'#include "putilities.h"
+		'#include <string>
 		FinalHeaders
 
 	construct Stmts [repeat function_definition_or_declaration]
@@ -95,9 +96,14 @@ function addAuxiliaryData
 	construct stats [repeat function_definition_or_declaration]
 		void printStats();
 
+	construct stringAnd [id]
+		_ [+ "std::string"] [+ "&"]
+	construct getConstant [repeat function_definition_or_declaration]
+		int getConstantForProtocol(const stringAnd 'protocol);
+
 	by
 		Includes
-		Stmts [. stats]
+		Stmts [. stats] [. getConstant]
 end function
 
 function generateIncludes packetType [id]

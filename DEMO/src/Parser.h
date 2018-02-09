@@ -2,6 +2,7 @@
 #define LITTLEENDIAN (0x1)
 #include "packet.h"
 #include "putilities.h"
+#include <string>
 #include "HTTP_Generated.h"
 #include "SMB2_Generated.h"
 #include "FTP_Generated.h"
@@ -12,3 +13,4 @@
 #define HTTPS_TYPE (4)
 int parseData (const unsigned char * data, const unsigned long dataLength, int type);
 void printStats ();
+int getConstantForProtocol (const std::string& protocol);

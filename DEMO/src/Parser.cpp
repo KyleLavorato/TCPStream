@@ -2,6 +2,7 @@
 #define LITTLEENDIAN (0x1)
 #include "packet.h"
 #include "putilities.h"
+#include <string>
 #include "HTTP_Generated.h"
 #include "SMB2_Generated.h"
 #include "FTP_Generated.h"
@@ -97,6 +98,18 @@ int parseData (const unsigned char *data, const unsigned long dataLength, int ty
     free (thePDU);
     thePDU = NULL;
     return parsedPDU;
+}
+
+int getConstantForProtocol (const std::string& protocol) {
+    if (!protocol.compare ("HTTP"))
+        return 0;
+    if (!protocol.compare ("SMB2"))
+        return 1;
+    if (!protocol.compare ("FTP"))
+        return 2;
+    if (!protocol.compare ("HTTPS"))
+        return 3;
+    return -1;
 }
 
 void printStats () {
