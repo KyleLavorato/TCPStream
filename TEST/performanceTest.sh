@@ -2,7 +2,7 @@
 
 
 if [[ "$1" == "" || "$1" == "-h" ]]; then
-	printf "USAGE: ./performanceTest.sh [-m(atching) | -s(pid)] [PCAP] [ExecutionNumber]\n"
+	printf "USAGE: ./performanceTest.sh [-m(atching) | -s(pid) | -n(o identification)] [PCAP] [ExecutionNumber]\n"
 	printf "\t\n"
 	echo "Please provide the binary and pcap locations"
 	exit 1
@@ -23,6 +23,11 @@ fi
 if [[ "$1" == "-s" ]]; then
 	TYPE="spid ../DEMO/configs/spid-config-testing.txt"
 	PTYPE="SPID"
+fi
+
+if [[ "$1" == "-n" ]]; then
+	TYPE="-n ../DEMO/configs/spid-config-testing.txt"
+	PTYPE="TCP"
 fi
 
 for i in $(seq 1 $TIMES)
