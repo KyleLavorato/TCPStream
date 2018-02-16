@@ -126,6 +126,8 @@ OPTIONS
               Print the contents of each packet after processing it
        -s, --stats
               Print out parser statistics at the end of the program
+       -n, --no-identify
+              Don't identify the protocols, just process streams and exit
 )";
 
 char* argString;
@@ -137,6 +139,7 @@ int main(int argc, char *argv[]) {
     bool printPackets = false;
     bool processPacketsIndividually = false;
     bool shouldPrintStats = false;
+    bool shouldIdentify = true;
 
     int arg = 1;
     string currentArg = argv[arg];
@@ -151,6 +154,8 @@ int main(int argc, char *argv[]) {
         } else if (currentArg == "-h" || currentArg == "--help") {
             cout << usageText;
             return -1;
+        } else if (currentArg == "-n" || currentArg == "--no-identify") {
+            shouldIdentify = false;
         } else {
             cerr << "Error: Unrecognized argument: " << currentArg << endl;
             cerr << endl;
@@ -169,35 +174,38 @@ int main(int argc, char *argv[]) {
     Tins::TCPIP::StreamFollower follower;
     follower.follow_partial_streams(true);
 
-    // Set up the new stream callback with the approach specified on the
-    // command line by the user using the APPROACH argument
-    if (approachArg == "string-matching") {
-
-        // Instantiate an identifier that uses our specific approach
-        StringMatchingIdentifier* identifier = new StringMatchingIdentifier;
-
-        // Configure the identifier using the config file
-        identifier->configure(configFileArg, printPackets, processPacketsIndividually, approachArg);
-
-        // Set up the new stream callback
-        follower.new_stream_callback(std::bind(&StringMatchingIdentifier::on_new_stream, identifier, _1));
-        follower.stream_termination_callback(std::bind(&StringMatchingIdentifier::handle_terminated_stream, identifier, _1, _2));
-
-    } else if (approachArg == "spid") {
-
-        // Instantiate an identifier that uses our specific approach
-        SpidIdentifier* identifier = new SpidIdentifier;
-
-        // Configure the identifier using the config file
-        identifier->configure(configFileArg, printPackets, processPacketsIndividually, approachArg);
-
-        // Set up the new stream callback
-        follower.new_stream_callback(std::bind(&SpidIdentifier::on_new_stream, identifier, _1));
-        follower.stream_termination_callback(std::bind(&SpidIdentifier::handle_terminated_stream, identifier, _1, _2));
-
-    } else {
-        cout << usageText;
-        return -1;
+    if (shouldIdentify) {
+    
+        // Set up the new stream callback with the approach specified on the
+        // command line by the user using the APPROACH argument
+        if (approachArg == "string-matching") {
+    
+            // Instantiate an identifier that uses our specific approach
+            StringMatchingIdentifier* identifier = new StringMatchingIdentifier;
+    
+            // Configure the identifier using the config file
+            identifier->configure(configFileArg, printPackets, processPacketsIndividually, approachArg);
+    
+            // Set up the new stream callback
+            follower.new_stream_callback(std::bind(&StringMatchingIdentifier::on_new_stream, identifier, _1));
+            follower.stream_termination_callback(std::bind(&StringMatchingIdentifier::handle_terminated_stream, identifier, _1, _2));
+    
+        } else if (approachArg == "spid") {
+    
+            // Instantiate an identifier that uses our specific approach
+            SpidIdentifier* identifier = new SpidIdentifier;
+    
+            // Configure the identifier using the config file
+            identifier->configure(configFileArg, printPackets, processPacketsIndividually, approachArg);
+    
+            // Set up the new stream callback
+            follower.new_stream_callback(std::bind(&SpidIdentifier::on_new_stream, identifier, _1));
+            follower.stream_termination_callback(std::bind(&SpidIdentifier::handle_terminated_stream, identifier, _1, _2));
+    
+        } else {
+            cout << usageText;
+            return -1;
+        }
     }
 
     SnifferConfiguration config;
