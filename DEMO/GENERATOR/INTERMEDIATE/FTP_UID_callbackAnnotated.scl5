@@ -1,7 +1,0 @@
-FTP DEFINITIONS ::= BEGIN
-    EXPORTS PDU_FTP ^ PDU;
-    PDU_FTP ^ PDU ::= (Packet_FTP)
-    Packet_FTP ^ Packet ::= SEQUENCE {
-    }
-
-END

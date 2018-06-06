@@ -1,6 +1,0 @@
-HTTPS DEFINITIONS ::= BEGIN
-    EXPORTS PDU_HTTPS ^ PDU;
-    PDU_HTTPS ^ PDU ::= (Packet_HTTPS)
-    Packet_HTTPS ^ Packet ::= SEQUENCE {
-    }
-END

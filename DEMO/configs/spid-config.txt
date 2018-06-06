@@ -1,3 +1,0 @@
-HTTP:../PCAPS/HTTP.pcap;SpidModels/HTTP.txt
-FTP:../PCAPS/our-ftp.pcap;SpidModels/FTP.txt
-SAMBA:../PCAPS/our-smb.pcap;SpidModels/SAMBA.txt
