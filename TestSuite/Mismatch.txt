@@ -1,0 +1,10 @@
+Mismatch in smb-on-windows-10-SPID
+
+1,2c1,2
+< [1] protocol: SAMBA
+< [2] protocol: SAMBA
+---
+> [1] protocol: HTTPS
+> [2] protocol: HTTPS
+8d7
+< [8] protocol: SAMBA

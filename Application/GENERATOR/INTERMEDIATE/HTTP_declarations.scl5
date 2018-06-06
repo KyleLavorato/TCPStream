@@ -1,0 +1,7 @@
+HTTP DEFINITIONS ::= BEGIN
+    EXPORTS PDU;
+    PDU_HTTP ^ PDU ::= (Packet)
+    Packet_HTTP ^ Packet ::= SEQUENCE {
+    }
+
+END
