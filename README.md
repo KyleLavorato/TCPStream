@@ -1,6 +1,6 @@
 # TCPStream
-
-## Software Introduction
+---
+### Software Introduction
 
 TCPStream is a standalone application that sniffs network traffic and captures only the TCP packets, reorganizes them into their appropriate streams, and then sends those streams of data to a parsing interface to verify proper packet protocol structure.
 
@@ -12,8 +12,8 @@ TCPStream is a standalone application that sniffs network traffic and captures o
 4. A full automated test suite to determine accuracy and bandwidth performance on any implementation
 5. A modular identification system, allowing for plug and play identification algorithms
 
-### Identification Algorithms
-
+## Identification Algorithms
+---
 The application currently supports two algorithms for the identification of assembled streams as a specific protocol.
 1. String Matching is a stragety where common header strings for a protocol are matched in data packets to identify the protocol
 2. Statistical Protocol IDentification (SPID) is an algorithm where a training sample is provided to build a fingerprint of standard traffic for each protocol that is present on the network. Incoming streams are then statistically compared to the fingerprints to identify the stream.
@@ -25,7 +25,7 @@ TCPStream depends on the [libtins](http://libtins.github.io) and [Boost C++](htt
 For easy installation of all dependencies run the `install.sh` script.
 
 ## Application
-
+---
 ### Compilation and Installation
 
 To compile the application build execute:
@@ -42,7 +42,7 @@ This script will execute the following actions
 4. Perform a full clean make of the project
 
 ## Configuration Files
-
+---
 ### Parsing and Build Configuration
 
 The config file `CONFIG.sws` defines the parsing interface for each defined protocol and defines which protocols must be built into the make file. The file follows the following format:
@@ -90,7 +90,7 @@ HTTP:PCAP/http.pcap;Models/HTTP.txt
 ```
 
 ## Test Suite
-
+---
 The software package comes with a built in test suite to assess performance located in `TestSuite`.
 The test suite is a set of two different evaluation scripts to test both the accuracy and bandwidth of the system.
 
